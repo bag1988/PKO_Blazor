@@ -1,0 +1,17 @@
+﻿@using SharedLibrary.Utilities;
+@inherits FiltrInherits<TestSzsRealDeviceFiltr>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="SCSChLService.Protocol.Grpc.Proto.V1.ChannelInfo" Provider="GetProvider" MinWidth="0" IsSetFocus="false" IsOnKeyDown="false">
+        <Tbody Context="item">
+        <td>@IpAddressUtilities.UintToString((uint)item.PortNo)</td>
+        <td>@item.PortDevIdx</td>
+        <td>@($"{item.DevSerNo} ({item.DevSerNo.ToString("X4")}h)")</td>
+        <td>@item.DevVer</td>
+        <td>@(GetRealTypeName(item.DevType))</td>
+        <td></td>
+        </Tbody>        
+    </TableVirtualize>
+}

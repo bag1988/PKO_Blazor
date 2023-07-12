@@ -1,0 +1,24 @@
+﻿@using SMP16XProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<GetItemsINotifySessSMPFilter>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="CSMP16xGetItemsINotifySess" DbClick="DbClick" Provider="GetProvider" IsSetFocus="false" SetSelectList="SeSelectItem" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)">
+        <Tbody Context="item">
+        <td>@item.SitName</td>
+        <td>@item.ObjName</td>
+        <td>@item.StartTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+        <td>@item.LastTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+        <td>@item.SuccessFail</td>
+        <td>@item.Success</td>
+        <td>@item.Fail</td>
+        </Tbody>
+        <TSticky>
+                <CheckP BitPos="4">
+                    <BPrint OnClick="GetReport" />
+                </CheckP>
+            </TSticky>
+    </TableVirtualize>
+}

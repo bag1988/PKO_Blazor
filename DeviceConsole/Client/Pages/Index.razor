@@ -1,0 +1,38 @@
+﻿@page "/"
+@page "/SystemId/{SystemId:int?}"
+@using SMSSGsoProto.V1;
+
+<TitleView>@GetTitle</TitleView>
+
+<div tabindex="0" @ref="divElem" class="p-2" style="grid-template-columns: repeat(@GetCountColumn,1fr);grid-template-rows: repeat(@GetCountColumn,1fr); display:grid; gap:1.5rem; height: calc(100vh - 100px);" @onkeydown="KeySet">
+    @if (SystemId > 0 && urlForSubsystemList.ContainsKey(SystemId))
+    {
+        @foreach (var item in urlForSubsystemList[SystemId])
+        {
+            <NavButton Name="@item.Value" Url="@item.Key" Description="@GetDesc(item.Key)" IsSelect="@IsSelect(item.Key)" />
+        }
+    }
+    else
+    {
+        <NavButton Name="@DeviceRep["IDS_STRING_SYSTEM_SETTINGS"]" Url="@($"SystemId/{SubsystemType.SUBSYST_Setting}")" Description="@Rep["DESCRIPTION_SETTINGS"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_Setting}")" />
+        @if (urlForSubsystemList.ContainsKey(SubsystemType.SUBSYST_ASO))
+        {
+            <NavButton Name="@SMGateRep["IDS_STRING_ASO"]" Url="@($"SystemId/{SubsystemType.SUBSYST_ASO}")" Description="@Rep["DESCRIPTION_ASO"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_ASO}")" />
+        }
+        @if (urlForSubsystemList.ContainsKey(SubsystemType.SUBSYST_P16x))
+        {
+            <NavButton Name="@GsoRep["P16X"]" Url="@($"SystemId/{SubsystemType.SUBSYST_P16x}")" Description="@Rep["DESCRIPTION_P16"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_P16x}")" />
+        }
+        @if (urlForSubsystemList.ContainsKey(SubsystemType.SUBSYST_SZS))
+        {
+            <NavButton Name="@DeviceRep["REGISTR_SRS"]" Url="@($"SystemId/{SubsystemType.SUBSYST_SRS}")" Description="@Rep["DESCRIPTION_SRS"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_SRS}")" />
+            <NavButton Name="@SMGateRep["IDS_STRING_SZS"]" Url="@($"SystemId/{SubsystemType.SUBSYST_SZS}")" Description="@Rep["DESCRIPTION_UUZS"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_SZS}")" />
+        }
+        @if (urlForSubsystemList.ContainsKey(SubsystemType.SUBSYST_GSO_STAFF))
+        {
+            <NavButton Name="@StartUIRep["IDS_STAFFTITLE"]" Url="@($"SystemId/{SubsystemType.SUBSYST_GSO_STAFF}")" Description="@Rep["DESCRIPTION_STAFF"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_GSO_STAFF}")" />
+        }
+        <NavButton Name="@DeviceRep["IDS_STRING_SYSTEM_SECURITY"]" Url="@($"SystemId/{SubsystemType.SUBSYST_Security}")" Description="@Rep["DESCRIPTION_SECURITY"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_Security}")" />
+        <NavButton Name="@DeviceRep["ADDITIONAL"]" Url="@($"SystemId/{SubsystemType.SUBSYST_TASKS}")" Description="@Rep["DESCRIPTION_AUTO"]" IsSelect="@IsSelect($"SystemId/{SubsystemType.SUBSYST_TASKS}")" />
+    }
+</div>

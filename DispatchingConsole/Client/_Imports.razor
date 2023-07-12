@@ -1,0 +1,28 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using BlazorLibrary.ServiceColection;
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.Extensions.Localization;
+@using Microsoft.JSInterop
+@using DispatchingConsole.Client
+@using DispatchingConsole.Client.Shared
+@using ReplaceLibrary;
+@using BlazorLibrary.Shared
+@using BlazorLibrary.Shared.NavLink
+@using BlazorLibrary.Shared.Modal
+@using BlazorLibrary.Shared.InputElements
+@using BlazorLibrary.Shared.Buttons
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager MyNavigationManager
+@inject HubContextCreate _HubContext
+@inject IStringLocalizer<GSOReplase> GsoRep
+@inject GetUserInfo _User
+@inject LocalStorage _localStorage
+@inject IAuthenticationService AuthenticationService

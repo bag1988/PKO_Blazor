@@ -1,0 +1,15 @@
+﻿<div class="top-row px-4 mb-3">
+    <div>        
+        @ChildContent
+    </div>
+
+</div>
+
+
+@code
+{
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+
+}

@@ -1,0 +1,115 @@
+﻿@using SMDataServiceProto.V1;
+@using SharedLibrary.GlobalEnums
+
+<ModalDialog Title="@TitleError" ButtonCloseEvent="Close">
+    <BodyContent>
+        @if (Model != null)
+        {
+            @*Наименование линии связи*@
+            <div class="mb-3">
+                <label class="form-label">@GSOFormRep["NameLine"]</label>
+                <InputFocus @bind-Value="Model.LineName" />
+            </div>
+
+            @*Тип линии связи*@
+            <div class="mb-3">
+                <label class="form-label">@GSOFormRep["TypeLine"]</label>
+                <select class="form-select" @onchange="SetConnType" value="@Model.ChannelType">
+                    @foreach (var item in LineTypes)
+                    {
+                        <option value="@item.Number">@item.Str</option>
+                    }
+                </select>
+            </div>
+            @if (!ViewParams)
+            {
+                @*Абонентский номер линии*@
+                <div class="mb-3">
+                    <label class="form-label">@TitlePhone</label>
+                    <input disabled="@(EditPhone?"disabled":null)" type="@((Model.ChannelType==(int)BaseLineType.LINE_TYPE_DIAL_UP||Model.ChannelType==(int)BaseLineType.LINE_TYPE_DEDICATED)?"number": "text")" class="form-control" @bind="Model.Phone">
+                </div>
+            }
+            @if (ViewExt)
+            {
+                @*Расширение*@
+                <div class="mb-3">
+                    <label class="form-label">@GSOFormRep["Expansion"]</label>
+                    <input type="text" maxlength="8" class="form-control" @bind="NewExtParam">
+                </div>
+            }
+            @if (ViewLocation)
+            {
+                @*Местоположение линии связи*@
+                <div class="mb-3">
+                    <label class="form-label">@GSOFormRep["LocationLine"]</label>
+                    <div class="d-flex flex-row">
+                        <select class="form-select" @bind="Model.LocationID">
+                            @foreach (var item in LocationList)
+                            {
+                                <option value="@item.OBJID.ObjID">@item.Name</option>
+                            }
+                        </select>
+                        @if (Model?.LocationID > 0)
+                        {
+                            <BDark AddClass="ms-1" Text="@AsoRep["IDS_STRING_INFO"]" OnClick="()=>LocationInfo=true" />
+                        }
+                    </div>
+                </div>
+            }
+
+
+            @if (ViewConnection)
+            {
+                @*Связь с устройством*@
+                <div class="mb-3">
+                    <label class="form-label">@GSOFormRep["ConnectDevice"]</label>
+                    <button type="button" class="btn btn-secondary w-100" @onclick="()=>EditBinding=true">@(NewBindingDevice?.Name)</button>
+                </div>
+            }
+            <hr />
+            @*Параметры и характеристики линии связи*@
+            <div class="mb-3">
+                <label class="form-label">@GSOFormRep["ParamLine"]</label>
+                <ResultView ClassItems=" p-1 pointer" TItem="Restrict" Items="RestrictList" DbClick="(e)=>SetRestrictBitStatus(e)" IsSetFocus="false" SelectList="@(SelectRestrict!=null?new(){SelectRestrict}:null)" SetSelectList="(e)=>SelectRestrict=e?.LastOrDefault()">
+                    <ChildContent>
+                        <label class="form-check-label"><input tabindex="-1" checked="@(IsChecked(context)?"checked":null)" @onchange="@(()=>SetRestrictBitStatus(context))" type="checkbox" class="form-check-input" /> @context.RestrictName</label>
+                    </ChildContent>
+                </ResultView>
+            </div>
+            <div class="alert alert-info p-2">
+                <BCreate OnClick="()=>AddParam = true" />
+                @if (SelectRestrict?.RestrictType == 1)
+                {
+                    <BDelete OnClick="DeleteRestrict" />
+                }
+            </div>
+            <hr />
+            <div class="mb-3">
+                <label class="form-check-label"><input type="checkbox" class="form-check-input" checked="@(Model?.Status==1? "checked" : null)" @onchange="(e)=>{Model!.Status=(bool)(e.Value??false)?1:0;}"> @GSOFormRep["LineUsed"]</label>
+            </div>
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="SetLine" />
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>
+
+@if (EditBinding)
+{
+    <EditBindingDevice BindingDevice="@BindingDevice" NewBindingDevice="@NewBindingDevice" Callback="ChangeBinding" />
+}
+
+@if (AddParam)
+{
+    <AddUserParam LineType="@Model?.ChannelType" Callback="GetRestrictList" />
+}
+
+@if (LocationInfo && Model != null && Model.LocationID > 0)
+{
+    <BlazorLibrary.Shared.Location.LocationInfo LocationID="Model.LocationID" Callback="()=>LocationInfo=false" />
+}

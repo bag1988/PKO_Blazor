@@ -1,0 +1,37 @@
+﻿@using SMDataServiceProto.V1
+
+
+@if (SituationGroups?.Count > 0)
+{
+    <div class="overflow-auto my-2">
+        @foreach (var item in SituationGroups)
+        {
+            <BSuccess IsOutline="@(ActiveSituationGroups.FirstOrDefault(r => r.SitGroupID == item.SitGroupID) != null?false:true)" Text="@item.SitGroupName" OnClick="() => HandleSitButtonClicked(item)" />
+        }
+    </div>
+}
+<TableScroll Colspan="18" Items="GetSitList" IsSetFocus="false" IsOnKeyDown="false">
+    <Thead>
+        <ThSort ThList="thList" ThWidthProcent="@(new List<int>(){15})" />
+    </Thead>
+    <Tbody Context="item">
+    <td>@item.SitName</td>
+    <td>@subsystems?.FirstOrDefault(r=>r.Key==item.SitID.SubsystemID).Value </td>
+    <td>@(item.SitTypeID == 1 ? ARMSetRep["STANDART"] : ARMSetRep["NON_STANDART"])</td>
+    <td>@item.CodeName</td>
+    <td>@item.Comm</td>
+    <td>@item.SitPrior</td>
+    <td>@item.SessBeg?.ToDateTime().ToLocalTime()</td>
+    <td>@item.SessEnd?.ToDateTime().ToLocalTime()</td>
+    <td>@GetNotifyState(item.SessStat)</td>
+    <td>@item.CountNotify</td>
+    <td>@item.CountNoNotify</td>
+    <td>@item.UnitName</td>
+    <td>@item.UnitPriority</td>
+    <td>@item.NotifyID</td>
+    <td>@item.MsgName</td>
+    <td>@item.MsgComm</td>
+    <td>@(item.MsgType == 1 ? ARMSetRep["TYPE_SOUND"] : item.MsgType == 2 ? ARMSetRep["TYPE_TEXT"] : "")</td>
+    <td>@item.Login</td>
+    </Tbody>
+</TableScroll>

@@ -1,0 +1,49 @@
+﻿@typeparam TItem
+@inherits TableParams<TItem>
+
+<div @ref="div" @onscroll="OnScroll" class="table-scroll-v table-responsive" style="max-height:@(WindowHeight)px;">
+    <table class="table table-hover table-bordered" style="min-width: @(MinWidth)px;">
+        <thead class="table-dark @(IsSticky==true? "position-sticky":"") top-0" style="z-index:2;">
+            <tr>
+                @Thead
+            </tr>
+        </thead>        
+        <tbody @ref="Elem" tabindex="0" @onkeydown="KeySet" @onkeydown:preventDefault="_shouldPreventDefault">
+            @if (Items != null)
+            {
+                @if (Items.Any())
+                {
+                    @foreach (var item in Items)
+                    {
+                        @if (Tbody is not null)
+                        {
+                            <tr class="@((SelectList?.Contains(item)??false)?"bg-select":"") @(SetSelectList.HasDelegate? "pointer":"")" @ondblclick="DbCallback" @onclick="(e)=>AddSelectItem(e, item)">
+                                @Tbody(item)
+                            </tr>
+                        }
+                    }
+                }
+                else
+                {
+                    <TrNoData Colspan="@Colspan" />
+                }
+            }
+            else
+            {
+                <TrLoad Colspan="@Colspan" />
+            }
+        </tbody>
+        @if (TSticky != null)
+        {
+            <tfoot class="alert-secondary @(IsSticky==true? "position-sticky":"") bottom-0" style="z-index:2;">
+                <tr>
+                    <td colspan="@Colspan" class="border-top">
+                        @TSticky
+                    </td>
+                </tr>
+            </tfoot>
+        }
+    </table>
+</div>
+
+

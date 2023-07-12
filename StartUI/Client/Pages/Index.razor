@@ -1,0 +1,293 @@
+﻿@page "/"
+@page "/Index"
+@using GateServiceProto.V1
+@using SMSSGsoProto.V1;
+@using StartUI.Client.Pages.IndexComponent
+
+<TitleView>@TitlePage</TitleView>
+
+<div class="row">
+    <div class="col-md-10">
+        <div>
+            @*Выбор активной вкладки*@
+            <div class="tabControl mt-0">
+                <div hotkey="@KeyCode.InfoSit" class="@(ActiveTab==Tab.SitList?"tabControlActive":"")" @onclick="(()=>SetActivTab(Tab.SitList))">
+                    @StartUIRep["IDS_SITUATION"]
+                </div>
+                @if (activeNotifyInfo.Any())
+                {
+                    <div hotkey="@KeyCode.StatSit" class="@(ActiveTab==Tab.StatList?"tabControlActive":"")" @onclick="(()=>SetActivTab(Tab.StatList))">
+                        @StartUIRep["IDS_STATIST"]
+                    </div>
+                }
+                else
+                {
+                    <div hotkey="@KeyCode.ResultSit" class="@(ActiveTab==Tab.ResultList?"tabControlActive":"")" @onclick="(()=>SetActivTab(Tab.ResultList))">
+                        @StartUIRep["IDS_SR_SESS"]
+                    </div>
+                }
+            </div>
+        </div>
+        @if (ActiveTab == Tab.StatList && activeNotifyInfo.Any())
+        {
+            @*Ход оповещения*@
+            <ViewStatListCache />
+        }
+        else if (ActiveTab == Tab.ResultList)
+        {
+            @*Результаты оповещения*@
+            <ViewResultListCache />
+        }
+        else
+        {
+            @*Список сценариев для запуска, спиоск выбранных сценариев*@
+            <ViewSitListCache @ref="SitList" />
+        }
+    </div>
+    <div class="col-md-2 text-center bg-light border p-1">
+        <div class="d-flex flex-column">
+            <CheckP BitPos="NameBitsPos.StartNotify">
+                @*Запуск оповещения*@
+                <BSecondary TextWrap="true" HotKey="@KeyCode.Enter" Text="@StartUIRep["IDS_START"]" OnClick="()=>CheckConfig(OnStartNotify, RequestType.StartNotification)"></BSecondary>
+                @*Запуск в ручном режиме*@
+                <BInfo TextWrap="true" HotKey="@KeyCode.Manual" Text="@StaffRep["ManualMode"]" OnClick="()=>CheckConfig(OnStartNotifyCustom, RequestType.CustomStartNotification)"></BInfo>
+                @*Прервать оповещения*@
+                @if (activeNotifyInfo.Any())
+                {
+                    <BSecondary TextWrap="true" HotKey="@KeyCode.Abort" Text="@StartUIRep["IDS_DROP"]" OnClick="()=>OnStopNotify=true"></BSecondary>
+                }
+                @*Дооповестить*@
+                <BSecondary TextWrap="true" HotKey="@KeyCode.Continue" Text="@StartUIRep["IDS_STRING_REGO"]" OnClick="ContinueNotify"></BSecondary>
+            </CheckP>
+
+            <CheckP BitPos="NameBitsPos.CreateNoStandart">
+                @*Создать нестандартный сценарий*@
+                <BSecondary TextWrap="true" HotKey="@KeyCode.Insert" Text="@StartUIRep["IDS_STRING_NOT_STANDART"]" OnClick="@(()=>CreateNoSit=true)" />
+            </CheckP>
+            <CheckP BitPos="NameBitsPos.Create">
+                @*Удалить нестандартный сценарий*@
+                <BSecondary TextWrap="true" HotKey="@KeyCode.Delete" Text="@StartUIRep["IDS_STRING_DEL_ALL_NONSTANDART_SIT"]" OnClick="StartDeleteNoStandart"></BSecondary>
+            </CheckP>
+        </div>
+        <div class="mt-2 p-2">
+            <img src="@GetLogoSvg" style="width:80%;" />
+        </div>
+
+        <ViewProcessing ActivTab="(int)ActiveTab" SubsystemID="SubsystemID" />
+
+    </div>
+</div>
+
+<CheckP BitPos="NameBitsPos.StartNotify">
+
+    @*Для оповещения выбраны сценарии*@
+    @if (SitList != null && SitList.SelectList.Any() && ShowModal)
+    {
+        @if (IsStartNotify)
+        {
+            <ModalDialog Title="@StartUIRep["IDS_STRING_WARNING"]" ButtonCloseEvent="HideNotify">
+                <BodyContent>
+                    @*Предупреждение, и запуск*@
+                    <p class="alert alert-danger">
+                        @(StartUIRep["IDS_STRING_FOR_LAUNCH_SIT_SELECTED"] + ": " + SitList.SelectList.Count())
+                        <br />
+                        @StartUIRep["IDS_STRING_COMMIT_LAUNCH"]!
+                    </p>
+                </BodyContent>
+                <ButtonContent>
+                    <BDark HotKey="@KeyCode.Enter" Text="@StartUIRep["IDS_START"]" OnClick="StartNotify"></BDark>
+                    <BCancel OnClick="HideNotify" />
+                </ButtonContent>
+            </ModalDialog>
+        }
+        else
+        {
+            <ModalDialog Title="@StartUIRep["IDS_STRING_WARNING"]" ButtonCloseEvent="HideNotify">
+                <BodyContent>
+                    @if (IsCustomMode)
+                    {
+                        <p class="alert alert-warning">
+                            @StartUIRep["IDS_STRING_START_SEL_SIT_IN_MANUAL_MODE_Q"]
+                            <br />
+                            @StartUIRep["IDS_STRING_NEED_MIC"]
+                        </p>
+                    }
+                    @*Отображение выбранных сценариев, и список активных*@
+                    <p class="text-danger">
+                        <h4>@StartUIRep["IDC_STATIC_SIT_LIST"]</h4>
+                        @if (SitList.SelectList.Any())
+                        {
+                            <ol>
+                                @foreach (var items in SitList.SelectList)
+                                {
+                                    <li>
+                                        @items.SitName
+                                    </li>
+                                }
+                            </ol>
+                        }
+                        else
+                        {
+                            <PNoData />
+                        }
+                    </p>
+                    <p class="text-danger">
+                        <h4>@StartUIRep["IDC_STATIC_ACTIVE_SIT_LIST"]</h4>
+                        <GetInfoActiv />
+                    </p>
+                </BodyContent>
+                <ButtonContent>
+                    <BDark HotKey="@KeyCode.Enter" Text="@StartUIRep["IDS_START"]" AddClass="me-2" OnClick="@(()=>IsStartNotify=true)" />
+                    <BCancel OnClick="HideNotify" />
+                </ButtonContent>
+            </ModalDialog>
+        }
+    }
+
+    @*Проверка конфигурации*@
+    @if (StartWarning.Any())
+    {
+        <ModalDialog Title="@StartUIRep["IDS_STRING_WARNING"]" ButtonCloseEvent="()=>StartWarning.Clear()">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    <ul>
+                        @foreach (var item in StartWarning)
+                        {
+                            <li>
+                                @item
+                            </li>
+                        }
+                    </ul>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BSecondary HotKey="@KeyCode.Enter" Text="@StartUIRep["Resume"]" OnClick="OnStartNotify"></BSecondary>
+                <BCancel OnClick="()=>StartWarning.Clear()" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+
+    @*Остановить оповещение*@
+    @if (OnStopNotify && activeNotifyInfo.Any())
+    {
+        <ModalDialog Title="@StartUIRep["IDS_STRING_NOTIFY"]" ButtonCloseEvent="()=>OnStopNotify=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @StartUIRep["IDS_STRING_TERMINATE_NOTIFY_Q"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDark HotKey="@KeyCode.Enter" Text="@StartUIRep["IDS_REG_STOP_NOTIFY"]" OnClick="StopNotify"></BDark>
+                <BCancel OnClick="()=>OnStopNotify=false" />
+            </ButtonContent>
+
+        </ModalDialog>
+    }
+    else
+    {
+        OnStopNotify = false;
+    }
+
+    @*Запустить дооповещение, настройки*@
+    @if (IsObjNoNotify == true)
+    {
+        <ModalDialog Title="@StartUIRep["IDS_SIT_MSG_NAME"]" ButtonCloseEvent="()=>IsObjNoNotify=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @StartUIRep["IDS_INIT_RESTART_ASO"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDark HotKey="@KeyCode.Enter" Text="@StartUIRep["IDS_STRING_REGO"]" OnClick="ContinueNotify"></BDark>
+                <BCancel OnClick="()=>IsObjNoNotify=false" />
+            </ButtonContent>
+
+        </ModalDialog>
+    }
+    @*Запуск в ручном режиме, отображение записи звука*@
+    @if (CustomModeStart)
+    {
+        <ModalDialog Title="@StaffRep["StateManualMode"]" ButtonCloseEvent="StopStream">
+            <BodyContent>
+                <VisualRecord @ref="visualRec" />
+            </BodyContent>
+            <ButtonContent>
+                <BDanger HotKey="@KeyCode.Enter" OnClick="StopStream" Text="@(StaffRep["StopRecord"]+ " "+(TimeRecord.Minutes.ToString("00") + ":" + TimeRecord.Seconds.ToString("00")))" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @*Запуск в ручном режиме, UUZS*@
+    @if (IsCustomModeUUZS)
+    {
+        <ModalDialog Title="@UUZSRep["UUZS_MANUAL"]">
+            <BodyContent>
+                <div class="progress mt-2 position-relative" style="height: 3rem; font-size: 2em;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width:0%"></div>
+                    <span class="w-100 position-absolute">0%</span>
+                </div>
+                <div class="row mt-2 p-2">
+                    <div class="col-4">
+                        <label class="form-label small">@StartUIRep["IDS_COUNTALL"]</label>
+                        <label class="form-control">2</label>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small">@StartUIRep["IDS_SUCC"]</label>
+                        <label class="form-control">0</label>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small">@StartUIRep["IDS_FAIL"]</label>
+                        <label class="form-control">2</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@UUZSRep["COUNT_REPEAT"]</label>
+                    <input disabled="disabled" type="number" max="99" class="form-control" value="1">
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                <BDark Text="@UUZSRep["START_MANUAL"]" />
+                <BInfo Text="@UUZSRep["REPEAT_COMMAND"]" />
+                <BCancel />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>
+
+<CheckP BitPos="NameBitsPos.CreateNoStandart">
+    @if (CreateNoSit)
+    {
+        @*Создание нестандартных сценариев*@
+        @if (SubsystemID == SubsystemType.SUBSYST_GSO_STAFF)
+        {
+            <CreateSitStaff CallbackEvent="()=>CreateNoSit=false" />
+        }
+        else if (SubsystemID == SubsystemType.SUBSYST_ASO || SubsystemID == SubsystemType.SUBSYST_SZS)
+        {
+            <CreateSituation CallbackEvent="()=>CreateNoSit=false" />
+        }
+    }
+</CheckP>
+
+<CheckP BitPos="NameBitsPos.Create">
+    @*Удаление нестандартных сценариев*@
+    @if (DrySitInfoList != null && DrySitInfoList.Any())
+    {
+        <ModalDialog Title="@StartUIRep["IDS_STRING_DEL_ALL_NONSTANDART_SIT_Q"]" ButtonCloseEvent="()=>DrySitInfoList=null">
+            <BodyContent>
+                <ResultView SetClass="alert alert-danger" TItem="GetDrySitInfoItem" Items="DrySitInfoList" DbClick="(e)=>CheckDeleteItem(e.SitID)">
+                    <ChildContent>
+                        <label class="form-check-label"><input tabindex="-1" checked="@(context.SitTypeID==1?"checked": null)" @onchange="()=>CheckDeleteItem(context.SitID)" type="checkbox" class="form-check-input" /> @context.SitName</label>
+                    </ChildContent>
+                </ResultView>
+            </BodyContent>
+            <ButtonContent>
+                <BCancel OnClick="()=>DrySitInfoList=null" />
+                <BDelete OnClick="DeleteNoStandart" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>
+
+
+

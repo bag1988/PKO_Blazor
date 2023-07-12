@@ -1,0 +1,102 @@
+﻿@inject IStringLocalizer<TasksReplace> TasksRep
+
+<ModalDialog Title="@(TaskId==null?TasksRep["IDS_REG_TASK_INSERT"]: Model?.TaskName)" ButtonCloseEvent="()=>CloseModal()">
+    <BodyContent>
+        @if (Model != null)
+        {
+            @*Наименование*@
+            <div class="mb-3">
+                <label class="form-label">@GsoRep["IDS_STRING_NAME"]</label>
+                <InputFocus @bind-Value="Model.TaskName" />
+            </div>
+            @*Подсистема*@
+            <div class="mb-3">
+                <label class="form-label">@TasksRep["IDS_SIT_SUBST"]</label>
+                <select class="form-select" value="@Model.TaskID.SubsystemID" @onchange="HandleSubsystemChanged">
+                    <option value="1">@SMDataRep["SUBSYST_ASO"]</option>
+                    <option value="2">@SMDataRep["SUBSYST_SZS"]</option>
+                    <option value="3">@SMDataRep["SUBSYST_GSO_STAFF"]</option>
+                </select>
+            </div>
+
+            @*Наименование сценария*@
+            <div class="mb-3">
+                <label class="form-label">@TasksRep["SIT_NAME"]</label>
+                <select class="form-select" @bind="Model.SitID.ObjID">
+                    <option value="-1">-----</option>
+                    @if (m_SitList != null)
+                    {
+                        @foreach (var item in m_SitList)
+                        {
+                            <option value="@item.OBJID?.ObjID">@item.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            @*Дни недели*@
+            <div class="mb-3">
+                <h5>@TasksRep["DAY_WEEK"]</h5>
+                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.Mo==1? "checked" : null)" class="form-check-input" @onclick="()=>Model.Mo=(Model.Mo==1?0:1)" /> @TasksRep["IDS_MO"]</label>
+                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.Tu==1? "checked" : null)" class="form-check-input" @onclick="()=>Model.Tu=(Model.Tu==1?0:1)" /> @TasksRep["IDS_TU"]</label>
+                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.We==1? "checked" : null)" class="form-check-input" @onclick="()=>Model.We=(Model.We==1?0:1)" /> @TasksRep["IDS_WE"]</label>
+                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.Th==1? "checked" : null)" class="form-check-input" @onclick="()=>Model.Th=(Model.Th==1?0:1)" /> @TasksRep["IDS_TH"]</label>
+                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.Fr==1? "checked" : null)" class="form-check-input" @onclick="()=>Model.Fr=(Model.Fr==1?0:1)" /> @TasksRep["IDS_FR"]</label>
+                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.Sa==1? "checked" : null)" class="form-check-input" @onclick="()=>Model.Sa=(Model.Sa==1?0:1)" /> @TasksRep["IDS_SA"]</label>
+                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.Su==1? "checked" : null)" class="form-check-input" @onclick="()=>Model.Su=(Model.Su==1?0:1)" /> @TasksRep["IDS_SU"]</label>
+            </div>
+            <hr />
+            <h5>@TasksRep["IDS_TASK_TIME"]</h5>
+            <TableDefault IsSetFocus="false" IsOnKeyDown="false" IsSticky="false" Colspan="3" TItem="TaskShedule" Items="m_vTaskShedule" SelectList="@(SelectTask!=null ? new (){SelectTask}:null)" SetSelectList="(e)=>SelectTask=e?.LastOrDefault()">
+                <Thead>
+                <th class="w-25">@TasksRep["IDS_TASK_TIME"]</th>
+                <th>@TasksRep["MODE"]</th>
+                <th>@TasksRep["TIME_ZONE"]</th>
+                </Thead>
+                <Tbody>
+                    @if (SelectTask?.Equals(context) ?? false)
+                    {
+                    <td>
+                        <input @bind:format="HH:mm" class="form-control form-control-sm" @bind="SelectTaskTime" />
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm" @bind="@context.TaskMode">
+                            <option value="0">@TasksRep["NEW_NOTIFY"]</option>
+                            <option value="1">@TasksRep["OLD_NOTIFY"]</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm" @bind="@context.TimeZoneId">
+                                @foreach (var zone in timeZones)
+                                {
+                                <option value="@zone.Id">@zone.DisplayName</option>
+                                }
+                        </select>
+                    </td>
+                    }
+                    else
+                    {
+                    <td style="@(context.TaskMode==1?"background-color: yellow;":"")">@context.TaskTime?.ToDateTime().ToString("t")</td>
+                    <td style="@(context.TaskMode==1?"background-color: yellow;":"")">@(context.TaskMode == 0 ? TasksRep["NEW_NOTIFY"] : TasksRep["OLD_NOTIFY"])</td>
+                    <td style="@(context.TaskMode==1?"background-color: yellow;":"")">@(timeZones.FirstOrDefault(x => x.Id == context.TimeZoneId)?.DisplayName ?? context.TimeZoneId)</td>
+                    }
+                </Tbody>
+                <TSticky>
+                    <BDark HotKey="@KeyCode.Insert" Text="@GsoRep["Add"]" OnClick="AddTaskList" />
+                    @if (SelectTask != null)
+                    {
+                        <BDelete OnClick="DeleteTaskList" />
+                    }
+                </TSticky>
+            </TableDefault>
+        }
+        else
+        {
+            <PLoad/>
+        }
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="SaveItem" />
+        <BClose OnClick="()=>CloseModal()" />
+    </ButtonContent>
+</ModalDialog>

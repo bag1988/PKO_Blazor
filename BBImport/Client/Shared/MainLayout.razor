@@ -1,0 +1,12 @@
+﻿@using BlazorLibrary.Shared.NavLink
+@inherits LayoutComponentBase
+<Main Title="@GsoRep["IMPORT_LIST_ABON"]" Width="300">
+    <Menu>
+        <MenuBBImport @ref="menu" UpdateFile="UpdateFile" UpdateInfo="UpdateInfo" />
+    </Menu>
+    <ChildContent>
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
+    </ChildContent>
+</Main>

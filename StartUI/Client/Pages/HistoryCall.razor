@@ -1,0 +1,82 @@
+﻿@page "/HistoryCall"
+@using AsoDataProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<FiltrHistoryCall>
+<TitleView>@StartUIRep["HISTORY_CALL"]</TitleView>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="HistoryCallItem" Provider="GetProvider" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="SetSelectList" DbClick="DbClick">
+        <Tbody Context="item">
+        <td class="text-nowrap">@item.SessID</td>
+        <td>@item.SitName</td>
+        <td>@item.TimeAccess?.ToDateTime().ToLocalTime()</td>
+        <td>@item.AbName</td>
+        <td>@item.DepName</td>
+        <td>@item.LineName</td>
+        <td>@item.Param</td>
+        <td>
+            @item.ResultName
+            <DetailsComponent Details="@item.Details" />
+        </td>
+        <td>@item.Answer</td>
+        </Tbody>
+        <TSticky>
+            <div class="d-flex align-items-center">
+                <BDelete OnClick="()=>IsViewDeleteHistory=true" />
+                <CheckP BitPos="4">
+                    <BPrint OnClick="GetReport" />
+                    <BDark IsOutline="true" Text="@GsoRep["SETTING_REPORT"]" OnClick="()=>IsViewPrintSetting=true" />
+                </CheckP>
+                @if (SelectItem != null && IsData)
+                {
+                    <AudioPlayerStream @ref="player" />
+                }
+            </div>
+        </TSticky>
+    </TableVirtualize>
+}
+
+
+
+<CheckP BitPos="NameBitsPos.ViewArhive">
+
+    @*Очистка истории*@
+    @if (IsViewDeleteHistory)
+    {
+        <ModalDialog Title="@DeviceRep["IDS_STRING_WARNING"]" ButtonCloseEvent="()=>IsViewDeleteHistory=false">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    @GsoRep["WARNING_DELETE_HISTORY_CALL"]
+                </p>
+
+                @*Удалить данные старше*@
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["DELETE_OLDER_DATA"]</label>
+                    <input type="date" class="form-control" @bind="DeleteTimeStartDelete" />
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                <BCancel OnClick="()=>IsViewDeleteHistory=false" />
+                <BDelete OnClick="ClearASOHistory" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsViewPrintSetting)
+    {
+        <ModalDialog Title="@GsoRep["SETTING_REPORT"]" ButtonCloseEvent="()=>IsViewPrintSetting=false">
+            <BodyContent>
+                <BlazorLibrary.Shared.ReportFont.FontChange ReportFont="ReportFont" />
+            </BodyContent>            
+            <ButtonContent>
+                <BClose OnClick="()=>IsViewPrintSetting=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+
+</CheckP>
+
+

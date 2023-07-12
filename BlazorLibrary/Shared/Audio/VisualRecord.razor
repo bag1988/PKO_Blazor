@@ -1,0 +1,16 @@
+﻿<div class="alert alert-warning mt-2">
+    @StaffRep["IsRecord"] @(TimeRecord.Minutes.ToString("00") + ":" + TimeRecord.Seconds.ToString("00"))
+</div>
+@code {    
+    private int[] HeightArray = new int[50];
+
+    CancellationTokenSource source = new CancellationTokenSource();
+
+    private TimeSpan TimeRecord;
+
+    public void Refresh(TimeSpan time)
+    {
+        TimeRecord = time;
+        StateHasChanged();        
+    }
+}

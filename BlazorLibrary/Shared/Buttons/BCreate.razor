@@ -1,0 +1,12 @@
+﻿@inherits ButtonDefault
+
+<button disabled="@(IsProcessing?"disabled":null)" type="button" hotkey="@(!string.IsNullOrEmpty(HotKey)?HotKey:null)" @onclick="OnClickAction" class="btn btn@(IsOutline==true?"-outline":"")-dark @(TextWrap==true?"text-wrap":"text-nowrap") @AddClass">@_content</button>
+
+@code {
+    public new string? HotKey = KeyCode.Insert;
+        
+    protected override void OnInitialized()
+    {
+        Text = GsoRep["IDS_STRING_CREATE"];
+    }
+}

@@ -1,0 +1,110 @@
+﻿@*Формат сообщения*@
+<div class="row mb-2">
+	<label class="form-label col-md-4">@DeviceRep["FormatMessage"]</label>
+	<div class="col-md-8">
+		<BSecondary IsOutline="true" AddClass="w-100" Text="@GetNameFormat()" OnClick="()=>IsViewEditFormat=true" />
+	</div>
+</div>
+<CheckP BitPos="NameBitsPos.Create">
+	@if (IsViewEditFormat)
+	{
+		@*Формат записи звукового сообщения*@
+        <ModalDialog Title="@DeviceRep["FormatRecMessage"]" ButtonCloseEvent="CloseEdit">
+            <BodyContent>
+                @if (HeaderSound != null)
+                {
+                    @*Формат*@
+                    <div class="mb-3">
+                        <label class="form-label">@DeviceRep["Format"]</label>
+                        <input type="text" disabled="disabled" class="form-control" value="PCM">
+                    </div>
+                    @*Частота*@
+                    <div class="mb-3">
+                        <label class="form-label">@DeviceRep["TTSFREQUENCY"]</label>
+                        <select class="form-select" @bind="HeaderSound.SampleRate">
+                            <option value="8000">8000 kHz</option>
+                            <option value="12000">12000 kHz</option>
+                            <option value="16000">16000 kHz</option>
+                            <option value="24000">24000 kHz</option>
+                            <option value="32000">32000 kHz</option>
+                            <option value="44100">44100 kHz</option>
+                            <option value="48000">48000 kHz</option>
+                        </select>
+                    </div>
+                    @*Количество бит*@
+                    <div class="mb-3">
+                        <label class="form-label">@DeviceRep["BitsPerSample"]</label>
+                        <select class="form-select" @bind="HeaderSound.SampleSize">
+                            @*<option value="8">8 Bit</option>*@
+                            <option value="16">16 Bit</option>
+                            @*<option value="24">24 Bit</option>*@
+                        </select>
+                    </div>
+                    @*Количество каналов*@
+                    <div class="mb-3">
+                        <label class="form-label">@DeviceRep["ChannelNumber"]</label>
+                        <select class="form-select" @bind="HeaderSound.Channels">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </div>
+                }
+                else
+                {
+                    <PNoData />
+                }
+            </BodyContent>			
+			<ButtonContent>
+				<BSave OnClick="ChangeFormat" />
+				<BCancel OnClick="CloseEdit" />
+			</ButtonContent>
+		</ModalDialog>
+	}
+</CheckP>
+
+@code {
+
+	[Parameter]
+	public WavOnlyHeaderModel? HeaderSound { get; set; }
+
+	[Parameter]
+	public EventCallback<WavOnlyHeaderModel?> ActionNext { get; set; }
+
+	private bool IsViewEditFormat = false;
+
+	private async Task ChangeFormat()
+	{
+		await ActionCallBack(HeaderSound);
+	}
+
+	private async Task CloseEdit()
+	{
+		await ActionCallBack();
+	}
+
+	private async Task ActionCallBack(WavOnlyHeaderModel? newSound = null)
+	{
+		if (ActionNext.HasDelegate)
+		{
+			await ActionNext.InvokeAsync(newSound);
+		}
+		IsViewEditFormat = false;
+	}
+
+	private string GetNameFormat()
+	{
+		string str = "";
+		if (HeaderSound != null)
+		{
+			str = HeaderSound.AudioFormatPcm == 1 ? "PCM" : "";
+
+			str += " " + HeaderSound.SampleRate.ToString("#,###") + "kHz;";
+
+			str += " " + HeaderSound.SampleSize + "Bit;";
+
+			str += " " + (HeaderSound.Channels == 1 ? "Mono" : "Stereo");
+		}
+		return str;
+	}
+
+}

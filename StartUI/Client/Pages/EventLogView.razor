@@ -1,0 +1,23 @@
+﻿@page "/EventLog"
+@using SMSSGsoProto.V1;
+@using SharedLibrary.Models
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<CEventLogFilter>
+<TitleView>@StartUIRep["IDS_HELP_SYST_LOGS"]</TitleView>
+@if(!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="CEventLog" Provider="GetProvider" IsOnKeyDown="false">
+        <Tbody Context="item">
+        <td class="@(item.Type==1?"text-danger":"")">@(Rep[BaseReplace.Get<ReplaceDictionary>(item.Source)])</td>
+        <td class="@(item.Type==1?"text-danger":"")">@item.RegTime.ToDateTime().ToLocalTime().ToString()</td>
+        <td class="@(item.Type==1?"text-danger":"")">@(Rep[BaseReplace.Get<ReplaceDictionary>(item.Type)])</td>
+        <td class="@(item.Type==1?"text-danger":"")">@ReplaceCodeToString(item.Source, item.Code)</td>
+        <td class="@(item.Type==1?"text-danger":"")">@item.Login</td>
+        <td class="@(item.Type==1?"text-danger":"")">@item.Info</td>
+        </Tbody>
+        <TSticky>
+            <BPrint OnClick="GetReport" />            
+        </TSticky>
+    </TableVirtualize>
+}

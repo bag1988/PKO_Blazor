@@ -1,0 +1,26 @@
+﻿@typeparam TItem
+
+@if (Data != null)
+{
+    @if (Data.Any())
+    {
+        @ChildContent?.Invoke(Data)
+    }
+    else
+    {
+        <PNoData />
+    }
+}
+else
+{
+    <PLoad />
+}
+
+@code
+{
+    [Parameter]
+    public RenderFragment<List<TItem>?>? ChildContent { get; set; }
+
+    [Parameter]
+    public List<TItem>? Data { get; set; }
+}

@@ -1,0 +1,33 @@
+﻿
+<a @ref="aElem" class="bg-outline-gray" href="@($"/{Url}")">
+    <div>
+        <h5 class="text-center">@Name</h5>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <small>@Description</small>
+        }
+    </div>
+</a>
+
+
+@code {
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public string? Url { get; set; }
+
+    [Parameter]
+    public bool IsSelect { get; set; } = false;
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    ElementReference? aElem;
+
+    protected override void OnParametersSet()
+    {
+        if (IsSelect)
+            aElem?.FocusAsync();
+    }
+}

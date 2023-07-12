@@ -1,0 +1,101 @@
+﻿@page "/"
+@using BlazorLibrary.FolderForInherits;
+@using BlazorLibrary.Shared.Login
+@using BlazorLibrary.Shared.NavLink
+@inherits CancellableComponent
+
+<TitleView>@GsoRep["IMPORT_LIST_ABON"]</TitleView>
+
+
+@*Данные из файла*@
+<TableScroll MinWidth="0" IsSetFocus="false" IsOnKeyDown="false" TItem="List<string>" Items="FileAbonInfo" Colspan="ThListFile.Count" Devision="2" ScrollAction="AddData">
+    <Thead>
+        <ThSort ThList="ThListFile" />
+    </Thead>
+    <Tbody Context="item">
+        @for (int i = 0; i < ThListFile.Count; i++)
+        {
+        <td>
+                @item.ElementAtOrDefault(i)
+        </td>
+        }
+    </Tbody>
+</TableScroll>
+
+
+@*Данные из файла*@
+<TableScroll MinWidth="0" IsSetFocus="false" IsOnKeyDown="false" TItem="ASOAbonent" Items="ImportAbonList" Colspan="6" ScrollAction="AddDataInfo">
+    <Thead>
+    <th>№</th>
+    <th>@GsoRep["SURNAME"]</th>
+    <th>@AsoRep["IDS_ABPHONE"]</th>
+    <th>@GsoRep["ARREARS"]</th>
+    <th>@AsoRep["IDS_ABADDRESS"]</th>
+    <th>@GsoRep["CURRENCY_CODE"]</th>
+    </Thead>
+    <Tbody Context="item">
+    <td>@(ImportAbonList?.IndexOf(item) + 1)</td>
+    <td>@item.Name</td>
+    <td>@item.Phone</td>
+    <td>@item.Comment</td>
+    <td>@item.Addr</td>
+    <td>@item.Pos</td>
+    </Tbody>
+    <TSticky>
+        <BDark OnClick="ViewWarning" Text="@GsoRep["IMPORT"]" />
+    </TSticky>
+</TableScroll>
+
+
+@if (IsWarning)
+{
+    <ModalDialog Title="@DeviceRep["IDS_STRING_WARNING"]">
+        <BodyContent>
+            @if (!IsProcessingSave)
+            {
+                <p class="alert alert-warning">
+                    @GsoRep["BEFORE_IMPORT"]
+                </p>
+            }
+            else
+            {
+                <p class="alert alert-info">
+                    @($"{GsoRep["IMPORT_ABON_TO_BASE"]} ({abList.GroupBy(x => x.AbonID).Count()})")
+                </p>
+            }
+        </BodyContent>
+        <ButtonContent>
+            @if (!IsProcessingDelete)
+            {
+                <BDark OnClick="SaveImportAbon" Text="@GsoRep["IMPORT"]" />
+            }
+            @if (!IsProcessingSave)
+            {
+                <BDelete OnClick="DeleteOldAbon" />
+            }
+            @if (!IsProcessingSave && !IsProcessingDelete)
+            {
+                <BCancel OnClick="()=>IsWarning=false" />
+            }
+
+        </ButtonContent>
+    </ModalDialog>
+}
+
+@if (IsCreateSit)
+{
+    <ModalDialog Title="@DeviceRep["IDS_STRING_WARNING"]" ButtonCloseEvent="()=>IsCreateSit=false">
+        <BodyContent>
+            <p class="alert alert-warning">
+                @GsoRep["OK_IMPORT_ABON"]
+            </p>
+        </BodyContent>
+        <ButtonContent>
+            <BDark OnClick="CreateSit" Text="@GsoRep["YES"]" />
+            @if (!IsProcessingSave)
+            {
+                <BDark IsOutline="true" Text="@GsoRep["NO"]" OnClick="()=>IsCreateSit=false" />
+            }
+        </ButtonContent>
+    </ModalDialog>
+}

@@ -1,0 +1,51 @@
+﻿<div @ref="div" class="btn-group" tabindex="-1" @onblur="OnBlurAction">
+    <BDark AddClass="m-1 dropdown-toggle" OnClick="SetView">
+        @if (IsProcessing)
+        {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+
+            @TextButton
+        }
+        else
+        {
+            @TextButton
+        }
+    </BDark>
+
+    @if (ChildButton != null)
+    {
+        <ul class="dropdown-menu dropdown-menu-dark @(IsViewMenuTop?"bottom-100":"top-100") @(IsViewAddMenu?"d-block":"")" @onclick="@(()=>IsViewAddMenu=false)" style="max-width:500px;">
+            @ChildButton
+        </ul>
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public string? TextButton { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildButton { get; set; }
+
+    [Parameter]
+    public bool IsViewMenuTop { get; set; } = true;
+
+    [Parameter]
+    public bool IsProcessing { get; set; } = false;
+
+    bool IsViewAddMenu = false;
+
+    ElementReference? div;
+
+    void OnBlurAction()
+    {
+        IsViewAddMenu = false;
+    }
+    void SetView()
+    {
+        IsViewAddMenu = !IsViewAddMenu;
+        if (IsViewAddMenu && div != null)
+            div?.FocusAsync();
+    }
+}

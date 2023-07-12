@@ -1,0 +1,96 @@
+﻿@page "/SubParamStaff"
+
+<TitleView>@GsoRep["IDS_STRING_PARAMS_Staff"]</TitleView>
+
+@if (Model != null)
+{
+    <form id="subparamstaff" @onsubmit="SaveParam">
+        @*Наименование пункта управления*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["ContrUnitName"]</label>
+            <div class="col-md-8">
+                <InputFocus @bind-Value="Model.ContrUnitName" />
+            </div>
+        </div>
+
+        @*Координаты*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["Geolocation"]</label>
+            <div class="col-md-8">
+                <input type="text" class=" form-control" @bind="m_geolocation">
+            </div>
+        </div>
+
+
+        @*Время обновления данных на экране (с)*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["RedrawTimeout"]</label>
+            <div class="col-md-8">
+                <input title="@($"{GsoRep["FROM"]} 1 {GsoRep["TO"]} 3600")" type="number" min=1 max=3600 class=" form-control" @bind="Model.RedrawTimeout">
+            </div>
+        </div>
+
+        @*Время между опросами состояния объектов при оповещении (с)*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["GetStatusTime"]</label>
+            <div class="col-md-8">
+                <input title="@($"{GsoRep["FROM"]} 1 {GsoRep["TO"]} 3600")" type="number" min=1 max=3600 class="form-control" @bind="Model.GetStatusTime">
+            </div>
+        </div>
+
+
+        @*Количество попыток соединения с удаленным ПУ*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["RepeatCount"]</label>
+            <div class="col-md-8">
+                <input title="@($"{GsoRep["FROM"]} 1 {GsoRep["TO"]} 100")" type="number" min=1 max=100 class="form-control" @bind="Model.RepeatCount">
+            </div>
+        </div>
+
+        @*Время между попытками соединения с удаленными ПУ (с)*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["RetryTimeout"]</label>
+            <div class="col-md-8">
+                <input title="@($"{GsoRep["FROM"]} 1 {GsoRep["TO"]} 3600")" type="number" min=1 max=3600 class="form-control" @bind="Model.RetryTimeout">
+            </div>
+        </div>
+
+        @*Максим. количество ошибок при соединении с удаленным ПУ*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["ErrCount"]</label>
+            <div class="col-md-8">
+                <input title="@($"{GsoRep["FROM"]} 1 {GsoRep["TO"]} 100")" type="number" min=1 max=100 class="form-control" @bind="Model.ErrCount">
+            </div>
+        </div>
+
+        @*Время ожидания установления соединения с удаленным ПУ (с)*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@GsoRep["RequestTimeout"]</label>
+            <div class="col-md-8">
+                <input title="@($"{GsoRep["FROM"]} 1 {GsoRep["TO"]} 3600")" type="number" min=1 max=3600 class="form-control" @bind="Model.RequestTimeout">
+            </div>
+        </div>
+        <hr />
+        <div class="row mb-2">
+            @*Индикация запуска оповещения*@
+            <label class="form-check-label mb-2"><input type="checkbox" class="form-check-input me-2" @bind="m_BNotifyStaff" />@GsoRep["BNotifyStaff"]</label>
+        </div>
+        <hr class="mt-0" />
+    </form>
+}
+else
+{
+    <PLoad />
+}
+<ButtonModal>
+    <CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.General">
+        <BSumbit FormId="subparamstaff" IsProcessing="IsProcessing"/>        
+        <BDark HotKey="@KeyCode.Escape" IsOutline="true" Text="@GsoRep["Reset"]" OnClick="OnInitializedAsync" />
+        @if (IsUpdate)
+        {
+            <span class="m-2 text-success">@AsoRep["IDS_OK_SAVE"]</span>
+        }
+    </CheckP>
+</ButtonModal>
+
+

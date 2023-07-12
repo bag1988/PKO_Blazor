@@ -1,0 +1,165 @@
+﻿@page "/ViewList"
+@using SMSSGsoProto.V1;
+@inherits FiltrInherits<ListFiltr>
+<TitleView>@TitleView</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="ListItem" Provider="GetProvider" DbClick="DbClick" SelectList="SelectList" SetSelectList="(e)=>SelectList = e">
+        <Tbody Context="item">
+        <td>@item.Name</td>
+        <td>@item.Priority</td>
+        <td>@item.Count</td>
+        <td>@item.Comm</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                <BCreate OnClick="()=>ViewCreateDialog(true)" />
+                @if (SelectList?.Count > 0)
+                {
+                    <BEdit OnClick="()=>ViewCreateDialog(false)" />
+                    <BDelete OnClick="()=>IsDelete=true" />
+                    @if (SubsystemID == SubsystemType.SUBSYST_ASO)
+                    {
+                        @*Экспорт*@
+                        <BPrimary Text="@AsoRep["EXPORT"]" OnClick="ExportSelectList" />
+                    }
+                }
+                @if (SubsystemID == SubsystemType.SUBSYST_ASO)
+                {
+                    @*Импорт*@
+                    <BSuccess Text="@AsoRep["IMPORT"]" OnClick="ViewDialogImport" />
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPosList="new[] { NameBitsPos.Create, NameBitsPos.CreateNoStandart }">
+    @if (IsCreateList)
+    {
+        <CreateList ListId="SelectList?.LastOrDefault()?.List?.ObjID" CallbackEvent="()=>IsCreateList=false" />
+    }
+</CheckP>
+
+<CheckP BitPos="NameBitsPos.Create">
+    @*Импорт параметров*@
+    @if (IsImport == true && SubsystemID == SubsystemType.SUBSYST_ASO)
+    {
+        <ModalDialog Title="@AsoRep["IMPORT"]" ButtonCloseEvent="()=>IsImport=false">
+            <BodyContent>
+                <div class="mb-3">
+                    <InputFile class="form-control" OnChange="@LoadFiles" />
+                </div>
+                @if (!string.IsNullOrEmpty(StatusImport))
+                {
+                    <p class="alert alert-info">
+                        @StatusImport
+                    </p>
+                }
+
+                @if (ImportList?.Any(x => string.IsNullOrEmpty(x.Name) || (ExistsList?.Any(s => s.Name.Trim() == x.Name?.Trim()) ?? false)) ?? false)
+                {
+                    <h5>@AsoRep["LIST_EXISTS"]</h5>
+                    @foreach (var item in ImportList.Where(x => string.IsNullOrEmpty(x.Name) || (ExistsList?.Any(s => s.Name.Trim() == x.Name?.Trim()) ?? false)).GroupBy(x => x.Name))
+                    {
+                        <div class="mb-3 d-flex align-items-start justify-content-between">
+                            <label class="form-label w-50">@item.Key</label>
+                            <input type="text" value="@item.Key" @oninput="ChangeListName" @onblur="()=>SetNewListName(item.Key)" class="form-control w-50" />
+                        </div>
+                    }
+                }
+
+                @if (NoInsertList?.Count > 0)
+                {
+                    @if (NoInsertList.Any(x => !x.AbonName.Contains("%exists%")))
+                    {
+                        <h5>@AsoRep["NO_ABONENT"]</h5>
+                        @foreach (var item in NoInsertList.Where(x => !x.AbonName.Contains("%exists%")).GroupBy(x => x.AbonName))
+                        {
+                            <div class="mb-3 d-flex align-items-start justify-content-between">
+                                <label class="form-label w-50">@item.Key</label>
+                                <input type="text" list="AbonList" value="@item.Key" @onblur="()=>ChangeAbName(item.Key)" class="form-control w-50" @oninput="GetFiltrAbonForName" />
+                                @if (AbonList != null)
+                                {
+                                    <datalist id="AbonList">
+                                        @foreach (var itemAbon in AbonList)
+                                        {
+                                            <option value="@itemAbon.Str"></option>
+                                        }
+                                    </datalist>
+                                }
+                            </div>
+                        }
+                    }
+                    @if (NoInsertList.Any(x => x.AbonName.Contains("%exists%")))
+                    {
+                        <h5>@AsoRep["NO_ADD_ABON"]</h5>
+                        <p class="alert alert-danger">
+
+                            @foreach (var item in NoInsertList.Where(x => x.AbonName.Contains("%exists%")).GroupBy(x => x.Name))
+                            {
+                                <b>@item.Key</b>
+                                <ul>
+                                    @foreach (var abon in item)
+                                    {
+                                        <li>
+                                            @abon.AbonName.Split("%exists%")[1]
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </p>
+                    }
+
+                }
+            </BodyContent>
+            <ButtonContent>
+                @if (ImportList?.Count > 0)
+                {
+                    <BDark Text="@GsoRep["IDS_STRING_NEXT"]" OnClick="InsertListAbon" />
+
+                }
+                @if (NoInsertList?.Count > 0)
+                {
+                    <BDark Text="@GsoRep["IDS_STRING_NEXT"]" OnClick="RepeatedInsert" />
+                }
+                <BClose OnClick="()=>IsImport=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsDelete == true && SelectList?.Count > 0)
+    {
+        <ModalDialog Title="@GsoRep["IDS_REG_LIST_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_STRING_MULTI_DELETE_Q"]: <b>@SelectList.Last().Name</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="DeleteList" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsDeleteListAbon == true && SelectList?.Count > 0 && ChildAbon != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_REG_LIST_DELETE"]">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["DeleteChildAbon"].ToString().Replace("{count}", ChildAbon.Count.ToString())
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                @*Не удалять абонентов*@
+                <BDark IsOutline="true" OnClick="()=>{ChildAbon=null; IsDeleteListAbon=false;}" Text="@AsoRep["NO_DELETE_ABONENT"]" />
+                @*Удалить абонентов*@
+                <BDanger OnClick="()=>IsDeleteListAbon=false" Text="@AsoRep["DELETE_ABONENT"]" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

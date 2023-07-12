@@ -1,0 +1,53 @@
+﻿@page "/Groups"
+@using UUZSDataProto.V1;
+@inherits FiltrInherits<GroupSzsFiltr>
+<TitleView>@UUZSDataRep["IDS_STRING_TERMINAL_DEVICES_GROUPS"]</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="CGroupInfoListOut" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+        <Tbody Context="item">
+        <td>@item.GroupName</td>
+        <td>@item.GroupID</td>
+        <td>@item.Prior</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                @*Добавить группу*@
+                <BCreate OnClick="()=>{IsViewEdit=true; SelectItem=null;}" />
+                @if (SelectItem != null)
+                {
+                    @*Редактировать группу*@
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    @*Удалить группу*@
+                    <BDelete OnClick="()=>IsDelete=true" />
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateGroup ActionBack="CallBackEvent" DeviceObj_ID="@(new OBJ_ID(request.ObjID){ ObjID= SelectItem?.GroupID??0})" />
+    }
+
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_COMMIT_DELETE_GROUP"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @UUZSRep["IDS_STRING_YOU_REALLY_DELETE_GROUP_Q"]: <b>@SelectItem.GroupName</b>
+                </p>
+            </BodyContent>            
+                <ButtonContent>
+                <BDelete OnClick="DeleteGroup" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

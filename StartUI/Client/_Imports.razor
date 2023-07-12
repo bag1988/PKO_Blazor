@@ -1,0 +1,72 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using SharedLibrary
+@using BlazorLibrary.Shared.Login
+@using ReplaceLibrary
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using StartUI.Client
+@using StartUI.Client.Injects;
+@using StartUI.Client.Shared
+@using BlazorLibrary.Shared
+@using BlazorLibrary
+@using BlazorLibrary.ServiceColection
+@using BlazorLibrary.Shared.Audio
+@using BlazorLibrary.Shared.Abonent
+@using BlazorLibrary.Shared.ListObject
+@using BlazorLibrary.Shared.SubParamSystem
+@using BlazorLibrary.Shared.Modal
+@using BlazorLibrary.Shared.NavLink
+@using BlazorLibrary.Shared.Buttons
+@using BlazorLibrary.Shared.Table
+@using BlazorLibrary.Shared.NotifyLog
+@using BlazorLibrary.Shared.Situation
+@using BlazorLibrary.Shared.Situation.NextPage
+@using BlazorLibrary.Shared.Messages
+@using BlazorLibrary.Shared.DevicesSZS
+@using BlazorLibrary.Shared.FiltrComponent
+@using SMDataServiceProto.V1
+@using SharedLibrary.GlobalEnums
+@using BlazorLibrary.GlobalEnums
+@using Microsoft.AspNetCore.Components.Authorization
+@using BlazorLibrary.FolderForInherits
+
+
+@inject GetUserInfo _User
+
+@inject NavigationManager MyNavigationManager
+@inject HubContextCreate _HubContext
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<ReplaceDictionary> Rep
+@inject IStringLocalizer<StartUIReplace> StartUIRep
+@inject IStringLocalizer<SMGateReplace> SMGateRep
+@inject IStringLocalizer<DeviceReplace> DeviceRep
+@inject IStringLocalizer<SMDataReplace> SMDataRep
+@inject IStringLocalizer<UUZSReplace> UUZSRep
+@inject IStringLocalizer<UUZSDataReplace> UUZSDataRep
+@inject IStringLocalizer<GSOReplase> GsoRep
+@inject IStringLocalizer<StaffReplace> StaffRep
+@inject IStringLocalizer<StaffDataReplace> StaffDataRep
+@inject IStringLocalizer<SMP16xReplace> SMP16xRep
+@inject IStringLocalizer<SMP16xNlReplace> SMP16xNlRep
+@inject IStringLocalizer<SZSNotifyReplace> SZSNotifyRep
+@inject IStringLocalizer<ASOReplace> AsoRep
+@inject IStringLocalizer<SMP16xFormReplace> SMP16xFormRep
+@inject IStringLocalizer<RDMReplace> RDMRep
+@inject IStringLocalizer<RepoterReplace> RepoterRep
+@inject IStringLocalizer<GSOFormReplase> GSOFormRep
+@inject IStringLocalizer<ErrorsReplace> ErrRep
+@inject IStringLocalizer<TasksReplace> TasksRep
+@inject IStringLocalizer<ViewStateReplace> ViewStateRep
+@inject IStringLocalizer<ASOGSMReplace> ASOGSMRep
+@inject IStringLocalizer<ASODataReplace> AsoDataRep
+@inject IStringLocalizer<SqlBaseReplace> SqlRep
+@inject OtherInfoForReport _OtherForReport
+@inject GenerateChannelsReport _GenerateReportChannels
+@inject LocalStorage _localStorage

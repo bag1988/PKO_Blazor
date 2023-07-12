@@ -1,0 +1,54 @@
+﻿@page "/ViewDevice"
+@inherits FiltrInherits<AsoDeviceFiltr>
+
+<TitleView>@AsoRep["IDS_STRING_CONTROL_DEVICE_ASO"]</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="ControllingDeviceItem" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+        <Tbody Context="item">
+        <td>@item.DeviceName</td>
+        <td>@item.ChannelsCount</td>
+        <td></td>
+        <td>@item.SoundInterface</td>
+        <td>@item.Status</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                @*Добавить устройство*@
+                <BCreate OnClick="()=>{IsViewEdit=true; SelectItem=null;}" />
+                @if (SelectItem != null)
+                {
+                    @*Ркдактировать устройство*@
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    @*Удалить устройство*@
+                    <BDelete OnClick="()=>IsDelete=true" />
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateDevice CallBack="CallBackEvent" DeviceID="@(SelectItem!=null?SelectItem.DeviceID:null)" />
+    }
+
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@AsoRep["IDS_REG_BLOCK_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_STRING_MULTI_DELETE_Q"]: <b>@SelectItem.DeviceName</b>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="DeleteControllingDevice" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

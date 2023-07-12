@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerfileContext>..\..</DockerfileContext>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grpc.Net.Client" />
+		<PackageReference Include="Grpc.Net.Client.Web" />
+		<PackageReference Include="Grpc.Tools">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.AspNet.WebApi.Client" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />		
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Client\BBImport.Client.csproj" />
+		<ProjectReference Include="..\Shared\BBImport.Shared.csproj" />
+		<ProjectReference Include="..\..\ServerLibrary\ServerLibrary.csproj" />
+		<ProjectReference Include="..\..\ServiceLibrary\ServiceLibrary.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="..\..\src\library\SharedSettings\sharedappsettings.Development.json" Link="sharedappsettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedappsettings.json" Link="sharedappsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedservicessettings.Development.json" Link="sharedservicessettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedservicessettings.json" Link="sharedservicessettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedsettings.Development.json" Link="sharedsettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedsettings.json" Link="sharedsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,21 @@
+﻿@if (!string.IsNullOrEmpty(Details))
+{
+    @if (IsViewText)
+    {
+        <span class="d-block">
+            @Details
+        </span>
+    }
+    <button @onclick="SetViewText" title="@Details" class="float-end btn btn-outline-dark p-1" style="line-height: 0.8rem;font-size: 1.2rem; border:none;">@GetText</button>
+}
+
+@code {
+    [Parameter]
+    public string? Details { get; set; }
+
+    bool IsViewText = false;
+
+    void SetViewText() => IsViewText = !IsViewText;
+
+    string GetText => IsViewText ? "-" : "+";
+}

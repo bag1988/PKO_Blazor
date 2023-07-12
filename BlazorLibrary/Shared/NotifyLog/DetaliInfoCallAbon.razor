@@ -1,0 +1,32 @@
+﻿@using AsoDataProto.V1
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<FiltrHistoryCall>
+<ModalDialog Title="@($"{AsoRep["HistoryCallAbon"]} {SitName}")" ButtonCloseEvent="ActionNext">
+    <BodyContent>
+        @if (!IsPageLoad)
+        {
+            <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+            <TableVirtualize @ref="table" MinWidth="0" TItem="HistoryCallItem" Provider="GetProvider" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="SetSelectList" DbClick="DbClick">
+                <Tbody Context="item">
+                <td>@(table?.IndexOfItem(item) + 1)</td>
+                <td>@item.TimeAccess?.ToDateTime().ToLocalTime()</td>
+                <td>@item.LineName</td>
+                <td>@item.Param</td>
+                <td>@item.ResultName</td>
+                <td>@item.Answer</td>
+                </Tbody>
+            </TableVirtualize>
+        }
+    </BodyContent>   
+    <ButtonContent>
+        <div class="d-flex align-items-center">           
+            <BClose OnClick="ActionNext" />
+            @if (SelectItem != null && IsData)
+            {
+                <AudioPlayerStream @ref="player" />
+            }
+        </div>
+    </ButtonContent>
+</ModalDialog>
+
+

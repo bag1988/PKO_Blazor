@@ -1,0 +1,44 @@
+﻿@page "/RegistrationList"
+@using StaffDataProto.V1;
+@inherits FiltrInherits<StaffFiltr>
+<TitleView>@Rep["Registration"]</TitleView>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="CGetRegList" Provider="GetProvider" DbClick="()=>IsCreate=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+        <Tbody Context="item">
+        <td>@item.CCURegistrList?.CUName</td>
+        <td>@item.CCURegistrList?.CUType</td>
+        <td>@item.CCURegistrList?.CUUNC</td>
+        <td>ID:@item.OBJID?.StaffID</td>
+        </Tbody>
+        <TSticky>
+            <CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.Create">
+                <BCreate OnClick="@(()=>{SelectItem=null; IsCreate=true;})" />
+                @if (SelectItem != null)
+                {
+                    <BEdit OnClick="()=>IsCreate = true" />
+                    <BDelete OnClick="()=>{IsDelete=true; IsCreate = true;}" />
+                    @if (SelectItem.OutLong != 2)
+                    {
+                        @*Расписание дозвона*@
+                        <BPrimary Text="@GSOFormRep["IDS_SHEDULE"]" OnClick="()=>IsViewShedule = true" />
+                    }
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.Create">
+    @if (IsCreate == true)
+    {
+        <CreateRegistration IdStaff="@SelectItem?.OBJID?.StaffID" IsDelete="IsDelete" CallBack="CloseModal" />
+    }
+
+    @if (IsViewShedule == true && SelectItem != null && SelectItem.OutLong != 2)
+    {
+        <DeviceConsole.Client.Pages.Staff.SheduleStaff.SheduleList ActionBack="()=>IsViewShedule=false" IdStaff="@SelectItem?.OBJID?.StaffID" StaffName="@SelectItem?.CCURegistrList?.CUName" />
+    }
+</CheckP>

@@ -1,0 +1,37 @@
+﻿@using Microsoft.Extensions.Localization
+@using ViewState.Client.Pages
+@inherits LayoutComponentBase
+
+<Main Title="@ViewRep["Title"]">
+    <Menu>
+        <DivNavLink>
+            <label class="form-check-label nav-link">
+                <input class="form-check-input m-1" checked="@(param.IsCheckCu?"checked":null)" type="checkbox" @onclick="()=>ChangeBool(!param.IsCheckCu, nameof(param.IsCheckCu))">
+                @ViewRep["ControlledPu"]
+            </label>
+        </DivNavLink>
+        <DivNavLink>
+            <label class="form-check-label nav-link">
+                <input class="form-check-input m-1" checked="@(param.IsPOSIgnore?"checked":null)" type="checkbox" @onclick="()=>ChangeBool(!param.IsPOSIgnore, nameof(param.IsPOSIgnore))">
+                @ViewRep["IgnorePOC"]
+            </label>
+        </DivNavLink>
+        <DivNavLink>
+            <label class="form-check-label nav-link">
+                <input class="form-check-input m-1" checked="@(param.IsHistoryCommand?"checked":null)" type="checkbox" @onclick="()=>ChangeBool(!param.IsHistoryCommand, nameof(param.IsHistoryCommand))">
+                @ViewRep["HISTORY_COMMAND"]
+            </label>
+        </DivNavLink>
+        <HR />
+        <DivNavLink>
+            <span>@ViewRep["INTERVAL_UPDATE"]</span>
+        </DivNavLink>
+        <DivNavLink>
+            <input type="number" max="999" class="form-control" value="@param.IntervalUpdateState" @oninput="SetInterval" />
+        </DivNavLink>
+
+    </Menu>
+    <ChildContent>
+        @Body
+    </ChildContent>
+</Main>

@@ -1,0 +1,218 @@
+﻿@using AsoDataProto.V1;
+@using SharedLibrary.GlobalEnums
+<TableDefault IsSetFocus="false" TItem="Shedule" Colspan="5" Items="SheduleList" DbClick="()=>ViewModal()" SetSelectList="(e)=>selectItem =new(e.LastOrDefault())" SelectList="@(selectItem!=null ? new (){selectItem}:null)" IsSticky="false" MinWidth="0">
+    <Thead>
+    <th>@AsoRep["IDS_CONNTYPE"]</th>
+    <th>@AsoRep["IDS_ABLOCATION"]</th>
+    <th>@AsoRep["IDS_CONNECT"]</th>
+    <th>@AsoRep["IDS_TIMEBEGIN"]</th>
+    <th>@AsoRep["IDS_TIMEEND"]</th>
+    </Thead>
+    <Tbody Context="item">
+    <td>@item.TypeName</td>
+    <td>@(LocationList.FirstOrDefault(x => x.OBJID.ObjID == item.Loc.ObjID)?.Name ?? "")</td>
+    <td>@item.ConnParam</td>
+    <td>@item.Begtime.ToTimeSpan()</td>
+    <td>@item.Endtime.ToTimeSpan()</td>
+    </Tbody>
+    <TSticky>
+        <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+            <BCreate OnClick="()=>ViewModal(true)" />
+            @if (selectItem != null)
+            {
+                <BEdit OnClick="()=>ViewModal()" />
+                <BDelete OnClick="()=>IsDeleteShedule=true" />
+                @if (SheduleList?.IndexOf(selectItem) > 0)
+                {
+                    <BSecondary OnClick="()=>SetPriorityShedule(-1)">
+                        <span class="oi oi-arrow-thick-top me-0"></span>
+                    </BSecondary>
+                }
+                @if (SheduleList?.IndexOf(selectItem) < (SheduleList?.Count - 1))
+                {
+                    <BSecondary OnClick="()=>SetPriorityShedule(1)">
+                        <span class="oi oi-arrow-thick-bottom me-0"></span>
+                    </BSecondary>
+                }
+
+            }
+        </CheckP>
+    </TSticky>
+</TableDefault>
+
+<CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+    @if (IsDeleteShedule && selectItem != null)
+    {
+        <ModalDialog Title="@GSOFormRep["IDS_REG_SHEDULE_DELETE"]" ButtonCloseEvent="@(()=>{IsDeleteShedule=false; selectItem=null;})">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_Q_DELSHEDULE"] @selectItem.ConnParam
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="DeleteShedule" />
+                <BCancel OnClick="@(()=>{IsDeleteShedule=false; selectItem=null;})" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (ShowModal && selectItem != null)
+    {
+        <ModalDialog Title="@AsoRep["IDS_STRING_CREATE_Schedule"]" ButtonCloseEvent="CloseModal">
+            <BodyContent>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div>
+                            <label class="form-label">@AsoRep["IDS_STRING_Schedule"]</label>
+                            <InputRadioGroup @bind-Value="@selectItem.DayType">
+                                @foreach (var item in Enum.GetValues<TypeDayName>())
+                                {
+                                    <div class="form-check">
+                                        <label class="form-check-label"><InputRadio class="form-check-input" Value="@((int)item)" />@AsoRep[item.ToString()]</label>
+                                    </div>
+                                }
+                            </InputRadioGroup>
+                            @if (selectItem.DayType == 4)
+                            {
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(selectItem.DayWeek.ToCharArray()[1]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(1)" /> @AsoRep[Days.Mo.ToString()]</label>
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(selectItem.DayWeek.ToCharArray()[2]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(2)" /> @AsoRep[Days.Tu.ToString()]</label>
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(selectItem.DayWeek.ToCharArray()[3]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(3)" /> @AsoRep[Days.We.ToString()]</label>
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(selectItem.DayWeek.ToCharArray()[4]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(4)" /> @AsoRep[Days.Th.ToString()]</label>
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(selectItem.DayWeek.ToCharArray()[5]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(5)" /> @AsoRep[Days.Fr.ToString()]</label>
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(selectItem.DayWeek.ToCharArray()[6]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(6)" /> @AsoRep[Days.Sa.ToString()]</label>
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(selectItem.DayWeek.ToCharArray()[0]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(0)" /> @AsoRep[Days.Su.ToString()]</label>
+                            }
+                        </div>
+                        <hr />
+                        <div class="mb-3">
+                            <label class="form-check-label me-1"><input type="checkbox" class="form-check-input" checked="@(selectItem.TimeType==1? "checked" : null)" @onchange="(e)=>selectItem.TimeType=((bool)(e?.Value??false)==true?1:0)" /> @AsoRep["IDS_STRING_Limits"]</label>
+                            @if (selectItem.TimeType == 1)
+                            {
+                                <div class="mt-2 mb-3 d-flex align-items-center">
+                                    <label class="form-label w-25">@AsoRep["IDS_TIMEBEGIN"]</label>
+                                    <input type="time" class="form-control" @bind-value="@StartTime" />
+                                </div>
+                                <div class="mb-3 d-flex align-items-center">
+                                    <label class="form-label w-25">@AsoRep["IDS_TIMEEND"]</label>
+                                    <input type="time" class="form-control" @bind-value="@EndTime" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">@AsoRep["IDS_STRING_Chanel"]</label>
+                            <select class="form-select" @onchange="SetConnType">
+                                @foreach (var item in LineTypes)
+                                {
+                                    <option value="@item.Number" selected="@(selectItem.BaseType==item.Number? "selected" : null)">@item.Str</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@AsoRep["IDS_STRING_ParamLine"]</label>
+                            @if (RestrictList.Any())
+                            {
+                                @foreach (var item in RestrictList)
+                                {
+                                    <div>
+                                        <label class="form-check-label me-1">
+                                            <input type="checkbox" checked="@(IsChecked(item)? "checked" : null)" class="form-check-input" @onclick="()=>SetRestrictBitStatus(item)" />
+                                            @item.RestrictName
+                                        </label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <hr />
+                    <div class="col-12">
+                        @*Параметры оповещения*@
+                        <label class="form-label">@AsoRep["IDS_STRING_Parameters"]</label>
+                        @*Тип оповещения*@
+                        <div class="mt-2 mb-3 d-flex align-items-center">
+                            <label class="form-label w-50">@AsoRep["TypeNotify"]</label>
+                            <select class="form-select" @bind="selectItem.ConnType">
+                                @foreach (var item in ConnTypes.Where(x => selectItem.BaseType == (int)BaseLineType.LINE_TYPE_DIAL_UP ? (new int[] { (int)BaseLineType.LINE_TYPE_DIAL_UP, (int)BaseLineType.LINE_TYPE_PAGE }).Contains(x.Number) : x.Number == selectItem.BaseType))
+                                {
+                                    <option value="@item.Number">@item.Str</option>
+                                }
+                            </select>
+                        </div>
+                        @if ((new int[] { (int)BaseLineType.LINE_TYPE_DIAL_UP, (int)BaseLineType.LINE_TYPE_GSM_TERMINAL }).Contains(selectItem.BaseType))
+                        {
+                            <div class="mb-3 d-flex align-items-center">
+                                <label class="form-label w-50">@AsoRep["IDS_ABLOCATION"]</label>
+                                <select class="form-select" @bind="selectItem.Loc.ObjID">
+                                    @foreach (var item in LocationList)
+                                    {
+                                        <option value="@item.OBJID.ObjID">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            @*Номер телефона*@
+                            <div class="mb-3 d-flex align-items-center">
+                                <label class="form-label w-50">@AsoRep["PhoneNumber"]</label>
+                                <input type="text" class="form-control" @bind="selectItem.ConnParam" />
+                            </div>
+                            @if (selectItem.ConnType == (int)BaseLineType.LINE_TYPE_DIAL_UP)
+                            {
+                                <div class="mb-3 d-flex align-items-center">
+                                    <label class="form-label w-50">@AsoRep["IDS_ABADDRESS"]</label>
+                                    <input type="text" class="form-control" @bind="selectItem.Address" />
+                                </div>
+                                <div class="mb-3 d-flex align-items-center">
+                                    <label class="form-label w-50">@AsoRep["Confirmation"]</label>
+                                    @*AsoRep["IDS_STRING_NO_CONFIRM"]*@
+                                    <select class="form-select" @bind="selectItem.Beeper">
+                                        <option value="0">-----</option>
+                                        <option value="1">@AsoRep["IDS_STRING_TICKER_CONFIRM"]</option>
+                                        <option value="2">@AsoRep["IDS_STRING_PASSWORD_CONFIRM"]</option>
+                                        <option value="3">@AsoRep["IDS_STRING_WITHOUT_CONFIRM"]</option>
+                                    </select>
+                                </div>
+                            }
+                        }
+                        else if (selectItem.BaseType == (int)BaseLineType.LINE_TYPE_WSDL)
+                        {
+                            <div class="mb-3 d-flex align-items-center">
+                                <label class="form-label w-50">@AsoRep["Region"]</label>
+                                <input type="text" class="form-control" @bind="selectItem.ConnParam" />
+                            </div>
+                        }
+                        else if (selectItem.BaseType == (int)BaseLineType.LINE_TYPE_DCOM)
+                        {
+                            <div class="mb-3 d-flex align-items-center">
+                                <label class="form-label w-50">@AsoRep["Server"]</label>
+                                <input type="text" class="form-control" @bind="selectItem.ConnParam" />
+                            </div>
+                        }
+                        else if (selectItem.BaseType == (int)BaseLineType.LINE_TYPE_SMTP)
+                        {
+                            <div class="mb-3 d-flex align-items-center">
+                                <label class="form-label w-50">@AsoRep["Email"]</label>
+                                <input type="text" class="form-control" @bind="selectItem.ConnParam" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                @if (IsExistConnParam)
+                {
+                    <p class="alert alert-danger">
+                        @AsoRep["IDS_CON_PAR_Q"]
+                    </p>
+                }
+                <BDark HotKey="@KeyCode.Enter" AddClass="me-2" OnClick="()=>AddShedle()" Text="@(selectItem.ASOShedule.ObjID>0?GsoRep["IDS_STRING_SAVE"]: AsoRep["IDS_STRING_ADD_SHEDULE"])" />
+                <BCancel OnClick="CloseModal" />
+                @if (selectItem.ConnType == 1)
+                {
+                    <label class="form-check-label ms-1"><input type="checkbox" class="form-check-input" @bind="IsDuplicate" /> @AsoRep["IDS_STRING_Duplicate"]</label>
+                }
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

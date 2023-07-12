@@ -1,0 +1,25 @@
+﻿<ModalDialog Title="@AsoRep[Model==null?"IDS_REG_DEP_UPDATE":"IDS_REG_DEP_INSERT"]" ButtonCloseEvent="Close">
+    <BodyContent>
+        @if (Model != null)
+        {
+            @*Подразделение*@
+            <div class="mb-3">
+                <label class="form-label">@AsoRep["IDS_DEPARTMENT"]</label>
+                <InputFocus @bind-Value="Model.DepName" />
+            </div>
+            @*Комментарий*@
+            <div class="mb-3">
+                <label class="form-label">@AsoRep["IDS_DEPCOMMENT"]</label>
+                <input type="text" class="form-control" @bind="Model.DepComm">
+            </div>
+        }
+        else
+        {
+            <PNoData />
+        }
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="SaveDepartment" />
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>

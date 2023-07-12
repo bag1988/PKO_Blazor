@@ -1,0 +1,24 @@
+﻿@using AsoDataProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<CreateResultsListCacheAso>
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="ResultCache" Provider="GetProvider" IsSetFocus="false">
+        <Tbody Context="item">
+        <td>@item.SitName</td>
+        <td>@item.AbName</td>
+        <td>@item.DepName</td>
+        <td>               
+            @item.ResultName
+            <DetailsComponent Details="@item.Details" />
+        </td>
+        <td>@item.AnswerTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+        <td>@item.ConnParam</td>
+        <td>@item.CountRealCall</td>
+        </Tbody>
+        <TSticky>
+            <ResultNotifySticky />
+        </TSticky>
+    </TableVirtualize>
+}

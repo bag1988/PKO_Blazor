@@ -1,0 +1,109 @@
+﻿@page "/ViewDepartment"
+@inherits FiltrInherits<DepartmentFiltr>
+
+<TitleView>@AsoDataRep["IDS_STRING_DEPARTMENT_COMMENT"]</TitleView>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="DepartmentAso" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="SelectList" SetSelectList="(e)=>SelectList = e">
+        <Tbody Context="item">
+        <td>@item.DepName</td>
+        <td>@item.DepComm</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                <BCreate OnClick="()=>{SelectList=null; IsViewEdit=true;}" />
+                @if (SelectList?.Count > 0)
+                {
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    <BDelete OnClick="()=>IsDelete=true" />
+
+                    @*Экспорт*@
+                    <BPrimary Text="@AsoRep["EXPORT"]" OnClick="ExportSelectDepartment" />
+                }
+
+                @*Импорт*@
+                <BSuccess Text="@AsoRep["IMPORT"]" OnClick="ViewDialogImport" />
+
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP SystemID="SubsystemType.SUBSYST_ASO" BitPos="NameBitsPos.Create">
+    @*Импорт параметров*@
+    @if (IsImport == true)
+    {
+        <ModalDialog Title="@AsoRep["IMPORT"]" ButtonCloseEvent="()=>IsImport=false">
+            <BodyContent>
+                <div class="mb-3">
+                    <InputFile class="form-control" OnChange="@LoadFiles" />
+                </div>
+                @if (!string.IsNullOrEmpty(StatusImport))
+                {
+                    <p class="alert alert-info">
+                        @StatusImport
+                    </p>
+                }
+                @if (ImportList?.Any(x => !ExistsDepartment?.Any(m => m.DepName.Trim().Equals(x.Name.Trim())) ?? false) ?? false)
+                {
+                    <h5>@AsoRep["DEPARTMENT_ADD"]</h5>
+                    <p class="alert alert-success">
+                        <ul>
+                            @foreach (var item in ImportList.Where(x => !ExistsDepartment?.Any(m => m.DepName.Trim().Equals(x.Name.Trim())) ?? false))
+                            {
+                                <li>
+                                    @item.Name
+                                </li>
+                            }
+                        </ul>
+                    </p>
+                }
+
+                @if (ImportList?.Any(x => ExistsDepartment?.Any(m => m.DepName.Trim().Equals(x.Name.Trim())) ?? false) ?? false)
+                {
+                    <h5>@AsoRep["DEPARTMENT_EXISTS"]</h5>
+                    <p class="alert alert-danger">
+                        <ul>
+                            @foreach (var item in ImportList.Where(x => ExistsDepartment?.Any(m => m.DepName.Trim().Equals(x.Name.Trim())) ?? false))
+                            {
+                                <li>
+                                    @item.Name
+                                </li>
+                            }
+                        </ul>
+                    </p>
+                }
+            </BodyContent>            
+            <ButtonContent>
+                @if (ImportList?.Any(x => !ExistsDepartment?.Any(m => m.DepName.Trim().Equals(x.Name.Trim())) ?? false) ?? false)
+                {
+                    <BDark Text="@GsoRep["IDS_STRING_NEXT"]" OnClick="ImportDepartment" />
+                }
+                <BClose OnClick="()=>IsImport=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+
+    @if (IsViewEdit == true)
+    {
+        <CreateDepartment CallBack="CallBackEvent" Model="@(SelectList==null?new(): new DepartmentAso(SelectList.Last()))" />
+    }
+
+    @if (IsDelete == true && SelectList?.Count > 0)
+    {
+        <ModalDialog Title="@AsoRep["IDS_REG_DEP_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_Q_DELDEPARTMENT"]: <b>@SelectList.Last().DepName</b>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="DeleteDepartment" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

@@ -1,0 +1,91 @@
+﻿@page "/"
+@using SharedLibrary.Models;
+@using SharedLibrary.Utilities;
+
+<TitleView>Пульт оперативно-диспетчерской связи</TitleView>
+
+@if (SelectList?.Count > 0 || _activeConnect != null)
+{
+    <PSticky Color="warning" StyleTop="0">
+        @if (_activeConnect?.State == StateCall.Create && _activeConnect.TypeCalling == TypeCall.In)
+        {
+            <b>@($"{GetTypeInConnect} {_activeConnect.HubUrl}")</b>
+            @if (_activeConnect.TypeConn != TypeConnect.Message)
+            {
+                <BlazorLibrary.Shared.Buttons.BDark Text="Принять" AddClass="ms-2 btn-sm" OnClick="()=>CreateAnswer(TypeConnect.Sound)" />
+                <BlazorLibrary.Shared.Buttons.BSecondary Text="Видеовызов" AddClass="ms-2 btn-sm" OnClick="()=>CreateAnswer(TypeConnect.Video)" />
+            }
+            <BlazorLibrary.Shared.Buttons.BPrimary Text="Сообщение" AddClass="ms-2 btn-sm" OnClick="()=>CreateAnswer(TypeConnect.Message)" />
+            <BlazorLibrary.Shared.Buttons.BCancel AddClass="ms-2 btn-sm" OnClick="CancelCall" />
+        }
+        else if (_activeConnect?.State == StateCall.Calling && _activeConnect.TypeCalling == TypeCall.Out)
+        {
+            <b>@_activeConnect.NameRoom</b>
+            <BlazorLibrary.Shared.Buttons.BDanger OnClick="CancelOutCall" AddClass="ms-2 btn-sm" Text="@GsoRep["IDS_STRING_CANCEL"]" />
+        }
+        else if (_activeConnect?.State == StateCall.Connecting)
+        {
+            <b>@_activeConnect.NameRoom</b>
+            <BlazorLibrary.Shared.Buttons.BDark IsOutline="true" AddClass="ms-2 btn-sm" Text="Завершить вызов" OnClick="CloseCallAction" />
+        }
+        else if (SelectList?.Count > 0)
+        {
+            @if (SelectList.Count == 1)
+            {
+                <b>@SelectList.Last().CCURegistrList?.CUName</b>
+            }
+            else
+            {
+                <b title="@(string.Join("; ", SelectList.Select(x=>x.CCURegistrList.CUName)))">@($"Группа ({SelectList.Count})")</b>
+            }
+            @if (_activeConnect?.State != StateCall.Calling)
+            {
+                <BlazorLibrary.Shared.Buttons.BDark Text="Звонок" AddClass="ms-2 btn-sm" OnClick="()=>StartConnect(TypeConnect.Sound)" />
+                <BlazorLibrary.Shared.Buttons.BSecondary Text="Видеовызов" AddClass="ms-2 btn-sm" OnClick="()=>StartConnect(TypeConnect.Video)" />
+                <BlazorLibrary.Shared.Buttons.BPrimary Text="Сообщение" AddClass="ms-2 btn-sm" OnClick="()=>StartConnect(TypeConnect.Message)" />
+            }
+        }
+
+    </PSticky>
+}
+
+<div class="row">
+    <div class="col">
+        <DivScroll>
+            @if (_messages.Count > 0)
+            {
+                @foreach (var item in _messages)
+                {
+                    <div class="clearfix">
+                        <div class="toast-container p-3 @(IpAddressUtilities.CompareForAuthority(item.Url, MyNavigationManager.BaseUri)? "float-end":"")">
+                            <div class="toast show">
+                                <div class="toast-header">
+                                    <strong class="me-auto">@item.Url</strong>
+                                    <small>@item.Date.ToString("g")</small>
+                                </div>
+                                <div class="toast-body">
+                                    @item.Message
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            @if (_activeConnect?.State == StateCall.Connecting)
+            {
+                <BlazorLibrary.Shared.Modal.ButtonModal>
+                    <form @onsubmit="SendMessage">
+                        <textarea rows="3" class="form-control" @bind="TempMessage"></textarea>
+                        <BlazorLibrary.Shared.Buttons.BSumbit Text="Отправить" />
+                    </form>
+                </BlazorLibrary.Shared.Modal.ButtonModal>
+            }
+        </DivScroll>
+    </div>
+
+    <div @ref="remoteVideoArray" class="col col-md-5 d-none"></div>
+
+
+</div>
+
+

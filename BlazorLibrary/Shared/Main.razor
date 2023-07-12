@@ -1,0 +1,42 @@
+﻿@using BlazorLibrary.Shared.NavLink
+
+<div class="page" @onclick="OnSetActive" @onkeyup="OnSetActive">
+    @if (SubsystemID != 0)
+    {
+        <NavMenu Title="@Title" Width="Width">
+            @Menu?.Invoke(SubsystemID)
+        </NavMenu>
+    }
+
+    <main @ref="main" tabindex="-1" class="main">
+        <article class="px-4">
+            @if (SubsystemID != 0)
+            {
+                <AuthUser>
+                    <Authorizing>
+                        <p class="alert alert-warning mt-3">@GsoRep["CheckLogin"]</p>
+                    </Authorizing>
+                    <Authorized>
+                        <div class="h-100">
+                            @if (isPageLoad)
+                            {
+                                @ChildContent?.Invoke(SubsystemID)
+                            }
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <LoginPage />
+                    </NotAuthorized>
+                </AuthUser>
+            }
+            else
+            {
+                <PLoad />
+            }
+        </article>
+        <MessageViewList @ref="MessageView" />
+    </main>
+</div>
+
+
+

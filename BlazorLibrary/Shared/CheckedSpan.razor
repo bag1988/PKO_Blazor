@@ -1,0 +1,27 @@
+﻿<input type="checkbox" class="form-check-input" checked="@(IsChecked?"checked":null)" @onclick="ClickCallback" />
+
+@*@if (IsChecked)
+{
+    <input type="checkbox" class="form-check-input" checked="checked" @onchange="ClickCallback" />
+}
+else
+{
+    <input type="checkbox" class="form-check-input" @onchange="ClickCallback" />
+}*@
+
+@code {
+    [Parameter]
+    public bool IsChecked { get; set; } = false;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private async Task ClickCallback()
+    {
+        IsChecked = true;
+        await Task.Yield();
+        IsChecked = false;
+        if (OnClick.HasDelegate)
+            await OnClick.InvokeAsync();
+    }
+}

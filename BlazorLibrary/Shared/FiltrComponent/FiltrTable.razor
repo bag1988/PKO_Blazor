@@ -1,0 +1,126 @@
+﻿@using BlazorLibrary.Models;
+@using FiltersGSOProto.V1;
+
+
+@if (!IsPageLoad)
+{
+    <TableVirtualize MinWidth="0" @ref="table" TItem="FiltrItem" Provider="GetProvider" IsSetFocus="false" SelectList="(SelectFiltrItem!=null? new(){SelectFiltrItem}:null)" SetSelectList="SetSelectList" IsSticky="false">
+        <Tbody Context="item">
+            @if (item.Equals(SelectFiltrItem))
+            {
+            <td>
+                <div>
+                    <input type="text" list="FreeKey" class="form-control form-control-sm" value="@SelectFiltrItem?.Key" @onchange="OnSetKey">
+                        @if (GetHintsItems.Any())
+                        {
+                        <datalist id="FreeKey">
+                                @foreach (var item in GetHintsItems)
+                                {
+                                <option value="@item.Key" />
+                                }
+                        </datalist>
+                        }
+                </div>
+            </td>
+            <td>
+                <div>
+                    <select class="form-control form-control-sm" value="@SelectFiltrItem?.Operation" @onchange="OnSetOperation">
+                        <option value="@FiltrOperationType.None">-----</option>
+                            @foreach (var item in OperandTypes)
+                            {
+                            <option value="@item.Key">@item.Name</option>
+                            }
+                    </select>
+                </div>
+            </td>
+            <td>
+                <div class="d-flex align-items-center">
+                        @if (GetHintSelectFiltr?.Type == Models.TypeHint.Date)
+                        {
+                        <input type="datetime-local" class="form-control" @bind="DateStart">
+                            @if (GetHintSelectFiltr?.Operation == FiltrOperationType.Range)
+                            {
+                            <span class="m-2">-</span>
+                            <input type="datetime-local" class="form-control" @bind="DateEnd">
+                            }
+                        }
+                        else if (GetHintSelectFiltr?.Type == Models.TypeHint.DateOnly)
+                        {
+                        <input type="date" class="form-control" @bind="DateStart">
+                            @if (GetHintSelectFiltr?.Operation == FiltrOperationType.Range)
+                            {
+                            <span class="m-2">-</span>
+                            <input type="date" class="form-control" @bind="DateEnd">
+                            }
+                        }
+                        else if (GetHintSelectFiltr?.Type == Models.TypeHint.Time)
+                        {
+                        <input type="time" @bind:format="HH:mm:ss" class="form-control" @bind="DateStart">
+                            @if (GetHintSelectFiltr?.Operation == FiltrOperationType.Range)
+                            {
+                            <span class="m-2">-</span>
+                            <input type="time" @bind:format="HH:mm:ss" class="form-control" @bind="DateEnd">
+                            }
+
+                        }
+                        else if (GetHintSelectFiltr?.Type == Models.TypeHint.Bool)
+                        {
+                        <span @onclick="()=>SetValueHintBool(true)" class="pointer">
+                                @GsoRep["YES"]
+                        </span>
+                        <span @onclick="()=>SetValueHintBool(false)" class="pointer">
+                                @GsoRep["NO"]
+                        </span>
+                        }
+                        else
+                        {
+                        <input type="text" list="ValueList" class="form-control form-control-sm" @onblur="OnClick" @bind:event="oninput" @bind="ValueSelect">
+
+                            @if (GetHintSelectFiltr?.Provider?.IsData == true && !GetHintSelectFiltr.Provider.IsLoadData)
+                            {
+                            <datalist id="ValueList">
+                                    @foreach (var item in GetHintSelectFiltr.Provider.CacheItems.Where(x => x.Value.Contains(SelectFiltrItem?.Value?.Value ?? "", StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                    <option value="@item.Value" />
+                                    }
+                            </datalist>
+                            }
+                        }
+                </div>
+            </td>
+            }
+            else
+            {
+            <td>
+                    @(Hints?.FirstOrDefault(x => x.Key == item.Key)?.Name ?? item.Key)
+            </td>
+            <td>
+                    @GetNameOperation(item.Operation)
+            </td>
+            <td>
+                    @item.Value?.Value
+            </td>
+            }
+        </Tbody>
+        <TSticky>
+            @if (LastRequest.HistoryRequest.Count > 0)
+            {
+                <DropdownMenu TextButton="@Rep["HISTORY"]">
+                    <ChildButton>
+                        @foreach (var item in LastRequest.HistoryRequest)
+                        {
+                            <li><span title="@GetNameHints(item)" @onclick="()=>OnClickHistory(item)" class="dropdown-item text-truncate">@GetNameHints(item)</span></li>
+                        }
+                        <li><span @onclick="ClearHistory" class="dropdown-item text-danger">@Rep["CLEAR_HISTORY"]</span></li>
+                    </ChildButton>
+                </DropdownMenu>
+            }
+            @*Добавить*@
+            <BDark Text="@UUZSRep["IDS_STRING_ADD"]" OnClick="AddFiltr" />
+            @if (SelectFiltrItem != null)
+            {
+                <BDelete OnClick="()=>RemoveItem(SelectFiltrItem)" />
+            }
+        </TSticky>
+    </TableVirtualize>
+}

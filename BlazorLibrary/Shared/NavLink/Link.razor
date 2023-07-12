@@ -1,0 +1,30 @@
+﻿<div class="nav-item px-2">
+    <NavLink hotkey="@(!string.IsNullOrEmpty(HotKey)?HotKey:null)" class="nav-link" href="@href" Match="@Match">
+        @if (string.IsNullOrEmpty(Text))
+        {
+            @ChildContent
+        }
+        else
+        {
+            @Text
+        }
+
+    </NavLink>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public NavLinkMatch Match { get; set; }
+
+    [Parameter]
+    public string? href { get; set; }
+
+    [Parameter]
+    public string? HotKey { get; set; }
+}

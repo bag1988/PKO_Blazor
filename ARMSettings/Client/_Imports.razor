@@ -1,0 +1,46 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using BlazorLibrary.ServiceColection;
+@using BlazorLibrary;
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.Extensions.Localization;
+@using Microsoft.JSInterop
+@using ARMSettings.Client
+@using ARMSettings.Client.Shared
+@using BlazorLibrary.FolderForInherits
+@using ReplaceLibrary;
+@using SharedLibrary;
+@using Microsoft.AspNetCore.Components.Authorization
+@using BlazorLibrary.Shared
+@using BlazorLibrary.Shared.NavLink
+@using BlazorLibrary.Shared.Modal
+@using BlazorLibrary.Shared.Buttons
+@using BlazorLibrary.Shared.Table
+@using SharedLibrary.GlobalEnums;
+@using BlazorLibrary.GlobalEnums
+@using SharedLibrary.Utilities
+@using Microsoft.AspNetCore.Components
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager MyNavigationManager
+@inject HubContextCreate _HubContext
+@inject IStringLocalizer<DeviceReplace> DeviceRep
+@inject IStringLocalizer<ASOReplace> AsoRep
+@inject IStringLocalizer<ASODataReplace> AsoDataRep
+@inject IStringLocalizer<GSOReplase> GsoRep
+@inject IStringLocalizer<GSOFormReplase> GSOFormRep
+@inject IStringLocalizer<UUZSReplace> UUZSRep
+@inject IStringLocalizer<ReplaceDictionary> Rep
+@inject IStringLocalizer<SqlBaseReplace> SqlRep
+@inject IStringLocalizer<SMDataReplace> SMDataRep
+@inject IStringLocalizer<ARMSettingsReplace> ARMSetRep
+
+@inject GetUserInfo _User
+@inject OtherInfoForReport _OtherForReport
+@inject IAuthenticationService AuthenticationService
+@inherits CancellableComponent

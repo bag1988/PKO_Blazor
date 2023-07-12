@@ -1,0 +1,56 @@
+﻿@using System.Globalization;
+@typeparam TItem
+@inherits TableVirtualizeParams<TItem>
+
+<div @ref="div" class="@(IsSticky == true?"table-scroll-v":"")  table-responsive" style="@(WindowHeight>0?$"max-height:{WindowHeight}px;":"") scroll-behavior: unset;">
+    <table class="table table-hover table-bordered table-virtualize" style="min-width: @(MinWidth)px;">
+        <thead class="table-dark @(IsSticky==true? "position-sticky":"") top-0" style="z-index:2;">
+            <tr>
+                <ThSort SortTable="SetSort" BFlagDefault="@request.BFlagDirection" CurrentTd="@request.LSortOrder" ThList="@Provider?.ThList" ThWidthProcent="@Provider?.ThWidthProcent" />
+            </tr>
+        </thead>
+        <tbody @ref="Elem" tabindex="0" @onkeydown="KeySet" @onkeydown:preventDefault="_shouldPreventDefault">
+            @if (Items != null)
+            {
+                @if (Items.Count == 0)
+                {
+                    <TrNoData Colspan="@Colspan" />
+                }
+            }
+            else
+            {
+                <TrLoad Colspan="@Colspan" />
+            }
+            <Virtualize @ref="virtualize" ItemsProvider="GetItems" Context="item" SpacerElement="tr" OverscanCount="@OverscanCount">
+                <ItemContent>
+                    <tr @key="item" class="@(GetClassElem(item))" @ondblclick="DbCallback" @onclick="(e)=>StartAddSelectItem(e, item)">
+                        @if (Tbody is not null)
+                        {
+                            @Tbody(item)
+                        }
+                    </tr>
+                </ItemContent>
+                <Placeholder>
+                    <tr>
+                        @for (int i = 0; i < Colspan; i++)
+                        {
+                            <td>
+                                ...
+                            </td>
+                        }
+                    </tr>
+                </Placeholder>
+            </Virtualize>
+        </tbody>
+        @if (TSticky != null)
+        {
+            <tfoot class="alert-secondary @(IsSticky==true? "position-sticky":"") bottom-0" style="z-index:2;">
+                <tr>
+                    <td colspan="@Colspan" class="border-top">
+                        @TSticky
+                    </td>
+                </tr>
+            </tfoot>
+        }
+    </table>
+</div>

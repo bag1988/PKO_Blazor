@@ -1,0 +1,66 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using BlazorLibrary.ServiceColection
+@using Microsoft.Extensions.Localization
+@using SharedLibrary
+@using BlazorLibrary
+@using BlazorLibrary.Shared.Login
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.JSInterop
+@using DeviceConsole.Client
+@using DeviceConsole.Client.Shared
+@using BlazorLibrary.Shared
+@using BlazorLibrary.Shared.SubParamSystem
+@using BlazorLibrary.Shared.Abonent
+@using BlazorLibrary.Shared.ListObject
+@using BlazorLibrary.Shared.Audio
+@using BlazorLibrary.Shared.Modal
+@using BlazorLibrary.Shared.Buttons
+@using BlazorLibrary.Shared.NavLink
+@using BlazorLibrary.Shared.Table
+@using BlazorLibrary.Shared.Situation
+@using BlazorLibrary.Shared.Situation.NextPage
+@using BlazorLibrary.Shared.Messages
+@using BlazorLibrary.Shared.DevicesSZS
+@using BlazorLibrary.Shared.InputElements
+@using BlazorLibrary.Shared.FormComponent
+@using ReplaceLibrary
+@using SMDataServiceProto.V1
+@using AsoDataProto.V1
+@using SharedLibrary.GlobalEnums
+@using BlazorLibrary.GlobalEnums
+@using Microsoft.AspNetCore.Components.Authorization
+@using BlazorLibrary.FolderForInherits
+@using BlazorLibrary.Shared.FiltrComponent
+@using FiltersGSOProto.V1;
+
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager MyNavigationManager
+@inject HubContextCreate _HubContext
+@inject IStringLocalizer<DeviceReplace> DeviceRep
+@inject IStringLocalizer<ASOReplace> AsoRep
+@inject IStringLocalizer<ASODataReplace> AsoDataRep
+@inject IStringLocalizer<GSOReplase> GsoRep
+@inject IStringLocalizer<SMGateReplace> SMGateRep
+@inject IStringLocalizer<GSOFormReplase> GSOFormRep
+@inject IStringLocalizer<UUZSReplace> UUZSRep
+@inject IStringLocalizer<ARMReplace> ARMRep
+@inject IStringLocalizer<ReplaceDictionary> Rep
+@inject IStringLocalizer<RepoterReplace> RepoterRep
+@inject IStringLocalizer<StartUIReplace> StartUIRep
+@inject IStringLocalizer<SqlBaseReplace> SqlRep
+@inject IStringLocalizer<SMDataReplace> SMDataRep
+@inject IStringLocalizer<UUZSDataReplace> UUZSDataRep
+@inject IStringLocalizer<StaffDataReplace> StaffDataRep
+@inject IStringLocalizer<SMP16xFormReplace> SMP16xFormRep
+@inject IStringLocalizer<SMP16xReplace> SMP16xRep
+@inject GetUserInfo _User
+@inject OtherInfoForReport _OtherForReport
+@inject IAuthenticationService AuthenticationService
+@inject LocalStorage _localStorage

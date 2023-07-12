@@ -1,0 +1,83 @@
+﻿@using SharedLibrary.GlobalEnums
+@inherits CancellableComponent
+
+<ModalDialog Title="@TitleText" ButtonCloseEvent="Cancel">
+    <BodyContent>
+        @if (Model != null)
+        {
+            <form id="createmessage" @onsubmit="WriteMessages">
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["IDS_STRING_NAME"]</label>
+                    <InputFocus disabled="@(MsgId>0 && Edit==false)" @bind-Value="Model.MsgName" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["IDS_STRING_SIT_COMMENT"]</label>
+                    <textarea rows="5" disabled="@(MsgId>0 && Edit==false)" class="form-control" @bind="Model.MsgComm"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["TypeMessage"]</label>
+                    <select class="form-select" disabled="@(MsgId>0)" @bind="Model.MsgType">
+                        <option value="@((int)MessageType.MessageText)">@GsoRep["IDS_STRING_MESSAGE_TYPE_TEXT"]</option>
+                        <option value="@((int)MessageType.MessageSound)">@GsoRep["IDS_STRING_MESSAGE_TYPE_SOUND"]</option>
+                        <option value="@((int)MessageType.MessageSoundAndText)">@GsoRep["IDS_STRING_MESSAGE_TYPE_TEXT_AND_SOUND"]</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        @GsoRep["MessageText"]
+                        @if (Model.MsgText.Length > 0)
+                        {
+                            <small class="text-danger">@($" ({GsoRep["LENGTH_SYMBOL"]} {Model.MsgText.Length} {GsoRep["SYMBOLS"]} - {Math.Ceiling((double)Model.MsgText.Length / 65)} {GsoRep["SMS"]})")</small>
+                        }
+                    </label>
+                    <textarea disabled="@(Model.MsgType==(int)MessageType.MessageSound || (MsgId>0 && Edit==false))" rows="5" class="form-control" @bind="Model.MsgText" @bind:event="oninput"></textarea>
+                    @if (Model.MsgType != (int)MessageType.MessageSound && Model.MsgType != (int)MessageType.MessageSoundAndText && SyntezData != null)
+                    {
+                        <SyntezPlayer Text="@Model.MsgText" Rate="@SyntezData.Rate" VoiceIsMen="@SyntezData.VoiceIsMen" />
+                    }
+                </div>
+                @if (SubsystemID == SubsystemType.SUBSYST_SZS)
+                {
+                    @*Время удержания оконечным устройством линии связи (с)*@
+                    <div class="mb-3 d-flex align-items-center">
+                        <label class="form-label w-100">@GsoRep["TIMEOUT_LINE"]</label>
+                        <input type="number" max="9999" class="form-control ms-2" @bind="TimeOut">
+                    </div>
+                }
+
+                @if (Model.MsgType != (int)MessageType.MessageText && Edit == true)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">@GsoRep["MessageSound"]</label>
+                        <div class="d-flex align-items-center">
+                            <RecordAudio SetSoundsUrlPlayer="SetSoundsUrlPlayer" />
+                            <div class="ms-1" style="width:250px;">
+                                <select class="form-select" @bind="SaveFileOrBase">
+                                    <option value="0">@DeviceRep["MsgSaveBase"]</option>
+                                    <option value="1">@DeviceRep["MsgSaveFile"]</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </form>
+
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+    <ButtonContent>
+        <div class="d-flex align-items-center">
+            <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                @if (Edit == true)
+                {
+                    <BSumbit FormId="createmessage" Text="@($"{(_uploaded>0? $"{_uploaded}KB / {_fileLength / 1024}KB":GsoRep["IDS_STRING_SAVE"])}")" IsProcessing="IsProcessing" />
+                }
+            </CheckP>
+            <BCancel OnClick="Cancel" />
+            <AudioPlayerStream @ref="player" TitleName="@Model?.MsgName" />
+        </div>
+    </ButtonContent>
+</ModalDialog>

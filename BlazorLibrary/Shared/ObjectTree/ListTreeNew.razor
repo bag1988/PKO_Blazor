@@ -1,0 +1,130 @@
+﻿@using BlazorLibrary.Models
+@using SMDataServiceProto.V1;
+
+<div class="row">
+    <div class="col-md-6">
+        <DivScroll SetClass="pe-2">
+            <PHeader>
+                @ForSelectTitle
+            </PHeader>
+            <TreeListUnlimit TItem="Google.Protobuf.WellKnownTypes.Any" Items="GetFolders" SetCurrentItem="SetCurrentItem" SelectList="SelectList" SetSelectList="SetSelectList" DbClick="AddSelected" IsSetFocus="false">
+                <ContentView>
+                    @if (context.Is(Objects.Descriptor) && context.TryUnpack<Objects>(out var obj))
+                    {
+                        <span class="oi oi-@(GetIconName(obj.Type))"></span> @obj.Name
+
+                        @if (obj.Equals(LoadChildForFolder))
+                        {
+                            <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+                        }
+                    }
+                    else if (context.Is(CGetSitItemInfo.Descriptor) && context.TryUnpack<CGetSitItemInfo>(out var child))
+                    {
+                        <span class="oi oi-@(GetChildIcon(child)) ms-3"></span> @child.Name
+                    }
+                </ContentView>
+            </TreeListUnlimit>
+            <PSticky Color="secondary text-end" StyleBottom="0">
+                @AddBackButons
+                <div>
+                    <label class="form-check-label me-1"><input type="checkbox" class="form-check-input" @bind="@AutoAdd" /> @GsoRep["AUTO_ADD_SELECT"]</label>
+                </div>
+
+                <div class="ms-auto">
+                    @if (LoadChildForFolder != null && !IsLoadAll)
+                    {
+                        <BSecondary IsOutline="true">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        </BSecondary>
+                    }
+                    else
+                    {
+                        @if (!IsLoadAll)
+                        {
+                            <BSecondary HotKey="@KeyCode.AddSelect" IsOutline="true" OnClick="AddSelected">
+                                <span class="oi oi-caret-right me-0 ms-2"></span>
+                            </BSecondary>
+                        }
+                        <BSecondary Text="@GsoRep["BLoad"]" HotKey="@KeyCode.AddSelectAll" IsOutline="true" OnClick="AddAll">
+                            <span class="oi oi-media-skip-forward me-0 ms-2"></span>
+                        </BSecondary>
+                    }
+
+                </div>
+            </PSticky>
+        </DivScroll>
+    </div>
+    <div class="col-md-6">
+        @if (AddTopContent != null)
+        {
+            @AddTopContent
+        }
+        <DivScroll SetClass="pe-2">
+            <PHeader>
+                @SelectTitle
+            </PHeader>
+            <TreeListUnlimit TItem="Google.Protobuf.WellKnownTypes.Any" Items="GetSelectFolder" SelectList="SelectListSelected" SetSelectList="SetSelectedList" DbClick="()=>RemoveSelected()" IsSetFocus="false">
+                <ContentView>
+                    @if (context.Is(Objects.Descriptor) && context.TryUnpack<Objects>(out var obj))
+                    {
+                        <span class="oi oi-@(GetIconName(obj.Type))"></span>  @obj.Name
+                    }
+                    else if (context.Is(CGetSitItemInfo.Descriptor) && context.TryUnpack<CGetSitItemInfo>(out var child))
+                    {
+                        <span class="oi oi-@(GetChildIcon(child)) ms-3"></span> @child.Name
+                    }
+                </ContentView>
+            </TreeListUnlimit>
+
+            @if (SelectItems != null)
+            {
+                <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                    <PSticky Color="secondary" StyleBottom="0">
+                        @*Удалить все объекты из списка*@
+                        <BSecondary IsOutline="true" HotKey="@KeyCode.AddSelectAll" OnClick="RermoveSelectedAll">
+                            <span class="oi oi-media-skip-backward"></span>
+                        </BSecondary>
+
+                        @*Удаление выбранный объект из списка*@
+                        <BSecondary Text="@GsoRep["BLoad"]" IsOutline="true" HotKey="@KeyCode.AddSelect" OnClick="()=>RemoveSelected(true)">
+                            <span class="oi oi-caret-left"></span>
+                        </BSecondary>
+                        @AddNextButons?.Invoke(SelectItems)
+                    </PSticky>
+                </CheckP>
+            }
+
+        </DivScroll>
+    </div>
+</div>
+<CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+    @if (Abon != null)
+    {
+        <CreateAbonent CallbackEvent="()=>{Abon=null;}" Abon="Abon" />
+    }
+
+    @if (IsDeleteAbon == true)
+    {
+        <ModalDialog Title="@GsoRep["IDS_STRING_EDITING"]" ButtonCloseEvent="CanselDelete">
+            <BodyContent>
+                @if (ListObj != null && ListObj.Any())
+                {
+                    <Cards AddClass="alert-warning" Header="@WarningDelete">
+                        <ul>
+                            <Virtualize Items="ListObj" Context="item">
+                                <li>@item</li>
+                            </Virtualize>
+                        </ul>
+                        <p>
+                            @DeviceRep["IDS_STRING_WARNING_DELETE"]
+                        </p>
+                    </Cards>
+                }
+            </BodyContent>            
+            <ButtonContent>
+                <BEdit OnClick="()=>RemoveSelected(true)" />
+                <BCancel OnClick="CanselDelete" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

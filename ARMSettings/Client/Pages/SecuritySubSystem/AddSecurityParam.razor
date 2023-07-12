@@ -1,0 +1,19 @@
+﻿@using SMSSGsoProto.V1
+<ModalDialog Title="@ARMSetRep["SECURITY_SETTINGS"]" ButtonCloseEvent="Close">
+    <BodyContent>
+        <DivScroll>
+            <ResultView TItem="SecurityParams" Items="SecurityParamsList" DbClick="Confirm" SelectList="SelectedSecurityParamsList" SetSelectList="AddItem">
+                <ChildContent>
+                    @context.SecurityParamName
+                </ChildContent>
+            </ResultView>
+        </DivScroll>
+    </BodyContent>
+    <ButtonContent>
+        @if (SelectedSecurityParamsList?.Count > 0)
+        {
+            <BDark Text="@ARMSetRep["CONFIRM"]" OnClick="Confirm" />
+        }
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>

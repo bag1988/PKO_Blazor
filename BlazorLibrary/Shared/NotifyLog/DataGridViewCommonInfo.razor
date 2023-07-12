@@ -1,0 +1,34 @@
+﻿@using StaffDataProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<GetItemsINotifySessEx>
+<CheckP BitPos="NameBitsPos.ViewArhive">
+
+    @if (!IsPageLoad)
+    {
+        <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+        <TableVirtualize @ref="table" TItem="CUResultsEx" Provider="GetProvider" DbClick="DbClick" SetSelectList="SeSelectItem" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" Devision="2" IsSetFocus="false">
+            <Tbody Context="item">
+            <td>@item.TCmdSource</td>
+            <td>@item.TStartTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+            <td>@item.TLastTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+            <td>@item.TSitName</td>
+            <td>@item.TCUName</td>
+            <td>@item.ResultName</td>
+            <td>@item.TSucc</td>
+            <td>@item.TFail</td>
+            <td>@item.TMsgName</td>
+            </Tbody>
+            <TSticky>
+                <div class="d-flex align-items-center">
+                    <CheckP BitPos="4">
+                        <BPrint OnClick="GetReport" />
+                    </CheckP>
+                    @if (SelectItem?.MsgID?.ObjID > 0 && IsData)
+                    {
+                        <AudioPlayerStream @ref="player" TitleName="@SelectItem?.TMsgName" />
+                    }
+                </div>
+            </TSticky>
+        </TableVirtualize>
+    }
+</CheckP>

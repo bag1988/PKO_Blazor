@@ -1,0 +1,39 @@
+﻿@using System.Globalization
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+
+<p>
+
+    <select class="form-select form-select-sm mt-3" @bind="Culture">
+        @foreach (var culture in supportedCultures)
+        {
+            <option value="@culture.Key">@culture.Value</option>
+        }
+    </select>
+</p>
+
+@code
+{
+    private Dictionary<CultureInfo, string> supportedCultures = new()
+        {
+            { new("be-BE"), "Беларускі (Беларусь)" },
+            { new("ru-RU"), "Русский (Росси́я)" }
+        };
+
+    private CultureInfo Culture
+    {
+        get => CultureInfo.CurrentCulture;
+        set
+        {
+            if (CultureInfo.CurrentCulture != value)
+            {
+                var js = (IJSInProcessRuntime)JSRuntime;
+                js.InvokeVoid("setCultureGlobal", value.Name);
+                Http.DefaultRequestHeaders.AcceptLanguage.Clear();
+                Http.DefaultRequestHeaders.AcceptLanguage.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue(value.Name));
+                Nav.NavigateTo(Nav.Uri, forceLoad: true);
+            }
+        }
+    }
+}

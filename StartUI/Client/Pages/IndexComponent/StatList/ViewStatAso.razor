@@ -1,0 +1,22 @@
+﻿@using AsoDataProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<CreateStatListCacheFiltr>
+<CheckP BitPos="NameBitsPos.ViewArhive">
+
+    @if (!IsPageLoad)
+    {
+        <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+        <TableVirtualize @ref="table" TItem="StatCache" Provider="GetProvider" IsSetFocus="false">
+            <Tbody Context="item">
+            <td>@item.SitName</td>
+            <td>@item.AbName </td>
+            <td>@(item.CountRealCall > 0 ? item.CountRealCall : "")</td>
+            <td>@item.LineName</td>
+            <td>@item.SelectName</td>
+            </Tbody>
+            <TSticky>
+                <ActivNotifySticky />
+            </TSticky>
+        </TableVirtualize>
+    }
+</CheckP>

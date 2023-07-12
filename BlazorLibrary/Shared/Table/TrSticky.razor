@@ -1,0 +1,18 @@
+﻿@if (ChildContent != null)
+{
+    <tr class="alert-secondary @(IsSticky==true? "position-sticky":"") bottom-0" style="z-index:2;">
+        <td colspan="@Colspan" class="border-top">
+            @ChildContent
+        </td>
+    </tr>
+}
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public int? Colspan { get; set; } = 1;
+
+    [Parameter]
+    public bool? IsSticky { get; set; } = true;
+}

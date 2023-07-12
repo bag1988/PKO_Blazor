@@ -1,0 +1,333 @@
+﻿@using BlazorLibrary.Helpers
+@using SMDataServiceProto.V1;
+@using SharedLibrary.GlobalEnums
+
+
+<ModalDialog Title="@(ObjectList?.LastOrDefault()?.Name??GsoRep["IDS_STRING_CREATE_SIT_SZS"])" ButtonCloseEvent="Cancel">
+    <BodyContent>
+        <form id="createszs" @onsubmit="Next">
+            @if (IsLoadPage)
+            {
+                <PLoad />
+            }
+            else if (IsCreatePrd && PrdItem != null)
+            {
+                <h5>@SMP16xRep["PRD_TITLE"]</h5>
+
+                @*Выбор комманды*@
+                <div class="mb-2">
+                    <select class="form-select form-select-sm" @bind="PrdItem.CmdID">
+                        @if (m_CmdList != null)
+                        {
+                            @foreach (var item in m_CmdList)
+                            {
+                                <option value="@item.CmdID">@item.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                @*Выбор номера комманды*@
+                <div class="mb-2">
+                    <select class="form-select form-select-sm" @bind="PrdItem.CmdParam">
+                        <option value="1">@SMP16xRep["COMMAND_1"]</option>
+                        <option value="2">@SMP16xRep["COMMAND_2"]</option>
+                        <option value="3">@SMP16xRep["COMMAND_3"]</option>
+                        <option value="4">@SMP16xRep["COMMAND_4"]</option>
+                        <option value="5">@SMP16xRep["COMMAND_5"]</option>
+                        <option value="6">@SMP16xRep["COMMAND_6"]</option>
+                    </select>
+                </div>
+
+                @*Выбор сообщения для ПРД*@
+                <div class="mb-2">
+                    <select class="form-select form-select-sm" @bind="PrdItem.MsgID">
+                        <ItemsSelectMsg IsAllMsg="IsAllMsg" MsgList="MsgList" SubsystemID="SubsystemType.SUBSYST_SZS" />
+                    </select>
+                </div>
+            }
+            else if (SzsList != null)
+            {
+                <div class="row" tabindex="0">
+
+                    <div class="col-md-6">
+                        @*Выбор режима*@
+                        <div class="mb-2">
+                            <label class="form-check-label d-block">
+                                <input name="interceptMode" class="form-check-input" type="radio" value="0" checked="@(Bits.CHECK_BIT(ItemFirst.Param1, 19))" @onchange="()=>OnButtonClicked(1072)"> @UUZSDataRep["IDS_STRING_TESTING"]
+                            </label>
+                            <label class="form-check-label d-block">
+                                <input name="interceptMode" class="form-check-input" type="radio" value="1" checked="@(Bits.CHECK_BIT(ItemFirst.Param1, 20))" @onchange="()=>OnButtonClicked(1109)"> @UUZSDataRep["IDS_STRING_TESTING_EXECUTE_DEVICE"]
+                            </label>
+                            <label class="form-check-label d-block">
+                                <input name="interceptMode" class="form-check-input" type="radio" value="2" checked="@(!Bits.CHECK_BIT(ItemFirst.Param1, 20)&&!Bits.CHECK_BIT(ItemFirst.Param1, 19))" @onchange="()=>OnButtonClicked(1071)"> @UUZSDataRep["IDC_RUNSGS"]
+                            </label>
+                        </div>
+
+                        @if (interceptMode == 2)
+                        {
+                            @*Включение ГРД*@
+                            <div class="mb-2">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" checked="@(Bits.CHECK_BIT(ItemFirst.Param1, 31))" @onchange="()=>OnButtonClicked(1143)"> @UUZSDataRep["IDC_NOTIFY_GRD"]
+                                </label>
+                            </div>
+                            @*Оповещение Гранит ПВС-1*@
+                            @if (IsIndividualMode == false)
+                            {
+                                <div class="mb-2">
+                                    <label class="form-check-label">
+                                        <input class="form-check-input" type="checkbox" checked="@(bPvsOn)" @onchange="()=>OnButtonClicked(1095)"> @UUZSDataRep["IDC_NOTIFY_PVS1"]
+                                    </label>
+                                </div>
+                            }
+
+
+                            @if (!bPvsOn)
+                            {
+                                @*Включение сирены*@
+                                <div class="mb-2">
+                                    <label class="form-check-label">
+                                        <input class="form-check-input" type="checkbox" checked="@(Bits.CHECK_BIT(ItemFirst.Param1, 17))" @onchange="()=>OnButtonClicked(1041)"> @UUZSDataRep["IDC_ONSIRENA"]
+                                    </label>
+                                </div>
+
+                            }
+                        }
+
+                    </div>
+                    <div class="col-md-6">
+                        @if (Bits.CHECK_BIT(ItemFirst.Param1, 17) && !bPvsOn && interceptMode == 2)
+                        {
+                            @*Режим*@
+                            @if (IsIndividualMode == false)
+                            {
+                                <div class="mb-2">
+                                    <label class="form-label">@UUZSDataRep["IDC_STATIC_SIRENA_TYPE"]</label>
+                                    <select class="form-select" value="@IDC_SIRENA_TYPE" @onchange="ChangeSirenaMode">
+                                        @*Прерывистая (ВНИМАНИЕ ВСЕМ)*@
+                                        <option value="0">@UUZSDataRep["SIRENA_TYPE1"]</option>
+                                        @*Непрерывная (ВОЗДУШНАЯ ТРЕВОГА)*@
+                                        <option value="1">@UUZSDataRep["SIRENA_TYPE2"]</option>
+                                    </select>
+                                </div>
+                            }
+
+                            @*Длительность*@
+                            <div class="mb-2">
+                                <label class="form-label">@UUZSDataRep["IDC_STATIC_SIRENA_LEN"]</label>
+                                <div class="d-flex align-items-center">
+                                    <input @bind:format="mm:ss" class="form-control w-25 me-2" @bind="IDC_SIRENATIME">
+                                    <input type="number" min="0" max="999" step="50" class="form-control w-25 me-2" value="@((Bits.LOWORD(ItemFirst.CmdParam)*50)%1000)" @oninput="(e)=>OnChangeInput(e, 1)">
+                                    <label class="form-label">@UUZSDataRep["IDC_STATIC_MSEC"]</label>
+                                </div>
+
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (IsIndividualMode == false)
+                {
+                    @if (IDC_SIRENA_TYPE == 0 && interceptMode == 2)
+                    {
+                        <div>
+                            @*Звуковое сообщение*@
+                            <h5>@UUZSDataRep["IDC_SOUNDMSG"]</h5>
+                            <div class="mb-2">
+                                @if (!bPvsOn)
+                                {
+                                    @*Пластинка (сообщение на ЭПУ) [1..4094]*@
+                                    <div class="d-flex align-items-center">
+                                        <label class="form-check-label">
+                                            <input name="IDC_CHANNEL_NOTIFY" class="form-check-input" type="radio" value="0" checked="@(!Bits.CHECK_BIT(ItemFirst.Param1, 18))" @onchange="()=>OnButtonClicked(1042)"> @UUZSDataRep["IDC_RADIO1"]
+                                        </label>
+                                        @if (!Bits.CHECK_BIT(ItemFirst.Param1, 18))
+                                        {
+                                            <input type="number" min="1" max="4094" value="@(Bits.LOWORD(ItemFirst.Param2))" @oninput="(e)=>OnChangeInput(e, 0)" class="form-control w-25 me-2">
+                                        }
+                                    </div>
+                                }
+
+                                @*Оповещение по каналу связи*@
+                                <div class="d-flex align-items-center">
+                                    <label class="form-check-label">
+                                        <input name="IDC_CHANNEL_NOTIFY" class="form-check-input" type="radio" value="1" checked="@(Bits.CHECK_BIT(ItemFirst.Param1, 18))" @onchange="()=>OnButtonClicked(1043)"> @UUZSDataRep["IDC_CHANNEL_NOTIFY"]
+                                    </label>
+                                    @if (Bits.CHECK_BIT(ItemFirst.Param1, 18))
+                                    {
+                                        <select class="form-select form-select-sm" value="@ItemFirst.MsgID" @onchange="OnChangeMsg">
+                                            <ItemsSelectMsg IsAllMsg="IsAllMsg" MsgList="MsgList" SubsystemID="SubsystemType.SUBSYST_SZS" />
+                                        </select>
+                                    }
+                                </div>
+                            </div>
+                            @if (Bits.CHECK_BIT(ItemFirst.Param1, 18))
+                            {
+                                @if (!bPvsOn)
+                                {
+                                    @*Длительность звукового сообщения*@
+                                    <div class="mb-2 d-flex align-items-center">
+                                        <label class="form-label">@UUZSDataRep["IDC_STATTIME2"]</label>
+                                        <input @bind:format="mm:ss" class="form-control w-25 me-2" @bind="IDC_MESSAGETIME">
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <TableDefault IsSetFocus="false" IsOnKeyDown="false" TItem="CGetSitItemInfo" Colspan="5" Items="SzsList" SetSelectList="SetSelectList" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" MinWidth="0">
+                        <Thead>
+                            <ThSort ThList="ThList" ThWidthProcent="@(new List<int>(){40,10,40,10})" />
+                        </Thead>
+                        <Tbody Context="item">
+                            @*Наименование устройства*@
+                        <td>@GetNameFull(item)</td>
+                        <td>
+                                @*Номер сообщения на пластинке*@
+                                @if (SelectItem?.Equals(item) ?? false)
+                                {
+                                <input type="number" max="9999" value="@(Bits.LOWORD(item.Param2)>0?Bits.LOWORD(item.Param2):"")" @oninput="OnChangeSelectInput" class="form-control form-control-sm" />
+                                }
+                                else
+                                {
+                                    @if (Bits.LOWORD(item.Param2) > 0)
+                                    {
+                                        @Bits.LOWORD(item.Param2)
+                                    }
+                                }
+                        </td>
+                        <td>
+                                @*Звуковое сообщение*@
+                                @if (SelectItem?.Equals(item) ?? false)
+                                {
+                                <select class="form-select form-select-sm" value="@item.MsgID" @onchange="OnChangeSelectMsg">
+                                    <ItemsSelectMsg IsAllMsg="IsAllMsg" MsgList="MsgList" SubsystemID="SubsystemType.SUBSYST_SZS" />
+                                </select>
+                                }
+                                else
+                                {
+                                    @(MsgList?.FirstOrDefault(x => x.OBJID != null && x.OBJID.ObjID == item.MsgID)?.Name ?? "")
+                                }
+                        </td>
+                            @*Длительность звукового сообщения*@
+                        <td>@GetLengthMsg(item)</td>
+                        </Tbody>
+                    </TableDefault>
+                }
+            }
+            else
+            {
+                <PNoData />
+            }
+        </form>
+    </BodyContent>
+    <ButtonContent>
+        <div class="d-flex align-items-center">
+            <label class="form-check-label me-2">
+                <input class="form-check-input" type="checkbox" checked="@IsAllMsg" @onchange="@((e)=>SetAllView(e))"> @Rep["AllMessage"]
+            </label>
+            @if (IsReadOnly == false)
+            {
+                <BDark OnClick="@(()=>{ViewInfoMessage=true; IsNewMessage=true;})" Text="@GsoRep["ID_RECORD"]" />
+                @if (IsViewMessage)
+                {
+                    <BDark OnClick="@(()=>{ViewInfoMessage=true; IsNewMessage=false;})" Text="@AsoRep["ReadMessage"]" />
+                }
+            }
+            <div class="ms-auto">
+                <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                    @if (IsReadOnly == false)
+                    {
+                        @if (IsCreatePrd)
+                        {
+                            <BDark OnClick="SavePrd" Text="@(SzsList==null?GsoRep["IDS_STRING_SAVE"]:GsoRep["IDS_STRING_NEXT"])" />
+                        }
+                        else
+                        {
+                            @if (IsIndividualMode == true)
+                            {
+                                <BSumbit FormId="createszs" IsProcessing="IsProcessing" Text="@GsoRep["IDS_STRING_NEXT"]" />
+                            }
+                            else
+                            {
+                                <BSumbit FormId="createszs" IsProcessing="IsProcessing" />
+                            }
+                        }
+                    }
+                </CheckP>
+                <BSecondary IsOutline="true" OnClick="Cancel" Text="@GsoRep["IDS_STRING_BACK"]" />
+            </div>
+        </div>
+    </ButtonContent>
+</ModalDialog>
+
+<CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+    @if (ViewInfoMessage)
+    {
+        <CreateMessage TitleText="@AsoDataRep["IDS_STRING_MESSAGE_COMMENT"]" CallBack="SaveCallBack" MsgId="GetCurrentMsgId" Edit="IsNewMessage" />
+    }
+
+    @if (IsNext && SzsList != null)
+    {
+        <ModalDialog Title="@UUZSRep["ZONE_NOTIFY"]" ButtonCloseEvent="()=>IsNext=false">
+            <BodyContent>
+                <TableDefault IsSetFocus="false" IsOnKeyDown="false" Colspan="16" Items="SzsList" IsSticky="false" MinWidth="0">
+                    <Thead>
+                        <ThSort ThList="ThListZone" ThWidthProcent="@(new List<int>(){20})" />
+                    </Thead>
+                    <Tbody Context="item">
+                        @*Наименование устройства*@
+                    <td>@GetNameFull(item)</td>
+                        @if (item.SZSGroupID > 0 && item.SZSDevID == 0)
+                        {
+                            @for (int i = 1; i <= 15; i++)
+                            {
+                                int dwSubItem = i;
+                            <td class="bg-@(GetColorTd(i, item.Param1)) pointer" @onclick="@(()=>SetColorTd(dwSubItem, item.SZSDevID, item.SZSGroupID))"></td>
+                            }
+                        }
+                        else
+                        {
+                            @for (int i = 1; i <= 15; i++)
+                            {
+                                int dwSubItem = i;
+                                @if (item.ZoneCount >= i)
+                                {
+                                <td class="bg-@(GetColorTd(i, item.Param1)) pointer" @onclick="@(()=>SetColorTd(dwSubItem, item.SZSDevID, item.SZSGroupID))">
+                                        @(ZoneList.FirstOrDefault(x => x.ParentDevID?.ObjID == item.SZSDevID && x.Order == i - 1)?.DevName)
+                                </td>
+                                }
+                                else
+                                {
+                                <td></td>
+                                }
+                            }
+                        }
+                    </Tbody>
+                </TableDefault>
+            </BodyContent>
+            <ButtonContent>
+                <BSave OnClick="SaveSzs" />
+                <BCancel OnClick="()=>IsNext=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @if (WARNING_LENGTH_TIME_SIRENA == 1)
+    {
+        <ModalDialog Title="@GsoRep["IDS_WARNING"]" ButtonCloseEvent="()=>WARNING_LENGTH_TIME_SIRENA=0">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    @UUZSRep["WARNING_LENGTH_TIME_SIRENA"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BSave OnClick="()=>WARNING_LENGTH_TIME_SIRENA=2" />
+                <BCancel OnClick="()=>WARNING_LENGTH_TIME_SIRENA=0" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>
+

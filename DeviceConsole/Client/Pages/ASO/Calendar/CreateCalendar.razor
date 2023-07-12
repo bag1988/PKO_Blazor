@@ -1,0 +1,20 @@
+﻿
+<ModalDialog Title="@AsoRep["IDS_REG_CALENDAR_INSERT"]" ButtonCloseEvent="Close">
+    <BodyContent>
+        @*Дата*@
+        <div class="mb-3">
+            <label class="form-label">@AsoRep["IDS_HOLIDAY_DATA"]</label>
+            <input type="date" class="form-control" @bind="date">
+        </div>
+        <hr />
+        @*наименование праздника*@
+        <div class="mb-3">
+            <label class="form-label">@AsoRep["IDS_HOLIDAY_NAME"]</label>
+            <textarea class="form-control" @bind="nameHoliday"></textarea>
+        </div>
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="SaveCalendar" />
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>

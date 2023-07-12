@@ -1,0 +1,63 @@
+﻿@if (ThList != null)
+{
+    @foreach (var item in ThList)
+    {
+        <th title="@item.Value" class="@GetClassItem(item)" style="@GetWidthTh(item)" @onclick="()=>SetSort(item.Key)">
+            @item.Value
+        </th>
+    }
+}
+
+@code {
+    [Parameter]
+    public Dictionary<int, string>? ThList { get; set; }
+
+    [Parameter]
+    public List<int>? ThWidthProcent { get; set; }
+
+    [Parameter]
+    public int? BFlagDefault { get; set; } = 0;
+
+    [Parameter]
+    public int? CurrentTd { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> SortTable { get; set; }
+
+    private async Task SetSort(int id)
+    {
+        if (id < 0)
+            return;
+        if (SortTable.HasDelegate)
+        {
+            await SortTable.InvokeAsync(id);
+        }
+    }
+
+    string? GetWidthTh(KeyValuePair<int, string> item)
+    {
+        string response = string.Empty;
+        if (ThList != null)
+        {
+            int? w = ThWidthProcent?.ElementAtOrDefault(Array.IndexOf(ThList.ToArray(), item));
+            response = (w != null && w != 0) ? ("width:" + w.ToString() + "%;") : "";
+        }
+        return response;
+    }
+
+
+    string GetClassItem(KeyValuePair<int, string> item)
+    {
+        string response = string.Empty;
+
+        if (CurrentTd == item.Key)
+        {
+            response = BFlagDefault == 0 ? "array-up" : "array-down";
+        }
+        if (item.Key >= 0)
+            response = response + " pointer";
+
+        return response;
+    }
+
+}

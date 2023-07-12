@@ -1,0 +1,24 @@
+﻿
+<ModalDialog Title="@ARMSetRep["PARAM_GROUP"]" ButtonCloseEvent="()=>CloseModal()">
+    <BodyContent>
+        <form id="groupedit" @onsubmit="SaveItem">
+            @*Наименование*@
+            <div class="mb-3">
+                <label class="form-label">@GsoRep["IDS_STRING_NAME"]</label>
+                <BlazorLibrary.Shared.InputElements.InputFocus @bind-Value="Item.GroupName" />
+            </div>
+            @*Тип*@
+            <div class="mb-3">
+                <label class="form-label">@ARMSetRep["TYPE"]</label>
+                <input type="number" min="1" max="100" class="form-control" @bind="Item.GroupTypeID">
+            </div>
+        </form>
+    </BodyContent>
+    <ButtonContent>
+        <BSumbit FormId="groupedit" IsProcessing="IsProcessing" />
+        <BClose OnClick="()=>CloseModal()" />
+    </ButtonContent>
+</ModalDialog>
+
+
+

@@ -1,0 +1,70 @@
+﻿@page "/ViewSituation"
+@inherits FiltrInherits<SituationFiltr>
+<TitleView>@TitleName</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="SituationItem" Provider="GetProvider" DbClick="DbClick" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+        <Tbody Context="item">
+        <td>@item.SitName</td>
+        <td>@item.CodeName</td>
+        <td>@item.SitPrior</td>
+        <td>@item.Comm</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                <BCreate OnClick="()=>ViewCreateDialog(true)" />
+                @if (SelectItem != null)
+                {
+                    <BEdit OnClick="()=>ViewCreateDialog(false)" />
+                    <BDelete OnClick="()=>IsDelete=true" />
+                    @if (request.ObjID.SubsystemID == SubsystemType.SUBSYST_ASO)
+                    {
+                        <BPrimary Text="@AsoRep["ViewMessage"]" OnClick="()=>IsViewNotify=true" />
+                    }
+                }
+                <BPrint OnClick="GetReport" />
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPosList="new[] { NameBitsPos.Create, NameBitsPos.CreateNoStandart }">
+    @if (IsCreateSit)
+    {
+        @if (SubsystemID == SubsystemType.SUBSYST_GSO_STAFF)
+        {
+            <CreateSitStaff SitId="SelectItem?.SitID" IsNoStandart="true" CallbackEvent="()=>IsCreateSit=false" />
+        }
+        else if (SubsystemID == SubsystemType.SUBSYST_ASO || SubsystemID == SubsystemType.SUBSYST_SZS)
+        {
+            <CreateSituation SitId="SelectItem?.SitID" IsNoStandart="true" CallbackEvent="()=>IsCreateSit=false" />
+        }
+    }
+    </CheckP>
+
+    <CheckP BitPos="NameBitsPos.Create">
+
+
+        @if (IsViewNotify && SelectItem != null)
+    {
+        @*Просмотр сгенерированных сообщений по шаблону*@
+        <NotifyObjectWithMessages SitId="SelectItem.SitID" CloseDialog="()=>IsViewNotify=false" />
+    }
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_REG_SIT_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_STRING_MULTI_DELETE_Q"]: <b>@SelectItem.SitName</b>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="DeleteSituation" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

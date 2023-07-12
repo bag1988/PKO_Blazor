@@ -1,0 +1,9 @@
+﻿<thead class="table-dark">
+    <tr>
+        @ChildContent
+    </tr>
+</thead>
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

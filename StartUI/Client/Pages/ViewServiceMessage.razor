@@ -1,0 +1,106 @@
+﻿@page "/ViewServiceMessage"
+
+@using FiltersGSOProto.V1;
+@using GateServiceProto.V1
+@using SMSSGsoProto.V1;
+@inherits FiltrInherits<ServiceMessagesFiltr>
+<TitleView>@GsoRep["IDS_STRING_SERVICE_MESSAGE"]</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="ServiceMessage" Provider="GetProvider" DbClick="ViewInfo" SelectList="SelectedList" SetSelectList="SetSelectList">
+        <Tbody Context="item">
+        <td>@item.Date.ToDateTime().ToLocalTime()</td>
+        <td>@item.Message</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                <BDanger IsOutline="true" Text="@GsoRep["IDS_STRING_CLEAR"]" OnClick="ClearServiceLogs" />
+                @if (SelectedList?.Count > 0)
+                {
+                    @*Удалить*@
+                    <BDelete OnClick="DeleteSelect" />
+
+                    @*Снять выделение*@
+                    <BDark Text="@AsoRep["Deselect"]" OnClick="()=>SelectedList.Clear()" />
+
+                    @if (DopInfo != null)
+                    {
+                        <BPrimary OnClick="ViewInfo" Text="@StartUIRep["IDS_EVENT_INFO"]" />
+                    }
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+@if (ViewDopInfo && SelectedList?.LastOrDefault() != null && DopInfo != null)
+{
+    <ModalDialog Title="@SelectedList.Last().Message" ButtonCloseEvent="CloseViewInfo">
+        <BodyContent>
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@GsoRep["STAFF_NAME"]</label>
+                <div class="col-md-8">
+                    <label class="form-control bg-light">@DopInfo.StaffName</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@GsoRep["CONTROL_UNIT_NAME"]</label>
+                <div class="col-md-8">
+                    <label class="form-control bg-light">@DopInfo.ControlUnitName</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@GsoRep["NOTIFY_START"]</label>
+                <div class="col-md-8">
+                    <label class="form-control bg-light">@DopInfo.SessBeg?.ToDateTime().ToLocalTime()</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@StartUIRep["IDS_SUBSYSTCOLUMN"]</label>
+                <div class="col-md-8">
+                    <label class="form-control bg-light">
+                        @switch (DopInfo.SitID?.SubsystemID)
+                        {
+                            case SubsystemType.SUBSYST_ASO:
+                                @SMDataRep["SUBSYST_ASO"]
+                                ; break;
+                            case SubsystemType.SUBSYST_SZS:
+                                @SMDataRep["SUBSYST_SZS"]
+                                ; break;
+                            case SubsystemType.SUBSYST_GSO_STAFF:
+                                @SMDataRep["SUBSYST_GSO_STAFF"]
+                                ; break;
+                            case SubsystemType.SUBSYST_P16x:
+                                @SMDataRep["SUBSYST_P16x"]
+                                ; break;
+                        }
+                    </label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@AsoRep["NameSit"]</label>
+                <div class="col-md-8">
+                    <label class="form-control bg-light">@DopInfo.SitName</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@UUZSRep["IDS_MESSAGE_NAME"]</label>
+                <div class="col-md-8">
+                    <label class="form-control bg-light">@DopInfo.MessageName</label>
+                </div>
+            </div>
+        </BodyContent>
+        <ButtonContent>
+            <div class="d-flex align-items-center">
+                <BClose OnClick="CloseViewInfo" />
+                @if (DopInfo.MsgID?.ObjID > 0)
+                {
+                    <AudioPlayerStream @ref="player" TitleName="@DopInfo.MessageName" />
+                }
+            </div>
+        </ButtonContent>
+    </ModalDialog>
+}

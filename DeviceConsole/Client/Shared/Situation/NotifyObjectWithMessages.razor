@@ -1,0 +1,18 @@
+﻿
+<ModalDialog Title="@AsoRep["ViewNotifyMessage"]" ButtonCloseEvent="Close">
+    <BodyContent>
+        <TableDefault Colspan="2" Items="Model" MinWidth="0" IsSetFocus="false" IsOnKeyDown="false">
+            <Thead>
+                <ThSort ThList="ThList" ThWidthProcent="@(new List<int>(){50, 50})" />
+            </Thead>
+            <Tbody Context="item">
+            <td>@item.ObjName</td>
+            <td>@item.Message</td>
+            </Tbody>
+        </TableDefault>
+    </BodyContent>
+    <ButtonContent>
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>
+

@@ -1,0 +1,64 @@
+﻿@*@page "/SheduleList"*@
+@using StaffDataProto.V1;
+@using SharedLibrary.GlobalEnums
+
+<ModalDialog Title="@($"{GSOFormRep["IDS_SHEDULE"]} {StaffName}")" ButtonCloseEvent="ClallBack">
+    <BodyContent>
+        @if (IdStaff == null)
+        {
+            <PNoData />
+        }
+        else
+        {
+            <TableScroll Colspan="7" IsSticky="false" TItem="SheduleCmd" Items="Model" DbClick="()=>IsCreate=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.FirstOrDefault()" MinWidth="0">
+                <Thead>
+                    <ThSort SortTable="SetSort" BFlagDefault="@request.BFlagDirection" CurrentTd="@request.LSortOrder" ThList="ThList" />
+                </Thead>
+                <Tbody Context="item">
+                <td>@item.CSheduleList?.Priority</td>
+                <td>@AsoRep[BaseReplace.Get<TypeDayName>(item.CSheduleList?.DayType??0)]</td>
+                <td>@item.CSheduleList?.Begin.ToDateTime().ToString("T")</td>
+                <td>@item.CSheduleList?.End.ToDateTime().ToString("T")</td>
+                <td>@(LineTypes?.FirstOrDefault(x => x.Number == item.CSheduleList?.ConnType)?.Str)</td>
+                <td>@item.CSheduleList?.Location</td>
+                <td>@item.CSheduleList?.ConnParam</td>
+                </Tbody>
+            </TableScroll>
+        }
+    </BodyContent>
+    <ButtonContent>
+        <CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.Create">
+            <BCreate OnClick="@(()=>{SelectItem=null; IsCreate=true;})" />
+            @if (SelectItem != null)
+            {
+                <BEdit OnClick="()=>IsCreate = true" />
+                <BDelete OnClick="()=>IsDelete=true" />
+            }
+        </CheckP>
+        <BClose OnClick="ClallBack" />
+    </ButtonContent>
+</ModalDialog>
+
+<CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.Create">
+
+    @if (IsCreate == true)
+    {
+        <CreateScheduleStaff Callback="CloseModal" ShedileID="@(SelectItem?.OBJKey?.ObjID?? new OBJ_ID(){ StaffID=IdStaff??0, SubsystemID=SubsystemType.SUBSYST_GSO_STAFF  })" />
+    }
+
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@GSOFormRep["IDS_REG_SHEDULE_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @GSOFormRep["IDS_Q_DELSHEDULE"]: <b>@SelectItem.CSheduleList.ConnParam</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="DeleteSheduleInfoStaff" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+</CheckP>

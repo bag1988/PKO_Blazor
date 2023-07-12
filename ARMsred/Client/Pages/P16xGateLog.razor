@@ -1,0 +1,61 @@
+﻿@page "/P16xGateLog"
+@using SMDataServiceProto.V1;
+
+<TitleView>@ARMRep["SystemLog"]: @ARMRep["P16xGateLog"]</TitleView>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <select @onchange="@((e)=>SetSelectItem(e))" class="form-select">
+            <option value="0" selected>@ARMRep["AcceptedList"]</option>
+            <option value="1">@ARMRep["SentList"]</option>
+        </select>
+    </div>
+    <div class="col-md-8 mb-3">
+        <select @onchange="@((e)=>SetSelect(e))" class="form-select">
+            @if (ListForSelect != null)
+            {
+                @if (ListForSelect.Any())
+                {
+                    <option value="">@ARMRep["AllList"]</option>
+                    @foreach (var item in ListForSelect)
+                    {
+                        <option value="@item.DwSerNo">@item.SzName</option>
+                    }
+                }
+                else
+                {
+                    <option value="">@ARMRep["NoData"]</option>
+                }
+            }
+            else
+            {
+                <option value="">@ARMRep["Load"]</option>
+            }
+        </select>
+    </div>
+</div>
+<TableScroll Colspan="6" TItem="P16xLog" Items="Model" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="SetAudioFile">
+    <Thead>
+    <th></th>
+    <th>@ARMRep["EventTime"]</th>
+    <th>@ARMRep["SerNo"]</th>
+    <th>@ARMRep["SzName"]</th>
+    <th>@ARMRep["CmdID"]</th>
+    <th>@ARMRep["tStatusName"]</th>
+    </Thead>
+    <Tbody Context="item">
+    <td class="text-center">
+            @if (item.MsgID > 0)
+            {
+            <span class="oi oi-media-play"></span>
+            }
+    </td>
+    <td>@((TypeLoad == 1 && item.EventTime.ToDateTime().ToLocalTime().Year == 0) ? "" : item.EventTime.ToDateTime().ToLocalTime().ToString("G"))</td>
+    <td>@item.SerNo</td>
+    <td>@item.SzName</td>
+    <td>@(TypeLoad == 0 ? item.CmdID : (item.CmdID == 0 ? ARMRep["Reset"] : item.CmdID))</td>
+    <td>@(TypeLoad == 0 ? "" : (item.EventTime.ToDateTime().ToLocalTime().Year == 0 ? ARMRep["WasNotExec"] : (item.Status == 82 ? ARMRep["Passed"] : "")))</td>
+    </Tbody>
+</TableScroll>
+<div style="position:sticky; bottom:0px;">
+</div>

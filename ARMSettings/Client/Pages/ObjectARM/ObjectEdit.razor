@@ -1,0 +1,84 @@
+﻿<ModalDialog Title="@ARMSetRep["PARAM_OBJECT"]" ButtonCloseEvent="()=>CloseModal()">
+    <BodyContent>
+        @if(!IsPageLoad)
+        {
+            @*Наименование*@
+            <div class="mb-3">
+                <label class="form-label">@GsoRep["IDS_STRING_NAME"]</label>
+                <BlazorLibrary.Shared.InputElements.InputFocus @bind-Value="Item.ObjectName" />
+            </div>
+            @*Тип*@
+
+            <div>
+                @*Выбор активной вкладки*@
+                <div class="tabControl mb-3">
+                    <div class="@(TypeObject==0?"tabControlActive":"")" @onclick="(()=>TypeObject=0)">
+                        @ARMSetRep["CU_AND_PRD"]
+                    </div>
+                    <div class="@(TypeObject==1?"tabControlActive":"")" @onclick="(()=>TypeObject=1)">
+                        @SMDataRep["SUBSYST_SZ"]
+                    </div>
+                </div>
+            </div>
+
+
+            @if (TypeObject == 0)
+            {
+                @*ПРД*@
+                <div class="mb-3">
+                    <label class="form-label">@SMDataRep["SUBSYST_PRD"]</label>
+                    <select class="form-select" @bind="GetDevId">
+                        @foreach (var item in ListPRD)
+                        {
+                            <option value="@item.DevID">@item.DevName</option>
+                        }
+                    </select>
+                </div>
+
+                @*ПУ*@
+                <div class="mb-3">
+                    <label class="form-label">@SMDataRep["SUBSYST_GSO_STAFF"]</label>
+                    <select class="form-select" @bind="GetStaffId">
+                        @foreach (var item in ListCu)
+                        {
+                            <option value="@item.StaffID">@item.UnitName @(!string.IsNullOrEmpty(item.NetBIOSName) ? $"({item.NetBIOSName})" : "")</option>
+                        }
+                    </select>
+                </div>
+
+                @*Контроль*@
+                <div class="mb-3">
+                    <label class="form-label">@UUZSRep["IDS_STRING_CONTROL"]</label>
+                    <input type="text" class="form-control" @bind="Item.Shedule">
+                </div>
+            }
+            else
+            {
+                @*Устройство*@
+                <div class="mb-3">
+                    <label class="form-label">@Rep["Device"]</label>
+                    <select class="form-select" @bind="GetDevId">
+                        @foreach (var item in ListUuzs)
+                        {
+                            <option value="@item.DevID">@item.DevName</option>
+                        }
+                    </select>
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-check-label me-1"><input type="checkbox" class="form-check-input" @bind="IsActive" /> @ARMSetRep["ACTIVE"]</label>
+            </div>
+        }
+        else
+        {
+            <PLoad/>
+        }
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="SaveItem" />
+        <BCancel OnClick="()=>CloseModal()" />
+    </ButtonContent>
+</ModalDialog>
+
+

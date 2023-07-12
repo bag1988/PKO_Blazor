@@ -1,0 +1,52 @@
+﻿@page "/ViewCalendar"
+@using Google.Protobuf.WellKnownTypes;
+@inherits FiltrInherits<CalendarFiltr>
+<TitleView>@AsoRep["IDS_STRING_HOLIDAYS"]</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="CalendarItem" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="(new(){SelectItem??new()})" SetSelectList="(e)=>SelectItem=e?.LastOrDefault()">
+        <Tbody Context="item">
+        <td>@item.Data?.ToDateTime().ToLocalTime().ToString("d")</td>
+        <td>@item.DataName</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                @*Добавить дату*@
+                <BCreate OnClick="()=>{IsViewEdit=true; SelectItem=null;}" />
+                @if (SelectItem != null)
+                {
+                    @*Редактировать дату*@
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    @*Удалить дату*@
+                    <BDelete OnClick="()=>IsDelete=true" />
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateCalendar CallBack="CallBackEvent" Model="@(SelectItem!=null? new CalendarItem(SelectItem):null)" />
+    }
+
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@AsoRep["IDS_REG_CALENDAR_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_Q_DELCALENDAR"]: <b>@SelectItem.DataName</b>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="()=>DeleteData(SelectItem.Data)" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

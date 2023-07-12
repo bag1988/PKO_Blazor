@@ -1,0 +1,30 @@
+﻿@inherits ButtonDefault
+
+<button disabled="@(IsProcessing?"disabled":null)" type="button" hotkey="@(!string.IsNullOrEmpty(HotKey)?HotKey:null)" @onclick="OnClickAction" class="btn btn@(GetClassColor) @(TextWrap==true?"text-wrap":"text-nowrap") @AddClass">@_content</button>
+
+@code {
+    [Parameter]
+    public bool IsSetFiltr { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        Text = AsoRep["IDS_STRING_FILTER"];
+    }
+
+    string GetClassColor
+    {
+        get
+        {
+            string style = string.Empty;
+            if (IsOutline == true)
+                style = "-outline";
+
+            if (IsSetFiltr)
+                style = style + "-warning";
+            else
+                style = style + "-secondary";
+
+            return style;
+        }
+    }
+}

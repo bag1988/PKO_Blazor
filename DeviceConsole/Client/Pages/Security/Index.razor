@@ -1,0 +1,181 @@
+﻿@page "/Security"
+@using SharedLibrary.Models;
+@*Пользователи системы безопасности и их разрешения*@
+<TitleView>@GsoRep["UserAndPermission"]</TitleView>
+
+<div class="row">
+    <div class="col-md-4">
+        <DivScroll SetClass="pe-2">
+            <PHeader>
+                @*Пользователи*@
+                @AsoDataRep["IDS_STRING_USERS"]
+            </PHeader>
+            @*Список пользователей*@
+            <ResultView TItem="UserInfo" Items="Model" Context="item" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem=e?.FirstOrDefault()">
+                <ChildContent>
+                    @item.Login
+                </ChildContent>
+            </ResultView>
+
+            <CheckP SystemID="SubsystemType.SUBSYST_Security" BitPos="NameBitsPos.Create">
+                <PSticky Color="light border-top pt-2" StyleBottom="0">
+                    <div class="d-flex flex-wrap align-items-center mb-2">
+                        <BDark HotKey="@KeyCode.Insert" OnClick="@(()=>IsAddUser=true)" Text="@GsoRep["Add"]" />
+                        @if (SelectItem != null)
+                        {
+                            <BDelete OnClick="@(()=>IsDelete=true)" />
+                            <BSecondary HotKey="@KeyCode.Enter" OnClick="@(()=>IsChangePassword=true)" IsOutline="true" Text="@DeviceRep["IDS_STRING_PASSWORD"]" />
+                            @*Супервизор*@
+                            <label class="form-check-label p-2"><input type="checkbox" class="form-check-input" @bind="@SelectItem.SuperVision" /> @AsoRep["SuperVision"]</label>
+                        }
+
+                    </div>
+
+
+                    @* @if (lMode != null)
+                    {
+                    Вход
+                    <h5>@Rep["Login"]</h5>
+
+
+                    Локальный
+                    <div class="mb-2">
+                    <label class="form-check-label"> <input type="radio" name="SelectMode" checked="@(lMode.LoginUserMode=="0"?"checked":null)" @onclick="@(()=>lMode.LoginUserMode="0")" class="form-radio-input"> @GsoRep["Local"]</label>
+                    </div>
+
+                    Локальный+доменный
+                    <div class="mb-2">
+                    <label class="form-check-label"> <input type="radio" name="SelectMode" checked="@(lMode.LoginUserMode=="1"?"checked":null)" @onclick="@(()=>lMode.LoginUserMode="1")" class="form-radio-input"> @GsoRep["LocalAndDomen"]</label>
+                    <div>
+                    <input disabled="@(lMode.LoginUserMode == "0"?"disabled":null)" type="text" @bind="@lMode.LoginADBase" class="form-control">
+                    </div>
+                    </div>
+
+                    SSO(Единый вход)
+                    <div class="row mb-2">
+                    <label class="form-check-label"><input disabled="@(lMode.LoginUserMode == "0"?"disabled":null)" checked="@(lMode.LoginSSOMode=="1"? "checked" : null)" @onchange="@((e)=>lMode.LoginSSOMode=((bool)(e.Value??false))?"1":"0")" type="checkbox" class="form-check-input" /> @GsoRep["SSO"] </label>
+                    </div>
+
+                    }*@
+
+                </PSticky>
+            </CheckP>
+        </DivScroll>
+    </div>
+
+    <div class="col-md-8">
+        <DivScroll SetClass="pe-2">
+            <PHeader>
+                @*Разрешения*@
+                @GsoRep["Permission"]
+            </PHeader>
+            <ResultView TItem="ItemPermission" Items="PermissionsList" DbClick="(e)=>ChangePerUser(e.Name, e.PosBit)" IsSetFocus="false">
+                <ChildContent>
+                    <label class="form-check-label"><input tabindex="-1" disabled="@(SelectItem?.Status==10?"disabled":null)" checked="@(IsCheckedPer(context.Name, context.PosBit)?"checked":null)" @onchange="@(()=>ChangePerUser(context.Name, context.PosBit))" type="checkbox" class="form-check-input" /> @context.NameFiled</label>
+                </ChildContent>
+            </ResultView>
+            <CheckP SystemID="SubsystemType.SUBSYST_Security" BitPos="NameBitsPos.Create">
+                <PSticky Color="secondary p-2 mt-3" StyleBottom="0">
+                    <BSave OnClick="SetUserPer" />
+                    <BDark HotKey="@KeyCode.Escape" IsOutline="true" Text="@GsoRep["Reset"]" OnClick="OnInitializedAsync" />
+                    @if (SelectItem != null && SelectItem.Status != 10)
+                    {
+                        <BSecondary Text="@AsoRep["SelectAll"]" OnClick="SelectAllPer" />
+                        <BSecondary IsOutline="true" Text="@AsoRep["Deselect"]" OnClick="UnSelectAllPer" />
+                    }
+                    @if (IsSave)
+                    {
+                        <span class="m-2 text-success">@AsoRep["IDS_OK_SAVE"]</span>
+                    }
+                </PSticky>
+            </CheckP>
+        </DivScroll>
+    </div>
+</div>
+
+
+
+<CheckP SystemID="SubsystemType.SUBSYST_Security" BitPos="NameBitsPos.Create">
+    @*Предупреждение удаления*@
+    @if (IsDelete == true)
+    {
+        <ModalDialog Title="@AsoRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @GsoRep["IsDeleteUser"].ToString().Replace("#Login", SelectItem?.Login)
+                </p>
+            </BodyContent>           
+            <ButtonContent>
+                <BDanger HotKey="@KeyCode.Enter" Text="@StartUIRep["IDS_STRING_DELETE"]" OnClick="DeleteUser"></BDanger>
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @*Добавить пользовытеля*@
+    @if (IsAddUser == true)
+    {
+        <ModalDialog Title="@DeviceRep["IDS_STRING_USER"]" ButtonCloseEvent="()=>IsAddUser=false">
+            <BodyContent>
+                @*Имя пользователя*@
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["UserName"]</label>
+                    <InputFocus @bind-Value="@NewUser.Login" />
+                </div>
+                @*Пароль*@
+                <div class="mb-3">
+                    <label class="form-label">@DeviceRep["IDS_STRING_PASSWORD"]</label>
+                    <input type="password" class="form-control" @bind="@NewPassword">
+                </div>
+
+                @*Подтверждение пароля*@
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["Confirmation"]</label>
+                    <input type="password" class="form-control" @bind="@NewUser.Passw">
+                </div>
+
+                @*Супервизор*@
+                <div class="mb-3">
+                    <label class="form-check-label"><input type="checkbox" class="form-check-input" @bind="@NewUser.SuperVision" /> @AsoRep["SuperVision"]</label>
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                <BSave OnClick="AddNewUser"></BSave>
+                <BCancel OnClick="()=>IsAddUser=false" />
+            </ButtonContent>
+
+        </ModalDialog>
+    }
+
+
+    @*Изменить пароль*@
+    @if (IsChangePassword == true)
+    {
+        <ModalDialog Title="@DeviceRep["IDS_STRING_PASSWORD"]" ButtonCloseEvent="()=>IsChangePassword=false">
+            <BodyContent>
+                @*Старый пароль*@
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["OldPassword"]</label>
+                    <InputFocus type="password" @bind-Value="@ChangePass.OldPassword" />
+                </div>
+
+                @*Новый пароль*@
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["NewPassword"]</label>
+                    <input type="password" class="form-control" @bind="@NewPassword">
+                </div>
+
+                @*Подтверждение пароля*@
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["Confirmation"]</label>
+                    <input type="password" class="form-control" @bind="@ChangePass.NewPassword">
+                </div>
+            </BodyContent>            
+            <ButtonContent>
+                <BSave OnClick="ChangePasswordUser"></BSave>
+                <BCancel OnClick="()=>IsChangePassword=false" />
+            </ButtonContent>
+
+        </ModalDialog>
+    }
+    </CheckP>

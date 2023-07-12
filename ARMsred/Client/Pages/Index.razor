@@ -1,0 +1,188 @@
+﻿@page "/"
+@using BlazorLibrary.Shared.Buttons
+@using SharedLibrary.GlobalEnums;
+@using SharedLibrary.Models;
+@inherits CancellableComponent
+<TitleView>@ARMRep["ARMsredTitle"] @GetCuName</TitleView>
+@if (IsResetConnectCu)
+{
+    <PLoad AddText="@($" - {StateConnectCU}")" />
+}
+else
+{
+    <TabControlGateMode SetGroupId="SetGroupId" />
+    @if (GroupId?.GroupID > 0)
+    {
+        <div class="row">
+            <div class="col-xxl-5">
+                <OnLoadData Data="CommandList">
+                    <div>
+                        <div class="row">
+                            <div class="col-10">
+                                @if (DisplayModeIndex == 0)
+                                {
+                                    @foreach (var item in context)
+                                    {
+                                        <button class="btn btn-@(SelectCommand==item.Command? "danger":"info") commandView " @onclick="()=>SetCommand(item)">
+                                            @item.CommandName
+                                        </button>
+                                    }
+                                    <button class="btn btn-@(SelectCommand==6? "danger":"info") commandView" @onclick="@(()=>SetCommand(6))">
+                                        @ARMRep[curStopState.ToString()]
+                                    </button>
+                                }
+                                <p class="alert alert-@(uploadMessages.Count(x=>!x.WriteBuffer?.IsCompleted??false)>0?"success blink":"secondary") text-center p-2 m-1">
+                                    @($"{ARMRep["Broadcast"]}{(GetUploadProgress > 0 ? $" {GetUploadProgress}KB" : "")}")
+                                </p>
+
+                            </div>
+                            <div class="col-2">
+                                @if ((DisplayModeIndex == 0 && SelectCommand > 0 && SelectCommand <= 6 && sitItemList.Count > 0) || (DisplayModeIndex == 1 && (SelectSitList?.Any() ?? false)))
+                                {
+                                    <BSecondary IsOutline="true" AddClass="m-1 startCommand" OnClick="CheckStart" Text="@ARMRep["Start"]" />
+                                }
+                                else
+                                {
+                                    <BSecondary IsOutline="true" AddClass="m-1 startCommand cursor-not-allowed" Text="@ARMRep["Start"]" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </OnLoadData>
+            </div>
+            <div class="col-xxl-7">
+                <div class="d-flex flex-wrap">
+                    <div>
+                        <button class="btn btn-@(typeMsgNotify!=SourceMsgNotify.No?"outline-secondary":"warning") m-1" type="button" @onclick="()=>ChangeModeMsg(SourceMsgNotify.No)">
+                            <span class="oi oi-volume-off mx-1"></span>
+                        </button>
+                        <button class="btn btn-@(typeMsgNotify!=SourceMsgNotify.Microphone?"outline-secondary":"warning") m-1" type="button" @onclick="()=>ChangeModeMsg(SourceMsgNotify.Microphone)">
+                            <span class="oi oi-microphone mx-1"></span>
+                        </button>
+                        <button class="btn btn-@(typeMsgNotify!=SourceMsgNotify.Records?"outline-secondary":"warning") m-1" type="button" @onclick="()=>ChangeModeMsg(SourceMsgNotify.Records)">
+                            <span class="oi oi-paperclip mx-1"></span>
+                        </button>
+                    </div>
+
+                    @if (typeMsgNotify == SourceMsgNotify.Records)
+                    {
+                        <div class="flex-fill">
+                            <RecordAudio @ref="recordAudio" SetSoundsUrlPlayer="SetSoundsUrlPlayer" />
+                            <div class="d-flex align-items-center">
+                                <div class="col">
+                                    <AudioPlayerStream @ref="player" BgColor="audio-white" />
+                                </div>
+                                <button class="btn btn-outline-info" type="button" @onclick="()=>SetRepeatCount(1)">
+                                    <span class="oi oi-plus mx-1"></span>
+                                </button>
+                                <p class="btn my-1">@RepeatCount</p>
+                                <button class="btn btn-outline-info" type="button" @onclick="()=>SetRepeatCount(-1)">
+                                    <span class="oi oi-minus mx-1"></span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div>
+        @if (GroupId?.GroupID > 0)
+        {
+            @if (DisplayModeIndex == 0)
+            {
+                <TableLayoutPanelPRDDestination @ref="table" GroupId="GroupId?.GroupID" DbClick="StartConnectRemote" SelectItem="sitItemList" SetStopState="SetStopState" />
+            }
+            else
+            {
+                <ScenListWithGroupsControl @ref="sitList" SetSelectSitList="SetSelectSitList" />
+            }
+        }
+        <div class="p-1 bg-white d-flex">
+            @if (DisplayModeIndex == 0)
+            {
+                @if (CuHistoryListConnect.Count > 0)
+                {
+                    <div>
+                        <DropdownMenu TextButton="@ARMRep["BACK"]">
+                            <ChildButton>
+                                @foreach (var item in CuHistoryListConnect)
+                                {
+                                    <li><span class="dropdown-item pointer" @onclick="()=>BackConnect(item)">@item.CUName</span></li>
+                                }
+                            </ChildButton>
+                        </DropdownMenu>
+                    </div>
+                }
+                @if (stateArray?.Count > 0)
+                {
+                    <div>
+                        <BSecondary IsOutline="true" Text="@ARMRep["SelectPRD"]" OnClick="()=>SelectPYPRD(0)" />
+                        <BSecondary IsOutline="true" Text="@ARMRep["SelectPU"]" OnClick="()=>SelectPYPRD(1)" />
+                        <BSecondary IsOutline="true" Text="@(sitItemList.Any() ? ARMRep["Deselect"] : ARMRep["SelectAll"])" OnClick="()=>SelectPYPRD(-1)" />
+                    </div>
+                }
+            }
+            @if (DisplayModeIndex == 0)
+            {
+                <BSecondary IsOutline="true" Text="@ARMRep["Scenario"]" OnClick="()=>SetDisplayModeIndex(1)" />
+            }
+            else
+            {
+                <BSecondary IsOutline="true" Text="@ARMRep["PU_AND_PRD"]" OnClick="()=>SetDisplayModeIndex(0)" />
+            }
+
+            <div class="ms-auto">
+                @if (ReservCuList.Count > 0)
+                {
+                    <DropdownMenu TextButton="@ARMRep["Server"]">
+                        <ChildButton>
+                            @foreach (var item in ReservCuList)
+                            {
+                                <li><span class="dropdown-item pointer" @onclick="()=>StartConnectRemote(item.OBJID.StaffID)">@item.CCURegistrList?.CUName</span></li>
+                            }
+                        </ChildButton>
+                    </DropdownMenu>
+                }
+                @if (stateArray?.Count > 0)
+                {
+                    <BSecondary IsOutline="true" Text="@ARMRep["Reset"]" OnClick="ResetButton" />
+                }
+            </div>
+        </div>
+    </div>
+
+    @*Последнее предупреждение*@
+    @if (IsStartNotify)
+    {
+        <ModalDialog Title="@ARMRep["LastWarning"]" ButtonCloseEvent="()=>IsStartNotify=false">
+            <BodyContent>
+                @*Предупреждение, и запуск*@
+                <p class="alert alert-danger">
+                    @ARMRep["ConfirmLaunchCmd"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDark HotKey="@KeyCode.Enter" Text="@ARMRep["Start"]" OnClick="ButtonStart"></BDark>
+                <BCancel OnClick="()=>IsStartNotify=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @*Запуск в ручном режиме, отображение записи звука*@
+    @if (CustomModeStart)
+    {
+        <ModalDialog Title="@ARMRep["StateManualMode"]" ButtonCloseEvent="StopStream">
+            <BodyContent>
+                <div class="alert alert-warning mt-2">
+                    @ARMRep["IsRecord"] @(TimeRecord.Minutes.ToString("00") + ":" + TimeRecord.Seconds.ToString("00"))
+                </div>
+            </BodyContent>           
+            <ButtonContent>
+                <BDanger HotKey="@KeyCode.Enter" OnClick="StopStream" Text="@(ARMRep["StopRecord"]+ " "+(TimeSpan.FromMinutes(5).Subtract(TimeRecord).Minutes.ToString("00") + ":" + TimeSpan.FromMinutes(5).Subtract(TimeRecord).Seconds.ToString("00")))" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+
+}

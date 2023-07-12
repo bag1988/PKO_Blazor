@@ -1,0 +1,112 @@
+﻿@page "/AutoNotify"
+@inject IStringLocalizer<TasksReplace> TasksRep
+@inherits FiltrInherits<AutoNotifyFiltr>
+<TitleView>@TasksRep["AUTO_NOTIFY"]</TitleView>
+<div class="row">
+    <div class="col-md-4">
+        @if (!IsPageLoad)
+        {
+            <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+            <TableVirtualize @ref="table" Devision="@(StartTasksInfo?.Count > 0 ?1.8:1)" IsSetFirstSelect="true" TItem="CGetTaskInfo" Provider="GetProvider" DbClick="()=>IsAdd=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="SetSelectItem" MinWidth="0">
+                <Tbody Context="item">
+                <td>@item.TaskName</td>
+                <td>@(item.Mo == 1 ? "+" : "")</td>
+                <td>@(item.Tu == 1 ? "+" : "")</td>
+                <td>@(item.We == 1 ? "+" : "")</td>
+                <td>@(item.Th == 1 ? "+" : "")</td>
+                <td>@(item.Fr == 1 ? "+" : "")</td>
+                <td>@(item.Sa == 1 ? "+" : "")</td>
+                <td>@(item.Su == 1 ? "+" : "")</td>
+                <td>
+                        @if (!string.IsNullOrEmpty(item.TaskTimeView))
+                        {
+                            @foreach (var time in item.TaskTimeView.Split(", "))
+                            {
+
+                                @if (time.Split(' ').Length > 1)
+                                {
+                                    @($"{time.Split(' ')[0]} {(timeZones.FirstOrDefault(x => x.Id == time.Split(' ')[1])?.DisplayName ?? time.Split(' ')[1])}")
+                                }
+                                else
+                                {
+                                    @time
+                                }
+                            <br />
+                            }
+                        }
+                </td>
+                <td>@item.SitName</td>
+                </Tbody>
+                <TSticky>
+                    <BDark Text="@GsoRep["Add"]" OnClick="AddTask" />
+                    @if (SelectItem != null)
+                    {
+                        <BEdit OnClick="()=>IsAdd=true" />
+                        <BDelete OnClick="DeleteTaskView" />
+                    }
+                </TSticky>
+            </TableVirtualize>
+        }      
+    </div>
+    <div class="col-md-8">
+        <TableScroll Devision="@(StartTasksInfo?.Count > 0 ?1.8:1)" Colspan="ResultList?.CountColumn" TItem="TaskResultPtr" Items="@ResultList?.TaskResultPtrList?.Array" MinWidth="0" IsSetFocus="false" IsOnKeyDown="false">
+            <Thead>
+                @if (ResultList?.ColumnInfoPtr?.Array.Count > 0)
+                    @foreach (var item in ResultList.ColumnInfoPtr.Array)
+                    {
+                    <th>@item</th>
+                    }
+            </Thead>
+            <Tbody Context="items">
+            <td>@items.Name</td>
+                @foreach (var item in items.TaskResult)
+                {
+                <td style="@(OnSubItemPrePaint(item.LStatus))">@item.TStatus</td>
+                }
+            </Tbody>
+            <TSticky>
+                <div class="d-flex align-items-center text-nowrap">
+                    <label class="form-label">@TasksRep["RESULT_VIEW_TO_DATE"]</label>
+                    <input type="date" class="form-control ms-2" style="width:200px;" value="@startDate.ToString("yyyy-MM-dd")" @onchange="ChangeDate" />
+                </div>
+            </TSticky>
+        </TableScroll>
+    </div>
+</div>
+
+@if (StartTasksInfo?.Count > 0)
+{
+    <DivScroll SetClass="mt-2 alert alert-secondary">
+        <ResultView Items="StartTasksInfo" IsSetFocus="false" IsOnKeyDown="false">
+            <span class="d-block">
+                @context
+            </span>
+        </ResultView>
+    </DivScroll>
+}
+
+
+<CheckP BitPos="NameBitsPos.EditTask">
+
+    @if (IsAdd)
+    {
+        <CreateTask ActionBack="ActionBack" TaskId="@(SelectItem?.TaskID)" />
+    }
+
+    @if (IsDelete && SelectItem != null)
+    {
+        <ModalDialog Title="@TasksRep["IDS_REG_TASK_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @TasksRep["IDS_S_DELTASKREQUEST"]:
+                    <b>@SelectItem.TaskName</b>
+                </p>
+            </BodyContent>            
+                <ButtonContent>
+                <BDelete OnClick="DeleteTask" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+</CheckP>

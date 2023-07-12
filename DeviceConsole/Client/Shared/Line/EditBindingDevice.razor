@@ -1,0 +1,14 @@
+﻿
+<ModalDialog Title="@GsoRep["DescriptionBindingDevice"]" ButtonCloseEvent="()=>Close()">
+    <BodyContent>
+        <ResultView TItem="BindingDevice" Items="BindingDeviceList" DbClick="()=>Close(SelectItem)" Context="item" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem=e?.FirstOrDefault()">
+            <ChildContent>
+                @item.Name
+            </ChildContent>
+        </ResultView>
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="()=>Close(SelectItem)" />
+        <BCancel OnClick="()=>Close()" />
+    </ButtonContent>
+</ModalDialog>

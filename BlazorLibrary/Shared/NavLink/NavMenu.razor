@@ -1,0 +1,65 @@
+﻿<PageTitle>@Title</PageTitle>
+<div class="sidebar" @onkeydown="KeySet" tabindex="0" @ref="div" style="max-height:@(WindowHeight)px;  min-width:@(Width)px; width:@(Width)px">
+    <div class="top-row py-0 navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand text-center" href="">
+                @GetCompanyName
+                <b style="display: block;font-size: 0.7em;">@dateNow</b>
+            </a>
+            <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="@NavMenuCssClass" style="width:inherit">
+        <AuthUser>
+            <Authorized>
+                @if(!string.IsNullOrEmpty(context))
+                {
+                    <div class="nav-item px-3 pt-0">
+                        <div class="d-flex justify-content-between flex-wrap">
+                            <span>@context</span>
+                            <b hotkey="@KeyCode.Logout" class="d-block pointer" @onclick="Logout">@Rep["Logout"]</b>
+                        </div>
+                    </div>
+                    <HR />
+
+
+                    @*<div class="px-2">
+                <CultureSelector />
+                </div>*@
+
+                    <nav class="flex-column  mb-5">
+                        @ChildContent
+                    </nav>
+                }
+            </Authorized>
+        </AuthUser>
+        <div class="text-white px-2 py-1 position-fixed bottom-0" style="background-color: rgba(0,0,0,0.75); z-index:1; width:inherit !important;">
+            <NavLink class="nav-link text-white" @onclick="()=>IsViewAbout=!IsViewAbout" style="cursor:pointer; font-size: smaller;">
+                <span class="oi @(!IsViewAbout?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @GsoRep["About"]
+            </NavLink>
+
+            @if (IsViewAbout)
+            {
+                <HR />
+                <div class="text-center" style="font-size: smaller;">
+                    @*Глобальная система оповещения*@
+                    @*<small class="d-block my-2">@GsoRep["AboutGlobal"]</small>*@
+                    @*Программный комплекс оповещения АС "ОСОДУ"*@
+                    <small class="d-block mt-2">@Rep["PO_NAME"]</small>
+                    <small class="d-block mb-2">@GetPoName</small>
+                    @*Версия*@
+                    <small class="d-block my-2">Версия @PVersion?.ProductVersionNumberMajor.@PVersion?.ProductVersionNumberMinor.@PVersion?.ProductVersionNumberPatch+@PVersion?.BuildNumber</small>
+                    <HR />
+                    @*Модуль "{Наименование ПО}"*@
+                    <small class="d-block my-2">@($"{StartUIRep["IDS_EVENT_MODULE"]} \"{Title}\"")</small>
+                    @*АО НПО «Сенсор» (c) Copyright-2022*@
+                    <small class="d-block my-2">@GetCompanyName (c) Copyright-@(DateTime.Now.Year)</small>
+
+                </div>
+            }
+        </div>
+    </div>
+</div>

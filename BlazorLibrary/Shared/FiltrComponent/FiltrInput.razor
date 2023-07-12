@@ -1,0 +1,147 @@
+﻿@using FiltersGSOProto.V1;
+
+<div class="filtr">
+    <div class="input-group mb-3">
+        @if (LastRequest.HistoryRequest.Count > 0)
+        {
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" @onblur="OnBlurHistory" @onclick="()=>IsViewHistory=!IsViewHistory">
+                <span class="oi oi-clock"></span>
+            </button>
+            <div class="dropdown-menu top-100 history-request @(IsViewHistory?"d-block":"")" @onmouseover="OnMouseOverHistory" @onmouseout="OnMouseOutHistory">
+                @foreach (var item in LastRequest.HistoryRequest)
+                {
+                    <span title="@GetNameHints(item)" @onclick="()=>OnClickHistory(item)" class="dropdown-item">@GetNameHints(item)</span>
+                }
+                <span @onclick="ClearHistory" class="dropdown-item text-danger">@Rep["CLEAR_HISTORY"]</span>
+            </div>
+        }
+        <div class="form-control overflow-auto">
+            <div class="active-filtr d-flex align-items-center">
+                @if (Items != null)
+                {
+                    @foreach (var item in Items)
+                    {
+                        <div title="@item.Value?.Value">
+                            <span>
+                                @GetNameHint(item)
+                            </span>
+                            <b @onclick="()=>RemoveItem(item)" class="pointer bg-warning"></b>
+                        </div>
+                    }
+                }
+                @if (SelectHints != null)
+                {
+                    <div>
+                        <span>@($"{SelectHints.Name}{(SelectHints.Operation != FiltrOperationType.None ? $" {GetNameOperation(SelectHints.Operation)}" : "")}")</span>
+                    </div>
+                }
+                <input @ref="input" placeholder="@Rep[PlaceHolder]" class="flex-fill" type="text" @bind="ValueSelect" @bind:event="oninput" @onkeydown="OnKeyDown" @onfocus="OnFocusInput" @onblur="OnBlurInput" @onclick="OnClickInput" />
+                @if (Items?.Count > 0)
+                {
+                    <b @onclick="RemoveAll" class="position-sticky end-0 pointer ms-auto bg-danger text-white"></b>
+                }
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary" @onclick="OnClick"><span class="oi oi-magnifying-glass mx-1"></span></button>
+    </div>
+    @*Подсказки*@
+    @if (IsViewHint)
+    {
+        <div class="filtr-hint" @onmouseover="OnMouseOver" @onmouseout="OnMouseOut" @onclick="OnClickHint" style="left:@(LeftHint)px;">
+            @if (SelectHints == null && Hints != null)
+            {
+
+                @foreach (var item in GetHintsItems)
+                {
+                    <span @onclick="()=>SetActive(item)" class="pointer @(item.Equals(FocusHints)?"bg-select":"")">
+                        @item.Name
+                    </span>
+                }
+            }
+            else if (SelectHints != null && SelectHints.Operation == FiltrOperationType.None)
+            {
+                @foreach (var item in OperandTypes.Where(x => x.Name.Contains(TempValue.Value ?? "", StringComparison.OrdinalIgnoreCase)))
+                {
+                    <span @onclick="()=>SetOperation(item)" class="pointer @(item.Key.Equals(FocusOperation?.Key)?"bg-select":"")">
+                        @item.Name
+                    </span>
+                }
+            }
+            else if (SelectHints != null && SelectHints.Operation != FiltrOperationType.None)
+            {
+                @if (SelectHints.Type == Models.TypeHint.Date && string.IsNullOrEmpty(TempValue.Value))
+                {
+                    <div class="d-flex align-items-center p-2">
+                        <input type="datetime-local" class="form-control" @bind="DateStart">
+                        @if (SelectHints.Operation == FiltrOperationType.Range)
+                        {
+                            <span class="m-2">-</span>
+                            <input type="datetime-local" class="form-control" @bind="DateEnd">
+                        }
+                        <button type="button" class="btn btn-outline-secondary ms-2" @onclick="SetValueDate">Ok</button>
+                    </div>
+                }
+                else if (SelectHints.Type == Models.TypeHint.DateOnly && string.IsNullOrEmpty(TempValue.Value))
+                {
+                    <div class="d-flex align-items-center p-2">
+                        <input type="date" class="form-control" @bind="DateStart">
+                        @if (SelectHints.Operation == FiltrOperationType.Range)
+                        {
+                            <span class="m-2">-</span>
+                            <input type="date" class="form-control" @bind="DateEnd">
+                        }
+                        <button type="button" class="btn btn-outline-secondary ms-2" @onclick="SetValueDate">Ok</button>
+                    </div>
+                }
+                else if (SelectHints.Type == Models.TypeHint.Time && string.IsNullOrEmpty(TempValue.Value))
+                {
+                    <div class="d-flex align-items-center p-2">
+                        <input type="time" @bind:format="HH:mm:ss" class="form-control" @bind="DateStart">
+                        @if (SelectHints.Operation == FiltrOperationType.Range)
+                        {
+                            <span class="m-2">-</span>
+                            <input type="time" @bind:format="HH:mm:ss" class="form-control" @bind="DateEnd">
+                        }
+                        <button type="button" class="btn btn-outline-secondary ms-2" @onclick="SetValueTime">Ok</button>
+                    </div>
+                }
+                else if (SelectHints.Type == Models.TypeHint.Duration && string.IsNullOrEmpty(TempValue.Value))
+                {
+                    <div class="d-flex align-items-center p-2">
+                        <input placeholder="dd.hh:mm" class="form-control" @bind="DurationStart">
+                        @if (SelectHints.Operation == FiltrOperationType.Range)
+                        {
+                            <span class="m-2">-</span>
+                            <input placeholder="dd.hh:mm" class="form-control" @bind="DurationEnd">
+                        }
+                        <button type="button" class="btn btn-outline-secondary ms-2" @onclick="SetValueDuration">Ok</button>
+                    </div>
+                }
+                else if (SelectHints.Type == Models.TypeHint.Bool && string.IsNullOrEmpty(TempValue.Value))
+                {
+                    <span @onclick="()=>SetValueHintBool(true)" class="pointer @(true.ToString() == FocusHint?.Value?"bg-select":"")">
+                        @GsoRep["YES"]
+                    </span>
+                    <span @onclick="()=>SetValueHintBool(false)" class="pointer @(false.ToString() == FocusHint?.Value?"bg-select":"")">
+                        @GsoRep["NO"]
+                    </span>
+                }
+                else if (SelectHints.Provider?.IsData == true)
+                {
+                    @if (!SelectHints.Provider.IsLoadData)
+                    {
+                        @foreach (var item in SelectHints.Provider.CacheItems.Where(x => x.Value.Contains(TempValue.Value ?? "", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <span @onclick="()=>SetValueHint(item)" class="pointer @(item.Equals(FocusHint)?"bg-select":"")">
+                                @item.Value
+                            </span>
+                        }
+                    }
+                }
+            }
+
+        </div>
+    }
+
+</div>
+

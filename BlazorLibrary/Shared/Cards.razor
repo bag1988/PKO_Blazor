@@ -1,0 +1,20 @@
+﻿<div class="card @AddClass">
+    <div class="card-header">
+        <b>@Header</b>
+    </div>
+    <div class="card-body">
+        <blockquote>
+            @ChildContent
+        </blockquote>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? AddClass { get; set; }
+
+    [Parameter]
+    public string? Header { get; set; }
+}

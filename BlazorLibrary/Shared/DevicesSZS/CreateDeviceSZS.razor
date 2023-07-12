@@ -1,0 +1,271 @@
+﻿@using UUZSDataProto.V1;
+
+<ModalDialog Title="@(DeviceObj_ID.ObjID > 0?Model?.DeviceInfo?.CDeviceInfo?.DevName:UUZSRep["IDS_STRING_CREATE_UUZS"])" ButtonCloseEvent="CallEvent">
+    <BodyContent>
+        <form id="createdeviceszs" @onsubmit="OnOK">
+            @if (Model?.DeviceInfo?.CDeviceInfo != null)
+            {
+                <div tabindex="1">
+                    @*Наименование*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_NAME"]</label>
+                        <InputFocus @bind-Value="Model.DeviceInfo.CDeviceInfo.DevName" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            @*Серийный номер*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_SERIAL_NUMBER"]</label>
+                                @if (DeviceObj_ID.ObjID > 0)
+                                {
+                                    <label class="form-control bg-light">@Model.DeviceInfo.CDeviceInfo.DevID</label>
+                                }
+                                else
+                                {
+                                    <input type="number" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.DevID">
+                                }
+                            </div>
+                            @*Глобальный номер*@
+                            <div class="mb-3">
+                                <label class="form-check-label me-1">@UUZSRep["GLOBAL_NUMBER"] <input type="checkbox" class="form-check-input ms-2" @bind="IsGlobalNum" /></label>
+                                @if (IsGlobalNum)
+                                {
+                                    <input type="number" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.GlobNum">
+                                }
+                            </div>
+                            @*Координаты GPS*@
+                            <div class="mb-3">
+                                <label class="form-label">@GsoRep["Geolocation"] GPS</label>
+                                <input type="text" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.GPS">
+                            </div>
+
+                            @*Приоритет*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_PRIORITY"]</label>
+                                <input type="number" min="1" max="50" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.Prior">
+                            </div>
+
+                            <div class="mb-3">
+                                @*Контроль состояния*@
+                                <label class="form-check-label">@GSOFormRep["IDC_CHECK_STATE"] <input type="checkbox" class="form-check-input" @bind="CheckState" /></label>
+                                @if (SheduleList != null && CheckState)
+                                {
+                                    @*Расширенный*@
+                                    <label class="form-check-label ms-2">@UUZSRep["STATE_ADVANCE"] <input type="checkbox" class="form-check-input" @bind="CheckStatesEx" /></label>
+                                    <select class="form-select" @bind="SheduleID">
+                                        @foreach (var item in SheduleList)
+                                        {
+                                            <option value="@item.SheduleID">@string.Format("{0:#,##0} ч. {1:mm} мин.", Math.Truncate(item.Duration.ToTimeSpan().TotalHours), item.Duration.ToTimeSpan())</option>
+                                        }
+                                    </select>
+
+                                }
+                            </div>
+                            <div class="mb-3">
+                                @*Устройство доступно*@
+                                <label class="form-check-label">@UUZSRep["IDS_STRING_DEVICE_AVAILABLE"] <input type="checkbox" class="form-check-input" checked="@(Model.DeviceInfo.CDeviceInfo.Status==1? "checked" : null)" @onchange="(e)=>{Model.DeviceInfo.CDeviceInfo.Status=(bool)(e.Value??false)?1:0;}" /></label>
+                            </div>
+                            <div class="mb-3">
+                                @*Запрет буферизации звука*@
+                                <label class="form-check-label">@UUZSRep["IDS_STRING_NO_BUF_SOUND"] <input type="checkbox" class="form-check-input" checked="@(Model.BuffSndOff==1? "checked" : null)" @onchange="(e)=>{Model.BuffSndOff=(bool)(e.Value??false)?1:0;}" /></label>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+                            @if (DeviceObj_ID.ObjID > 0)
+                            {
+                                @*Активация устройства*@
+                                <label class="form-label">@UUZSRep["IDS_STRING_ACTIVE_DEVICE"]</label>
+                                @*Код устройства*@
+                                <div class="mb-3">
+                                    <label class="form-label">@UUZSRep["IDS_STRING_CODE_DEVICE"]</label>
+                                    <label class="form-control bg-light">@DeviceCode.ToString("X")</label>
+                                </div>
+
+                                @*Код активации*@
+                                <div class="mb-3">
+                                    <label class="form-label">@UUZSRep["IDS_STRING_CODE_ACTIVE"]</label>
+                                    <input type="text" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.ActivateCode">
+                                </div>
+                            }
+                            @*Принадлежность*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_ALIGMENT"]</label>
+                                <input type="text" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.Adress">
+                            </div>
+
+                            @*Комментарий*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_COMMENT"]</label>
+                                <input type="text" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.Comm">
+                            </div>
+                            @*Число зон*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["ZONE_COUNT"]</label>
+                                <input type="number" min="1" max="15" class="form-control" @bind="Model.DeviceInfo.CDeviceInfo.ZoneCount">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    @*Используемые каналы*@
+                    <h4>
+                        @UUZSRep["IDS_STRING_CHANNEL"]
+                    </h4>
+                    <hr />
+                    <TableDefault IsSetFocus="false" IsOnKeyDown="false" TItem="CShedule" Colspan="5" Items="Model?.DeviceInfo?.CSheduleArray" SetSelectList="(e)=>GetRestrictList(e.FirstOrDefault())" SelectList="@(SelectShedule!=null ? new (){SelectShedule}:null)" IsSticky="false" MinWidth="0">
+                        <Thead>
+                            <ThSort ThList="ThList" ThWidthProcent="@(new List<int>(){0,30,30,20,0})" />
+                        </Thead>
+                        <Tbody Context="item">
+
+                        <td>
+                                @(Model?.DeviceInfo?.CSheduleArray.IndexOf(item) + 1)
+                        </td>
+                        <td>@(LineTypes.FirstOrDefault(x => x.Number == item.BaseType)?.Str ?? UUZSRep["IDS_STRING_ERR_IN_DATA"])</td>
+                        <td>
+                                @if (SelectShedule?.Equals(item) ?? false)
+                                {
+                                    @if (item.BaseType == (int)BaseLineType.LINE_TYPE_DIAL_UP)
+                                    {
+                                    <input type="text" class="form-control form-control-sm" @bind="item.ConnParam">
+                                    }
+                                    else
+                                    {
+                                    <select class="form-select form-select-sm" value="@item.ConnParam" @onchange="(e)=>ChangeLine(e, item)">
+                                        <option>-----</option>
+                                            @foreach (var l in L_List)
+                                            {
+                                            <option value="@l.LineID">@($"{l.LineName} ({l.Phone})")</option>
+                                            }
+                                    </select>
+                                    }
+                                }
+                                else
+                                {
+                                    @if (item.BaseType == (int)BaseLineType.LINE_TYPE_DIAL_UP)
+                                    {
+                                        @item.ConnParam
+                                    }
+                                    else
+                                    {
+                                        @item.Phone
+                                    }
+                                }
+                        </td>
+                        <td>
+                                @if (item.BaseType == (int)BaseLineType.LINE_TYPE_DIAL_UP)
+                                {
+                                    @if (SelectShedule?.Equals(item) ?? false)
+                                    {
+                                    <select class="form-select form-select-sm" @bind="item.LocationID">
+                                            @if (LocationList != null)
+                                            {
+                                                @foreach (var l in LocationList)
+                                                {
+                                                <option value="@l.OBJID.ObjID">@l.Name</option>
+                                                }
+                                            }
+                                    </select>
+                                    }
+                                    else
+                                    {
+                                        @(LocationList?.FirstOrDefault(x => x.OBJID.ObjID == item.LocationID)?.Name ?? UUZSRep["IDS_STRING_ERR_IN_DATA"])
+                                    }
+                                }
+                        </td>
+                        <td>
+                            <input type="number" min="1" max="50" class="form-control form-control-sm" @bind="item.PriorType">
+                        </td>
+                        </Tbody>
+                        <TSticky>
+                            @*Добавить линию*@
+                            <DropdownMenu TextButton="@UUZSRep["IDS_STRING_ADD"]" IsViewMenuTop="false">
+                                <ChildButton>
+                                    @foreach (var item in LineTypes)
+                                    {
+                                        <li><span class="dropdown-item pointer" @onclick="()=>AddLineList(item.Number)">@item.Str</span></li>
+                                    }
+                                </ChildButton>
+                            </DropdownMenu>
+
+                            @if (SelectShedule != null)
+                            {
+                                @*Удалить линию*@
+                                <BDelete OnClick="()=>IsDeleteLine=true" />
+                            }
+                        </TSticky>
+                    </TableDefault>
+                </div>
+                <div class="row">
+                    <div class="col-md-6" tabindex="2">
+                        @*Характеристики линии*@
+                        <h4>
+                            @UUZSRep["IDS_STRING_PROPERTY_LINE"]
+                        </h4>
+                        <hr />
+                        @if (RestrictList.Any())
+                        {
+                            @foreach (var item in RestrictList)
+                            {
+                                <div>
+                                    <label class="form-check-label me-1">
+                                        <input type="checkbox" checked="@(IsChecked(item)? "checked" : null)" class="form-check-input" @onclick="()=>SetRestrictBitStatus(item)" />
+                                        @item.RestrictName
+                                    </label>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        @*Зоны устройства*@
+                        <h4>
+                            @UUZSRep["IDS_STRING_ZONE"]
+                        </h4>
+                        <hr />
+                        <TableDefault IsSetFocus="false" IsOnKeyDown="false" Colspan="2" Items="ZoneList.OrderBy(x=>x.Order).Take(Model?.DeviceInfo?.CDeviceInfo?.ZoneCount??15)" IsSticky="false" MinWidth="0">
+                            <Thead>
+                                <ThSort ThList="@(new Dictionary<int, string>(){{-1, "№"},{-2, UUZSRep["IDS_STRING_NAME"]} })" />
+                            </Thead>
+                            <Tbody Context="item">
+                            <td>
+                                    @(item.Order + 1)
+                            </td>
+                            <td>
+                                <input type="text" class="form-control form-control-sm" @bind="item.DevName">
+                            </td>
+                            </Tbody>
+                        </TableDefault>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <PLoad />
+            }
+        </form>
+    </BodyContent>
+    <ButtonContent>
+        <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+            <BSumbit IsProcessing="IsProcessing" FormId="createdeviceszs" />
+        </CheckP>
+        <BCancel OnClick="CallEvent" />
+    </ButtonContent>
+</ModalDialog>
+
+@if (IsDeleteLine && SelectShedule != null)
+{
+    <ModalDialog Title="@UUZSRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDeleteLine=false">
+        <BodyContent>
+            <p class="alert alert-danger">
+                @UUZSRep["IDS_STRING_DELETE_SHEDULE_DEVICE_Q"]: <b>@(SelectShedule.BaseType == (int)BaseLineType.LINE_TYPE_DIAL_UP ? SelectShedule.ConnParam : SelectShedule.Phone)</b>
+            </p>
+        </BodyContent>
+        <ButtonContent>
+            <BDelete OnClick="DeleteLineList" />
+            <BCancel OnClick="()=>IsDeleteLine=false" />
+        </ButtonContent>
+    </ModalDialog>
+}

@@ -1,0 +1,26 @@
+{
+  "profiles": {
+    "SynthesisService": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:12349",
+      "dotnetRunMessages": true
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "applicationUrl": "http://localhost:12349",
+      "Kestrel": {
+        "Protocols": "Http1AndHttp2",
+        "Endpoints": {
+          "Grpc": {
+            "Url": "http://localhost:12349"
+          }
+        }
+      },
+      "useSSL": false
+    }
+  }
+}

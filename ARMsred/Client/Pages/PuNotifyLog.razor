@@ -1,0 +1,26 @@
+﻿@page "/PuNotifyLog"
+@using SMSSGsoProto.V1;
+
+<TitleView>@ARMRep["SystemLog"]: @ARMRep["PuNotifyLog"]</TitleView>
+
+<div class="row">
+    <div class="col-md-4">
+        <TableScroll Colspan="3" TItem="CSessions" Items="Model" SelectList="@(selectItem!=null ? new (){selectItem}:null)" SetSelectList="GetItemInfo">
+            <Thead>
+                <ThSort SortTable="SetSort" BFlagDefault="@request.BFlagDirection" CurrentTd="@request.LSortOrder" ThList="ThList" />
+            </Thead>
+            <Tbody Context="item">
+            <td>@item.TSessBeg?.ToDateTime().ToLocalTime()</td>
+            <td>@item.TSessEnd?.ToDateTime().ToLocalTime()</td>
+            <td>@item.TSitName</td>
+            </Tbody>
+        </TableScroll>
+    </div>
+    <div class="col-md-8">
+        @if (selectItem != null)
+        {
+            <DataGridViewCommonInfo></DataGridViewCommonInfo>
+            <DataGridViewDetailInfoResult></DataGridViewDetailInfoResult>
+        }
+    </div>
+</div>

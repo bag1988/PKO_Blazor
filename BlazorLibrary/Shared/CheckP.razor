@@ -1,0 +1,53 @@
+﻿@if (BitPos != null)
+{
+    @if (CheckPermission.CheckBitPos(PerSub, BitPos))
+    {
+        @ChildContent
+    }
+}
+else if (BitPosList != null)
+{
+    @if (CheckPermission.CheckBitPos(PerSub, BitPosList))
+    {
+        @ChildContent
+    }
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public int? BitPos { get; set; }
+
+    [Parameter]
+    public int[]? BitPosList { get; set; }
+
+    private PermisionsUser? Permisions = null;
+
+    [Parameter]
+    public int? SystemID { get; set; }
+
+    [CascadingParameter]
+    public int SubsystemId { get; set; } = 1;
+
+    private byte[]? PerSub = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Permisions = await _User.GetAuthPerm();
+        if (SystemID == null)
+            SystemID = SubsystemId;
+        switch (SystemID)
+        {
+            case SubsystemType.SUBSYST_ASO: PerSub = Permisions.PerAccAso; break;
+            case SubsystemType.SUBSYST_SZS: PerSub = Permisions.PerAccSzs; break;
+            case SubsystemType.SUBSYST_GSO_STAFF: PerSub = Permisions.PerAccCu; break;
+            case SubsystemType.SUBSYST_P16x: PerSub = Permisions.PerAccP16; break;
+            case SubsystemType.SUBSYST_Security: PerSub = Permisions.PerAccSec; break;
+            case SubsystemType.SUBSYST_Setting: PerSub = Permisions.PerAccFn; break;
+            case SubsystemType.SUBSYST_RDM: PerSub = Permisions.PerAccRdm; break;
+        }
+    }
+
+}

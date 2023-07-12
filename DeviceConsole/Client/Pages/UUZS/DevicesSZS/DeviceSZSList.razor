@@ -1,0 +1,90 @@
+﻿@page "/DevicesSZS/{DevType:int}"
+@using UUZSDataProto.V1;
+
+@inherits FiltrInherits<SzsEndDeviceFiltr>
+
+<TitleView>@UUZSRep["IDS_STRING_TERMINAL_DEVICES"]</TitleView>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="Tuple<bool, CGetDeviceInfo>" DbClick="()=>IsViewEdit=true" Provider="GetProvider" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+        <Tbody Context="item">
+            @if (item.Item1)
+            {
+            <td>@item.Item2.CDeviceInfoListOut?.DevName</td>
+            <td>@item.Item2.CDeviceInfoListOut?.DevID</td>
+            <td>@item.Item2.CDeviceInfoListOut?.Adress</td>
+            <td>@item.Item2.CDeviceInfoListOut?.Prior</td>
+            <td>@(item.Item2.CDeviceInfoListOut?.GlobalNum > 0 ? item.Item2.CDeviceInfoListOut?.GlobalNum : "")</td>
+            }
+            else
+            {
+            <td colspan="5"></td>
+            }
+        <td>@item.Item2.CDeviceInfoListOut?.ConnParam</td>
+        <td>@item.Item2.CDeviceInfoListOut?.LocationName</td>
+        <td>@item.Item2.CDeviceInfoListOut?.Comm</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                @*Добавить устройство*@
+                <BCreate OnClick="()=>{IsViewEdit=true; SelectItem=null;}" />
+                @if (SelectItem != null)
+                {
+                    @*Ркдактировать устройство*@
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    @*Удалить устройство*@
+                    <BDelete OnClick="()=>IsDelete=true" />
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateDeviceSZS CallBack="CallBackEvent" DevType="DevType" DeviceObj_ID="@(new OBJ_ID(request.ObjID){ ObjID= SelectItem?.Item2.CDeviceInfoListOut?.DevID??0})" />
+    }
+
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_COMMIT_DELETE_TERMINAL_DEVICE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @UUZSRep["IDS_STRING_YOU_REALLY_DELETE_TERMINAL_DEVICE_Q"]: <b>@SelectItem.Item2.CDeviceInfoListOut?.DevName</b>
+                </p>
+            </BodyContent>           
+            <ButtonContent>
+                <BDelete OnClick="DeleteDevice" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsViewObjList == true)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_COMMIT_DELETE_TERMINAL_DEVICE"]" ButtonCloseEvent="CanselDelete">
+            <BodyContent>
+                @if (ListObj != null && ListObj.Any())
+                {
+                    <Cards AddClass="alert-warning" Header="@UUZSRep["IDS_STRING_ERROR_DELETE"]">
+                        <ul>
+                            <Virtualize Items="ListObj" Context="item">
+                                <li>@item</li>
+                            </Virtualize>
+                        </ul>
+                        <p>
+                            @UUZSRep["IDS_STRING_W_DELETE"]
+                        </p>
+                    </Cards>
+                }
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="()=>DeleteDevice()" />
+                <BCancel OnClick="CanselDelete" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

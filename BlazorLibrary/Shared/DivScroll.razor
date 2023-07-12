@@ -1,0 +1,58 @@
+﻿@using System.Net.Http.Json;
+<div @ref="div" @onscroll="OnScroll" class="table-scroll-v table-responsive @SetClass" style="max-height:@(WindowHeight)px;">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? SetClass { get; set; }
+
+    [Parameter]
+    public double? Devision { get; set; } = 1; //разделить на
+
+    [Parameter]
+    public EventCallback ScrollAction { get; set; }
+
+    [Parameter]
+    public int? MinusHeight { get; set; }
+
+    private ElementReference div = default!;
+
+    private int WindowHeight = 800;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            await Task.Yield();
+            var d = await JSRuntime.InvokeAsync<double>("GetWindowHeight", div);
+            if (Devision != null && Devision != 0 && d > 0)
+            {
+                d = d / Devision.Value;
+            }
+            WindowHeight = (int)Math.Truncate(d);
+            if (MinusHeight > 0)
+            {
+                WindowHeight = WindowHeight - MinusHeight.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task OnScroll()
+    {
+        if (ScrollAction.HasDelegate)
+        {
+            var scrollY = await JSRuntime.InvokeAsync<double>("GetScrollElement", div);
+            if (scrollY > 0.8)
+                await ScrollAction.InvokeAsync();
+        }
+    }
+}

@@ -1,0 +1,62 @@
+﻿@using SMDataServiceProto.V1
+<select class="form-select form-select-sm" value="@SheduleId" @onchange="(e)=>ChangeSelect(e)">
+	@if (SheduleList != null)
+	{
+		<option value="0"></option>
+		@foreach (var item in SheduleList)
+		{
+			<option value="@item.SheduleID">@item.Duration.ToTimeSpan().Hours ч. @item.Duration.ToTimeSpan().Minutes мин.</option>
+		}
+	}
+</select>
+@code {
+	[Parameter]
+	public uint PortNo { get; set; }
+
+	[Parameter]
+	public EventCallback<int> OnChange { get; set; }
+
+	[Parameter]
+	public int StaffId { get; set; }
+
+	[Parameter]
+	public List<GetSheduleListItem>? SheduleList { get; set; }
+
+	private int SheduleId = 0;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetDeviceShedule();
+	}
+
+	private async Task GetDeviceShedule()
+	{
+		OBJ_Key hwobj = new();
+		hwobj.ObjID = new();
+		hwobj.ObjID.ObjID = (int)PortNo;
+		hwobj.ObjID.StaffID = StaffId;
+		hwobj.ObjID.SubsystemID = SubsystemType.SUBSYST_SZS;
+		hwobj.ObjType = (int)HMT.Uuzs;
+
+		await Http.PostAsJsonAsync("api/v1/GetDeviceShedule", hwobj).ContinueWith(async x =>
+		{
+			if (x.Result.IsSuccessStatusCode)
+			{
+				var r = await x.Result.Content.ReadFromJsonAsync<GetShedule>() ?? new();
+
+				if (r.Status > 0 && r.Shedule > 0)
+				{
+					SheduleId = r.Shedule;
+				}
+			}
+		});
+	}
+
+	private async Task ChangeSelect(ChangeEventArgs e)
+	{
+		int.TryParse(e.Value?.ToString(), out int id);
+		if (OnChange.HasDelegate)
+			await OnChange.InvokeAsync(id);
+	}
+
+}

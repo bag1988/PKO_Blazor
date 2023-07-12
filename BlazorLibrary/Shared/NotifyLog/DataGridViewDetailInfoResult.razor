@@ -1,0 +1,29 @@
+﻿@using StaffDataProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<GetItemsICUExResultFilter>
+<CheckP BitPos="NameBitsPos.ViewArhive">
+
+    @if (!IsPageLoad)
+    {
+        <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+        <TableVirtualize @ref="table" TItem="CGetResExStat" Provider="GetProvider" IsOnKeyDown="false" IsSetFocus="false">
+            <Tbody Context="item">
+            <td>@item.SitName</td>
+            <td>@item.SubSystName</td>
+            <td>@item.ObjName</td>
+            <td>@item.ObjType</td>
+            <td>@item.ObjDefine</td>@*Серийный номер УУЗС*@
+            <td>@item.ObjAddress</td>
+            <td>@item.GlobNum</td>
+            <td>@item.CurTime?.ToDateTime().ToLocalTime()</td>
+            <td>@item.StatusName</td>
+            <td>@item.CUName</td>
+            </Tbody>
+            <TSticky>
+                <CheckP BitPos="4">
+                    <BPrint OnClick="GetReport" />
+                </CheckP>
+            </TSticky>
+        </TableVirtualize>
+    }
+</CheckP>

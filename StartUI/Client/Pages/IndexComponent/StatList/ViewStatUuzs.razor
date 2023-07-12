@@ -1,0 +1,23 @@
+﻿@using UUZSDataProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<CreateStatListCacheFiltr>
+<CheckP BitPos="NameBitsPos.ViewArhive">
+
+    @if (!IsPageLoad)
+    {
+        <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+        <TableVirtualize @ref="table" TItem="CLVNotify" Provider="GetProvider" IsSetFocus="false">
+            <Tbody Context="item">
+            <td>@item.SitName</td>
+            <td>@item.DevName</td>
+            <td>@(item.GroupID > 0 ? item.GroupID : "")</td>
+            <td>@item.CallName</td>
+            <td>@item.StatusName</td>
+            <td>@item.CmdTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+            </Tbody>
+            <TSticky>
+                <ActivNotifySticky />
+            </TSticky>
+        </TableVirtualize>
+    }
+</CheckP>

@@ -1,0 +1,255 @@
+﻿@using SharedLibrary.GlobalEnums
+@inherits CancellableComponent
+<ModalDialog Title="@GSOFormRep["IDS_STRING_REGISTRATION_CU"]" ButtonCloseEvent="CancelOrClose">
+    <BodyContent>
+        @if (Model != null)
+        {
+            <form id="createregistration" @onsubmit="StartConnect">
+                <div class="row">
+                    <div class="col-md-6">
+                        @*Наименование пункта управления*@
+                        <div class="mb-3">
+                            <label class="form-label">@GsoRep["ContrUnitName"]</label>
+                            <input type="text" disabled="disabled" class="form-control" @bind="Model.CUName">
+                        </div>
+
+                        @*Тип пункта управления*@
+                        <div class="mb-3">
+                            <label class="form-label">@GSOFormRep["TYPE_CU"]</label>
+                            <select disabled="@(IdStaff>0?"disabled":null)" class="form-select" @bind="Model.CUType">
+                                @foreach (var item in CUTypeList)
+                                {
+                                    <option value="@item.ObjID">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        @*Пользователь*@
+                        <div class="mb-3">
+                            <label class="form-label">@DeviceRep["IDS_STRING_USER"]</label>
+                            <InputFocus @bind-Value="Model.Login"/>
+                        </div>
+
+                        @*Пароль*@
+                        <div class="mb-3">
+                            <label class="form-label">@DeviceRep["IDS_STRING_PASSWORD"]</label>
+                            <input type="password" class="form-control" @bind="Model.Passw">
+                        </div>
+
+                        @*Домен*@
+                        <div class="mb-3">
+                            <label class="form-label">@DeviceRep["NotifyStaffDomain"]</label>
+                            <input type="text" class="form-control" @bind="Model.Domain">
+                        </div>
+
+                        @*Сетевое имя*@
+                        <div class="mb-3">
+                            <label class="form-label">@GSOFormRep["IDS_CU_UNC"]</label>
+                            <div class="d-flex align-items-center">
+                                <InputIpAddress @bind-Value="IpAdress" />
+                                <b>:</b>
+                                <input type="number" class="form-control w-25" max="99999" @bind="Port" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        @if (IdStaff == null || IdStaff == 0)
+                        {
+                            @*Тип линии связи*@
+                            <div class="mb-3">
+                                <label class="form-label">@GSOFormRep["TypeLine"]</label>
+                                <label class="form-control">@(LineTypes.FirstOrDefault(x => x.Number == ConnParams.ConnType)?.Str)</label>
+                                @*<select class="form-select" @bind="ConnParams.ConnType">
+                        @foreach (var item in LineTypes)
+                        {
+                        <option value="@item.Number">@item.Str</option>
+                        }
+                        </select>*@
+                            </div>
+
+                            @*Выбрана телефонная линия*@
+                            @if (ConnParams.ConnType == (int)BaseLineType.LINE_TYPE_DIAL_UP)
+                            {
+                                @*Параметры и характеристики линии связи*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GSOFormRep["ParamLine"]</label>
+                                    @if (RestrictList?.Any() ?? false)
+                                    {
+                                        @foreach (var item in RestrictList)
+                                        {
+                                            <div class="pointer">
+                                                <label class="form-check-label me-1">
+                                                    <input type="checkbox" checked="@(IsChecked(item)? "checked" : null)" class="form-check-input" @onclick="()=>SetRestrictBitStatus(item)" />
+                                                    @item.RestrictName
+                                                </label>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+                                <hr />
+
+
+                                @*Тип оповещения*@
+                                <div class="mb-3">
+                                    <label class="form-label w-50">@AsoRep["TypeNotify"]</label>
+                                    <select class="form-select" @bind="ConnParams.DeviceType">
+                                        @if (ConnTypeList != null)
+                                        {
+                                            @foreach (var item in ConnTypeList)
+                                            {
+                                                <option value="@item.Number">@item.Str</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                @*Местоположение линии связи*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GSOFormRep["LocationLine"]</label>
+                                    <select class="form-select" @bind="ConnParams.LocationID.ObjID">
+                                        @foreach (var item in LocationList)
+                                        {
+                                            <option value="@item.OBJID.ObjID">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+
+
+
+                                @*Номер телефона*@
+                                <div class="mb-3">
+                                    <label class="form-label">@AsoRep["PhoneNumber"]</label>
+                                    <input type="text" class="form-control" @bind="ConnParams.ConnParam">
+                                </div>
+
+                            }
+                            @*Выбрана ЛВС*@
+                            @if (ConnParams.ConnType == (int)BaseLineType.LINE_TYPE_UNDEF)
+                            {
+                                @*Сетевое имя*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GSOFormRep["IDS_CU_UNC"]</label>
+                                    <label class="form-control">@(IpAdress + (Port > 0 ? $":{Port}" : ""))</label>
+                                    @*<input type="text" class="form-control" @bind="ConnParams.ConnParam">*@
+                                </div>
+                            }
+
+                            @*Выбрана выделенная линия*@
+                            @if (ConnParams.ConnType == (int)BaseLineType.LINE_TYPE_DEDICATED)
+                            {
+                                @*Номер линии*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GsoRep["NumberLine"]</label>
+                                    <input type="number" min="1" max="99" class="form-control" @bind="ConnParams.ConnParam">
+                                </div>
+                            }
+
+                            @*Приоритет*@
+                            <div class="mb-3">
+                                <label class="form-label">@GSOFormRep["IDS_PRIORITY"]</label>
+                                <input type="number" min="1" max="99" class="form-control" @bind="ConnParams.Prior">
+                            </div>
+                        }
+
+
+                    </div>
+                </div>
+            </form>
+
+        }
+        else
+        {
+            <PLoad />
+        }
+        @if (InfoConnect != null)
+        {
+            <div class="alert alert-warning">
+                <Virtualize Items="InfoConnect" Context="item">
+                    <span class="d-block">
+                        @item
+                    </span>
+                </Virtualize>
+            </div>
+        }
+    </BodyContent>
+    <ButtonContent>
+        <CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.Create">
+            <BSumbit FormId="createregistration" Text="@ButtonName" IsProcessing="IsStartProssecing" />
+            <BCancel OnClick="CancelOrClose" />
+        </CheckP>
+    </ButtonContent>
+</ModalDialog>
+
+
+<CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.Create">
+    @if (IsDeleting == true && Model != null)
+    {
+        <ModalDialog Title="@GSOFormRep["IDS_STRING_DELETE_CU_REG"]" ButtonCloseEvent="CloseDelete">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @GSOFormRep["IDS_STRING_DELETE_CU_REG_Q"]: <b>@Model.CUName</b>
+                </p>
+                @if (ViewInputPassword)
+                {
+                    @*Введите сервисный пароль для продолжения*@
+                    <div class="mb-3">
+                        <label class="form-label">@GSOFormRep["ServicePassword"]</label>
+                        <input type="password" class="form-control" @bind="UserPassw">
+                    </div>
+                }
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="DeleteRegInfo" />
+                <BCancel OnClick="CloseDelete" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+
+    @if (IsCreateConnect == true)
+    {
+        <ModalDialog Title="@GSOFormRep["IDS_SUCCESSCAPTION"]" ButtonCloseEvent="()=>IsCreateConnect =false">
+            <BodyContent>
+                <p class="alert alert-success">
+                    @GSOFormRep["IDS_SAVESHEDULE"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BSave OnClick="SetSheduleInfo" />
+                <BCancel OnClick="()=>IsCreateConnect =false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsUpdateConnect == true)
+    {
+        <ModalDialog Title="@GSOFormRep["IDS_SUCCESSCAPTION"]" ButtonCloseEvent="()=>IsUpdateConnect =false">
+            <BodyContent>
+                <p class="alert alert-success">
+                    @GSOFormRep["IDS_UPDATEUSERPARAMS"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BSave OnClick="UpdateUser" />
+                <BCancel OnClick="()=>IsUpdateConnect =false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsAbort == true)
+    {
+        <ModalDialog Title="@GSOFormRep["IDS_WARNING"]" ButtonCloseEvent="()=>IsAbort =false">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    @GSOFormRep["IDS_S_EXIST_COMMAND"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDark Text="@GsoRep["IDS_STRING_ABORT"]" HotKey="@KeyCode.Enter" OnClick="AbortProssecing" />
+                <BCancel OnClick="()=>IsAbort =false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

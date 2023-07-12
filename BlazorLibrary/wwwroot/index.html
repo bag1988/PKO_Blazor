@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Программный комплекс оповещения</title>
+    <base href="/" />
+    <link href="_content/BlazorLibrary/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="_content/BlazorLibrary/css/app.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="d-flex justify-content-center mt-5">
+            <div class="spinner-border" role="status"><span class="visually-hidden">Идет загрузка...</span></div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui" class="toast align-items-center text-white bg-danger border-0 mb-2 me-2">
+        <div class="d-flex">
+            <div class="toast-body">
+                Произошла необработанная ошибка. <a href="" class="reload text-white">Обновить</a>
+            </div>
+            <a class="btn-close btn-close-white me-2 m-auto dismiss"></a>
+        </div>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' })</script>
+    <script src="_content/BlazorLibrary/script/site.js"></script>    
+</body>
+
+</html>

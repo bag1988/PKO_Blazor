@@ -1,0 +1,118 @@
+﻿<div class="input-group">
+    <input @ref="_input1" type="text" maxlength="3" placeholder="xxx" class="form-control" @bind="Part1" @bind:event="oninput">
+    <input @ref="_input2" type="text" maxlength="3" placeholder="xxx" class="form-control" @bind="Part2" @bind:event="oninput">
+    <input @ref="_input3" type="text" maxlength="3" placeholder="xxx" class="form-control" @bind="Part3" @bind:event="oninput">
+    <input @ref="_input4" type="text" maxlength="3" placeholder="xxx" class="form-control" @bind="Part4" @bind:event="oninput">
+</div>
+
+@code {
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    ElementReference? _input1;
+    ElementReference? _input2;
+    ElementReference? _input3;
+    ElementReference? _input4;
+
+    string?[] _parts
+    {
+        get
+        {
+            string?[] _array = new string[4];
+            Value?.Split('.', 4).CopyTo(_array, 0);
+            return _array;
+        }
+    }
+
+    public uint? Part1
+    {
+        get
+        {
+            if (uint.TryParse(_parts[0], out uint result))
+                return result;
+            return null;
+        }
+        set
+        {
+            var p = _parts;
+            if (value > 255)
+                p[0] = "255";
+            else
+                p[0] = value?.ToString();
+            SetValue(p);
+            if (p[0]?.Length == 3)
+                _input2?.FocusAsync();
+        }
+    }
+
+    public uint? Part2
+    {
+        get
+        {
+            if (uint.TryParse(_parts[1], out uint result))
+                return result;
+            return null;
+        }
+        set
+        {
+            var p = _parts;
+            if (value > 255)
+                p[1] = "255";
+            else
+                p[1] = value?.ToString();
+            SetValue(p);
+            if (p[1]?.Length == 3)
+                _input3?.FocusAsync();
+        }
+    }
+
+    public uint? Part3
+    {
+        get
+        {
+            if (uint.TryParse(_parts[2], out uint result))
+                return result;
+            return null;
+        }
+        set
+        {
+            var p = _parts;
+            if (value > 255)
+                p[2] = "255";
+            else
+                p[2] = value?.ToString();
+            SetValue(p);
+            if (p[2]?.Length == 3)
+                _input4?.FocusAsync();
+        }
+    }
+
+    public uint? Part4
+    {
+        get
+        {
+            if (uint.TryParse(_parts[3], out uint result))
+                return result;
+            return null;
+        }
+        set
+        {
+            var p = _parts;
+            if (value > 255)
+                p[3] = "255";
+            else
+                p[3] = value?.ToString();
+            SetValue(p);
+        }
+    }
+
+    void SetValue(string?[] _value)
+    {
+        Value = string.Join('.', _value);
+        if (ValueChanged.HasDelegate)
+            ValueChanged.InvokeAsync(Value);
+    }
+}

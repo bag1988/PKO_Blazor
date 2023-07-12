@@ -1,0 +1,190 @@
+﻿@inherits LayoutComponentBase
+<Main @ref="elem" Title="@DeviceRep["IDR_MAINFRAME"]">
+    <Menu>
+        <CascadingValue Value="context">
+            <CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.Create">
+                <DivNavLink>
+                    <NavLink href="@($"/SystemId/{SubsystemType.SUBSYST_Setting}")" class="nav-link pointer">
+                        <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_Setting?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @DeviceRep["IDS_STRING_SYSTEM_SETTINGS"]
+                    </NavLink>
+                    @if (IsViewSubMenu == SubsystemType.SUBSYST_Setting)
+                    {
+                        <div class="ps-2">
+                            @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_Setting])
+                            {
+                                @if (item.Key != "SettingBase")
+                                {
+                                    <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                }
+                                else
+                                {
+                                    <CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.General">
+                                        <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                    </CheckP>
+                                }
+                            }
+                        </div>
+                    }
+                </DivNavLink>
+            </CheckP>
+            @if (configStart.ASO)
+            {
+                <CheckP SystemID="SubsystemType.SUBSYST_ASO" BitPos="NameBitsPos.General">
+                    <DivNavLink>
+                        <NavLink href="@($"/SystemId/{SubsystemType.SUBSYST_ASO}")" class="nav-link pointer">
+                            <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_ASO?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @SMGateRep["IDS_STRING_ASO"]
+                        </NavLink>
+                        @if (IsViewSubMenu == SubsystemType.SUBSYST_ASO)
+                        {
+                            <div class="ps-2">
+                                @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_ASO])
+                                {
+                                    <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                }
+                            </div>
+                        }
+                    </DivNavLink>
+                </CheckP>
+            }
+            @if (configStart.P16x)
+            {
+                <CheckP SystemID="SubsystemType.SUBSYST_P16x" BitPos="NameBitsPos.General">
+                    <DivNavLink>
+                        <NavLink class="nav-link pointer" href="@($"/SystemId/{SubsystemType.SUBSYST_P16x}")">
+                            <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_P16x?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @GsoRep["P16X"]
+                        </NavLink>
+                        @if (IsViewSubMenu == SubsystemType.SUBSYST_P16x)
+                        {
+                            <div class="ps-2">
+                                @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_P16x])
+                                {
+                                    <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                }
+                            </div>
+                        }
+                    </DivNavLink>
+                </CheckP>
+            }
+
+            @if (configStart.UUZS)
+            {
+                <CheckP BitPos="NameBitsPos.General">
+                    <DivNavLink>
+                        <NavLink class="nav-link pointer" href="@($"/SystemId/{SubsystemType.SUBSYST_SRS}")">
+                            <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_SRS?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @DeviceRep["REGISTR_SRS"]
+                        </NavLink>
+                        @if (IsViewSubMenu == SubsystemType.SUBSYST_SRS)
+                        {
+                            <div class="ps-2">
+                                @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_SRS])
+                                {
+                                    <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                }
+                            </div>
+                        }
+                    </DivNavLink>
+                </CheckP>
+                <CheckP SystemID="SubsystemType.SUBSYST_SZS" BitPos="NameBitsPos.General">
+                    <DivNavLink>
+                        <NavLink class="nav-link pointer" href="@($"/SystemId/{SubsystemType.SUBSYST_SZS}")">
+                            <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_SZS?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @SMGateRep["IDS_STRING_SZS"]
+                        </NavLink>
+                        @if (IsViewSubMenu == SubsystemType.SUBSYST_SZS)
+                        {
+                            <div class="ps-2">
+                                @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_SZS].Where(x => !x.Key.Contains("DevicesSZS")))
+                                {
+                                    <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                }
+                                @if (GetDevice.Count() > 0)
+                                {
+                                    <NavLink class="nav-link m-0 pointer" tabindex="0" @onkeydown="@((e)=>IsViewChild= e.Code=="Enter"?!IsViewChild:IsViewChild)" @onclick="()=>IsViewChild=!IsViewChild">
+                                        @if (IsViewChild)
+                                        {
+                                            <span class="oi oi-caret-top" aria-hidden="true"></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="oi oi-caret-bottom" aria-hidden="true"></span>
+                                        }
+                                        @UUZSRep["IDS_STRING_TERMINAL_DEVICES"]
+                                    </NavLink>
+                                    @if (IsViewChild)
+                                    {
+                                        <div class="ps-2">
+                                            @foreach (var item in GetDevice)
+                                            {
+                                                <div class="ps-2 m-0">
+                                                    <NavLink class="dropdown-item text-wrap" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                    </DivNavLink>
+                </CheckP>
+            }
+            @if (configStart.STAFF)
+            {
+                <CheckP SystemID="SubsystemType.SUBSYST_GSO_STAFF" BitPos="NameBitsPos.General">
+                    <DivNavLink>
+                        <NavLink class="nav-link pointer" href="@($"/SystemId/{SubsystemType.SUBSYST_GSO_STAFF}")">
+                            <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_GSO_STAFF?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @StartUIRep["IDS_STAFFTITLE"]
+                        </NavLink>
+                        @if (IsViewSubMenu == SubsystemType.SUBSYST_GSO_STAFF)
+                        {
+                            <div class="ps-2">
+                                @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_GSO_STAFF])
+                                {
+                                    <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                }
+                            </div>
+
+                        }
+                    </DivNavLink>
+                </CheckP>
+            }
+            <CheckP SystemID="SubsystemType.SUBSYST_Security" BitPos="NameBitsPos.General">
+                <DivNavLink>
+                    <NavLink href="@($"/SystemId/{SubsystemType.SUBSYST_Security}")" class="nav-link pointer">
+                        <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_Security?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @DeviceRep["IDS_STRING_SYSTEM_SECURITY"]
+                    </NavLink>
+                    @if (IsViewSubMenu == SubsystemType.SUBSYST_Security)
+                    {
+                        <div class="ps-2">
+                            @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_Security])
+                            {
+                                <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                            }
+                        </div>
+                    }
+                </DivNavLink>
+            </CheckP>
+            <CheckP BitPos="NameBitsPos.General">
+                <DivNavLink>
+                    <NavLink href="@($"/SystemId/{SubsystemType.SUBSYST_TASKS}")" class="nav-link pointer">
+                        <span class="oi @(IsViewSubMenu==SubsystemType.SUBSYST_TASKS?"oi-caret-top":"oi-caret-bottom")" aria-hidden="true"></span> @DeviceRep["ADDITIONAL"]
+                    </NavLink>
+                    @if (IsViewSubMenu == SubsystemType.SUBSYST_TASKS)
+                    {
+                        <div class="ps-2">
+                            <CheckP SystemID="SubsystemType.SUBSYST_ASO" BitPos="NameBitsPos.ViewTask">
+                                @foreach (var item in urlForSubsystemList[SubsystemType.SUBSYST_TASKS])
+                                {
+                                    <NavLink class="dropdown-item" href=@($"/{item.Key}")>@item.Value</NavLink>
+                                }
+                            </CheckP>
+                        </div>
+                    }
+                </DivNavLink>
+            </CheckP>
+        </CascadingValue>
+    </Menu>
+    <ChildContent>
+        <CascadingValue Value="context">
+            @Body
+        </CascadingValue>
+    </ChildContent>
+</Main>

@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@inherits CancellableComponent
+<div class="d-flex align-items-center w-100">
+    <button hotkey="@KeyCode.Record" class="btn @(records?"btn-outline-warning d-flex align-items-center":"btn-outline-danger") m-1" type="button" @onclick="()=>(records?SendStopWorklet():StartStreamWorklet())">
+        <span class="oi @(records?"oi-media-stop":"oi-media-record") mx-1"></span>
+        @if (records == true)
+        {
+            @(TimeRecord.Minutes.ToString("00") + ":" + TimeRecord.Seconds.ToString("00"))
+        }
+    </button>
+    <InputFile @ref="elem" class="form-control m-1" OnChange="@LoadFiles" />
+    @if (_uploaded > 0)
+    {
+        <label class="m-2 text-nowrap">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            @($"{_uploaded}KB / {_fileLength / 1024}KB")
+        </label>
+    }
+</div>

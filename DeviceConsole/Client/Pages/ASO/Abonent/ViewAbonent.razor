@@ -1,0 +1,268 @@
+﻿@page "/ViewAbonent"
+@inherits FiltrInherits<AbonFiltr>
+
+<TitleView>@AsoDataRep["IDS_STRING_ABONENT_COMMENT"]. @AsoRep["IDS_STRING_COUNT"]: @CountAb?.Count, @AsoRep["IDS_STRING_TOTAL_RECORDS"]: @AllCount</TitleView>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="Tuple<bool, AbonentItem>" DbClick="EditAbon" Provider="GetProvider" SelectList="SelectedList" SetSelectList="SetSelectList">
+        <Tbody Context="item">
+            @if (item.Item1)
+            {
+            <td>@item.Item2.AbName</td>
+            <td>@(DepartmentList.FirstOrDefault(x => x.Dep.ObjID == item.Item2.IDDep)?.Name ?? AsoRep["IDS_STRING_ERR_CHECK_DEP"])</td>
+            <td>@item.Item2.Position</td>
+            <td>@item.Item2.AbPrior</td>
+            <td>@(item.Item2.AbStatus != 0 ? SqlRep[(SqlTableValue.AsoAbonentStatusName + item.Item2.AbStatus).ToString()] : AsoRep["IDS_STRING_ERR_CHECK_STATE"])</td>
+            <td>@(item.Item2.Role == 1 ? "VIP" : AsoRep["IDS_STRING_REGULAR"])</td>
+            }
+            else
+            {
+            <td colspan="6"></td>
+            }
+
+        <td>@(item.Item2.ConnType != 0 ? SqlRep[(SqlTableValue.AsoConnectionType + item.Item2.ConnType).ToString()] : AsoRep["IDS_STRING_ERR_CHECK_LINE"])</td>
+        <td>@(LocationList.FirstOrDefault(x => x.OBJID.ObjID == item.Item2.LocationID)?.Name ?? AsoRep["IDS_STRING_ERR_CHECK_LOCATION"])</td>
+        <td>@item.Item2.ConnParam</td>
+        <td>@item.Item2.Address</td>
+            @if (item.Item2.Beeper > 0)
+            {
+            <td>@GetConfirmName(item.Item2.Beeper)</td>
+            }
+            else
+            {
+            <td style="color:gray !important" title="@AsoRep["IDS_STRING_NO_CONFIRM"]">@GetConfirmName(item.Item2.Beeper)</td>
+            }
+            @if (IsViewLabels)
+            {
+            <td>
+                    @if (item.Item1 && item.Item2.LabelNameValueFieldList?.List?.Count > 0)
+                    {
+                        @foreach (var label in item.Item2.LabelNameValueFieldList.List)
+                        {
+                        <span class="d-block">@($"{label.NameField}: {label.ValueField}")</span>
+                        }
+                    }
+            </td>
+            }
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                @*Создание абонента*@
+                <BCreate OnClick="()=>{SelectedList=null;IsViewEdit=true;}" />
+                @if (SelectedList?.Count() == 1)
+                {
+                    @*Редактирование абонента*@
+                    <BEdit OnClick="EditAbon" />
+                }
+                @if ((SelectedList != null && SelectedList.Any()))
+                {
+                    @if (SelectedList?.Count() > 1)
+                    {
+                        @*Множественное редактирование*@
+                        <BWarning Text="@AsoRep["IDS_STRING_MULTI_EDIT"]" OnClick="()=>IsEditList=true" />
+                    }
+                    @*Удаление абонента*@
+                    <BDelete OnClick="ViewDelete" />
+                    @*Экспорт*@
+                    <DropdownMenu TextButton="@AsoRep["IDS_STRING_EXPORT_AB"]" IsProcessing="IsProcessingExport">
+                        <ChildButton>
+                            <li><span class="dropdown-item pointer" @onclick="()=>ExportAbonList(ExportType.XML)">@AsoRep["IDS_STRING_EXPORT_XML"]</span></li>
+                            <li><span class="dropdown-item pointer" @onclick="()=>ExportAbonList(ExportType.CSV)">@AsoRep["IDS_STRING_EXPORT_CSV"]</span></li>
+                            <li><span class="dropdown-item pointer" @onclick="()=>ExportAbonList(ExportType.XLSX)">@AsoRep["IDS_STRING_EXPORT_XLSX"]</span></li>
+                        </ChildButton>
+                    </DropdownMenu>
+                }
+                @*Импорт*@
+                <BSuccess Text="@AsoRep["IDS_STRING_IMPORT_AB"]" OnClick="()=>{IsViewImport=true;Process.Clear();}" />
+                @*Печать*@
+                <BPrint OnClick="GetReport" />
+                <label class="form-check-label ms-1"><input type="checkbox" class="form-check-input" @bind="ChangeViewLabels" /> @DeviceRep["SPECIFICATIONS"]</label>
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateAbonent CallbackEvent="CallBackEvent" Abon="@SelectedList?.FirstOrDefault()?.Item2.IDAb" />
+    }
+
+    @if (IsEditList == true)
+    {
+        <EditAbonList CallbackEvent="CallBackEditList" ModelList="@SelectedList?.Select(x=>x.Item2)" />
+    }
+
+    @if (IsViewImport == true)
+    {
+        <ModalDialog Title="@AsoRep["ImportAbon"]" ButtonCloseEvent="()=>IsViewImport=false">
+            <BodyContent>
+                <div class="mb-3">
+                    <InputFile class="form-control" OnChange="@LoadFiles" />
+                </div>
+                @if (Process.Any())
+                {
+                    <ProcessImport Process="Process" />
+                }
+            </BodyContent>
+            <ButtonContent>
+                @if (importListAbon?.Count > 0)
+                {
+                    <BDark Text="@AsoRep["START"]" OnClick="WriteAbonToBase" />
+                }
+                @if (IsProcessingImport)
+                {
+                    <BDark Text="@GsoRep["IDS_STRING_ABORT"]" OnClick="()=>IsProcessingImport=false" />
+                }
+                else
+                {
+                    <BClose OnClick="()=>IsViewImport=false" />
+                }
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (ChangeImportLoc == true)
+    {
+        <ModalDialog Title="@AsoRep["IDS_STRING_IMPORT_AB"]">
+            <BodyContent>
+                @AsoRep["ERROR_IMPORT"]
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABONENT"]</label>
+                    <input disabled="disabled" type="text" class="form-control" value="@ImportName">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABPHONE"]</label>
+                    <input disabled="disabled" type="text" class="form-control" value="@ImportPhone">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABLOCATION"]</label>
+                    <div class="d-flex">
+                        <input disabled="disabled" type="text" class="form-control me-2" value="@ImportLoc">
+                        <select class="form-select" @bind="LocIdImport">
+                            <option></option>
+                            @foreach (var item in LocationList)
+                            {
+                                <option value="@item.OBJID.ObjID">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                <BDark Text="@AsoRep["ToAccept"]" OnClick="()=>ToAccept(SetNewInfoGlobal.replace)" />
+                <BSecondary Text="@AsoRep["ACCEPT_FOR_EVERYONE"]" OnClick="()=>ToAccept(SetNewInfoGlobal.replaceGlobal)" />
+                <BDark IsOutline="true" HotKey="@KeyCode.Escape" Text="@AsoRep["Skip"]" OnClick="()=>ToAccept(SetNewInfoGlobal.skip)" />
+                <BDark IsOutline="true" Text="@AsoRep["SKIP_FOR_EVERYONE"]" OnClick="()=>ToAccept(SetNewInfoGlobal.skipGlobal)" />
+                @if (IsProcessingImport)
+                {
+                    <BDark Text="@GsoRep["IDS_STRING_ABORT"]" OnClick="()=>ToAccept(SetNewInfoGlobal.abort)" />
+                }
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (ChangeImportInfo == true)
+    {
+        @*Параметр дозвона существует, хотите установить следующую информацию для данного параметра дозвона?*@
+        <ModalDialog Title="@AsoRep["IDS_STRING_IMPORT_AB"]">
+            <BodyContent>
+                <div class="alert alert-danger">
+                    <h5>@GsoRep["DIALUP_PARAM_EXIST"]</h5>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_ABLOCATION"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@replaceItem?.Loc">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_STRING_Chanel"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@(replaceItem?.BaseType > 0 ? SqlRep[(SqlTableValue.AsoConnectionType + replaceItem.BaseType).ToString()] : AsoRep["IDS_STRING_ERR_CHECK_LINE"])">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@GetCallName</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@replaceItem?.Phone">
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <h5>@GsoRep["CHANGE_INFO_ABON"]</h5>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_ABONENT"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@replaceItem?.Name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_ABDEPARTMENT"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@replaceItem?.Dep">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_ABPOSITION"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@replaceItem?.Pos">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_STRING_AB_ROLE"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@(replaceItem?.Role==1?"VIP":AsoRep["IDS_STRING_REGULAR"])">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_STRING_AB_PRIOR"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@replaceItem?.Prior">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_STRING_AB_STATE"]</label>
+                        <input disabled="disabled" type="text" class="form-control" value="@(replaceItem?.Stat > 0 ? SqlRep[(SqlTableValue.AsoAbonentStatusName + replaceItem.Stat).ToString()] : AsoRep["IDS_STRING_ERR_CHECK_STATE"])">
+                    </div>
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                <BDark Text="@AsoRep["ToAccept"]" OnClick="()=>ToAcceptInfo(SetNewInfoGlobal.replace)" />
+                <BSecondary Text="@AsoRep["ACCEPTS_FOR_EVERYONE"]" OnClick="()=>ToAcceptInfo(SetNewInfoGlobal.replaceGlobal)" />
+                <BDark IsOutline="true" HotKey="@KeyCode.Escape" Text="@AsoRep["Skip"]" OnClick="()=>ToAcceptInfo(SetNewInfoGlobal.skip)" />
+                <BDark IsOutline="true" Text="@AsoRep["SKIP_FOR_EVERYONE"]" OnClick="()=>ToAcceptInfo(SetNewInfoGlobal.skipGlobal)" />
+                @if (IsProcessingImport)
+                {
+                    <BDark Text="@GsoRep["IDS_STRING_ABORT"]" OnClick="()=>ToAcceptInfo(SetNewInfoGlobal.abort)" />
+                }
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+
+    @if (IsDelete == true && (SelectedList?.Any() ?? false))
+    {
+        <ModalDialog Title="@AsoRep["IDS_REG_AB_DELETE"]" ButtonCloseEvent="CancelDelete">
+            <BodyContent>
+                @if (ListSit != null && ListSit.Any())
+                {
+                    <Cards AddClass="alert-warning" Header="@AsoRep["AbonInSit"]">
+                        <ul>
+                            <Virtualize Items="ListSit" Context="item">
+                                <li>@item</li>
+                            </Virtualize>
+                        </ul>
+                        <p>
+                            @AsoRep["WarningDelete"]
+                        </p>
+                    </Cards>
+                }
+                else
+                {
+                    <Cards AddClass="alert-danger" Header="@AsoRep["IDS_STRING_MULTI_DELETE_Q"]">
+                        <ul>
+                            @if (SelectedList != null)
+                            {
+                                @foreach (var item in SelectedList)
+                                {
+                                    <li>@item.Item2.AbName</li>
+                                }
+                            }
+                        </ul>
+                    </Cards>
+                }
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="DeleteAbonent" />
+                <BCancel OnClick="CancelDelete" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

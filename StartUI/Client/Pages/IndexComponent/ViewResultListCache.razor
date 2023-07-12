@@ -1,0 +1,12 @@
+﻿@if (SubsystemID == SubsystemType.SUBSYST_ASO)
+{
+    <StartUI.Client.Pages.IndexComponent.ResultList.ViewResultAso />
+}
+else if (SubsystemID == SubsystemType.SUBSYST_SZS)
+{
+    <StartUI.Client.Pages.IndexComponent.ResultList.ViewResultUUZS/>
+}
+else if (SubsystemID == SubsystemType.SUBSYST_GSO_STAFF)
+{
+    <StartUI.Client.Pages.IndexComponent.ResultList.ViewResultStaff/>
+}

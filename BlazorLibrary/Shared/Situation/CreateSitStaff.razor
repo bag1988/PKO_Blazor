@@ -1,0 +1,127 @@
+﻿@using SMControlSysProto.V1;
+
+<ModalDialog ButtonCloseEvent="GoCallBack" Title="@GetTextTitle">
+    <BodyContent>
+        @if (!IsPageLoad)
+        {
+            <form id="createsitstaff" @onsubmit="NextPage">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label">@AsoRep["NameSit"]</label>
+                            <InputFocus @bind-Value="NewSit.SitName" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">@AsoRep["CommSit"]</label>
+                            <input type="text" class="form-control" @bind="NewSit.SitComm">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+
+                        <div class="row mb-2">
+                            @*Глобальный номер сценария*@
+                            <div class="col-md-6">
+                                <label class="form-label">@StaffRep["GlobalNumSit"]</label>
+                                <input type="number" min=1 class="form-control" @bind="GlobalNum">
+                            </div>
+                            @*Приоритет*@
+                            <div class="col-md-6">
+                                <label class="form-label">@AsoRep["IDS_ABPRIORITY"]</label>
+                                <input type="number" min=1 max=50 class="form-control" @bind="NewSit.SitPriority">
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            @*Подсистема*@
+                            <label class="form-label">@StaffRep["SubSystem"]</label>
+                            <select class="form-select" value="@SelectSubsystemId" @onchange="@((e)=>ChangeSubSystem(e))">
+                                <option value="0">-----</option>
+                                @if (SubSystemList != null)
+                                {
+                                    @foreach (var sub in SubSystemList)
+                                    {
+                                        <option value="@sub.SubSystID">@sub.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-md-6">
+                    <DivScroll SetClass="pe-2">
+                        <PHeader>
+                            @*Список объектов управления*@
+                            @StaffRep["ListObjManagement"]
+                        </PHeader>
+                        <ResultView IsSetFocus="false" TItem="SituationItem" Items="GetListTree" SelectList="SelectData" SetSelectList="(e)=>SelectData=e" DbClick="AddSelect">
+                            <ChildContent Context="item">
+                                <span class="oi oi-@(GetIconName(item.SitID?.SubsystemID))"></span>@item.SitName
+                            </ChildContent>
+                        </ResultView>
+                        <PSticky Color="secondary text-end" StyleBottom="0">
+                            <BCancel OnClick="GoCallBack" />
+                            @if (GetListTree?.Any() ?? false)
+                            {
+                                <div class="ms-auto">
+                                    <BSecondary HotKey="@KeyCode.AddSelect" IsOutline="true" OnClick="AddSelect">
+                                        <span class="oi oi-caret-right me-0 ms-2"></span>
+                                    </BSecondary>
+                                    <BSecondary HotKey="@KeyCode.AddSelectAll" IsOutline="true" OnClick="AddAll">
+                                        <span class="oi oi-media-skip-forward me-0 ms-2"></span>
+                                    </BSecondary>
+                                </div>
+                            }
+                        </PSticky>
+                    </DivScroll>
+                </div>
+                <div class="col-md-6">
+                    <DivScroll SetClass="pe-2">
+                        <PHeader>
+                            @*Объекты управления для оповещения*@
+                            @StaffRep["ListObjNotify"]
+                        </PHeader>
+                        <ResultView IsSetFocus="false" TItem="SituationItem" Items="SelectFolders" SelectList="SelectItem" SetSelectList="(e)=>SelectItem=e" DbClick="RemoveSelect">
+                            <ChildContent Context="item">
+                                <span class="oi oi-@(GetIconName(item.SitID?.SubsystemID))"></span>@item.SitName
+                            </ChildContent>
+                        </ResultView>
+                        @if (SelectFolders?.Any() ?? false)
+                        {
+                            <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                                <PSticky Color="secondary" StyleBottom="0">
+                                    @*Удалить все объекты из списка*@
+                                    <BSecondary IsOutline="true" HotKey="@KeyCode.AddSelectAll" OnClick="RemoveAll">
+                                        <span class="oi oi-media-skip-backward"></span>
+                                    </BSecondary>
+
+                                    @*Удаление выбранный объект из списка*@
+                                    <BSecondary IsOutline="true" HotKey="@KeyCode.AddSelect" OnClick="RemoveSelect">
+                                        <span class="oi oi-caret-left"></span>
+                                    </BSecondary>
+                                    <BSumbit FormId="createsitstaff" Text="@GsoRep["IDS_STRING_NEXT"]" AddClass="m-1 ms-auto" IsProcessing="IsProcessing" />
+                                </PSticky>
+                            </CheckP>
+                        }
+                    </DivScroll>
+                </div>
+            </div>
+
+
+            @*Следущая страница*@
+            @if (ViewMessageList)
+            {
+                if (SelectFolders != null)
+                {
+                    <StaffPage StaffList="SelectFolders" IsReadOnly="IsReadOnly" NextAction="SaveSitStaff" />
+                }
+            }
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+</ModalDialog>
+

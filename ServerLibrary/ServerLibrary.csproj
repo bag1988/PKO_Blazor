@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapr.AspNetCore" />
+		<PackageReference Include="DocumentFormat.OpenXml" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" />
+		<PackageReference Include="System.IO.Packaging" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+		<PackageReference Include="WebPush" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\RemoteConnectLibrary\RemoteConnectLibrary.csproj" />
+		<ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
+		<ProjectReference Include="..\LibraryProto\LibraryProto.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Models\" />
+	</ItemGroup>
+
+</Project>

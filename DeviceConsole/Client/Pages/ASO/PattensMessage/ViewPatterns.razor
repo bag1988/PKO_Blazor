@@ -1,0 +1,161 @@
+﻿@page "/ViewPatterns"
+@inherits FiltrInherits<PatternsFiltr>
+
+<TitleView>@AsoRep["PATTERNS_MESSAGE"]</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="AbonMsgParam" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="SelectList" SetSelectList="(e)=>SelectList = e">
+        <Tbody Context="item">
+        <td>@item.ParamValue</td>
+        <td>@item.ParamName</td>
+        <td>@(item.AbonID > 0 ? item.AbonName : AsoRep["ALL_ABON"])</td>
+        <td>@(item.SitID > 0 ? SitList?.FirstOrDefault(x => x.SitID == item.SitID)?.SitName ?? AsoRep["ALL_SIT"] : AsoRep["ALL_SIT"])</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                <BCreate OnClick="()=>{SelectList=null; IsViewEdit=true;}" />
+                @if (SelectList?.Count > 0)
+                {
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    <BDelete OnClick="()=>IsDelete=true" />
+                    @*Экспорт*@
+                    <BPrimary Text="@AsoRep["EXPORT"]" OnClick="ExportSelectMsgParam" />
+                }
+                @*Импорт*@
+                <BSuccess Text="@AsoRep["IMPORT"]" OnClick="ViewDialogImport" />
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPos="NameBitsPos.Create">
+    @*Импорт параметров*@
+    @if (IsImport == true)
+    {
+        <ModalDialog Title="@AsoRep["IMPORT"]" ButtonCloseEvent="()=>IsImport=false">
+            <BodyContent>
+                <div class="mb-3">
+                    <InputFile class="form-control" OnChange="@LoadFiles" />
+                </div>
+                @if (!string.IsNullOrEmpty(StatusImport))
+                {
+                    <p class="alert alert-info">
+                        @StatusImport
+                    </p>
+                }
+                @if (ImportList?.Count > 0)
+                {
+                    @*Если не найден сценарий*@
+                    @if (ImportList.Any(x => !SitList?.Any(s => s.SitName.Trim() == x.SitName?.Trim()) ?? false))
+                    {
+                        <h5>@AsoRep["NO_SITUATION"]</h5>
+                        @foreach (var item in ImportList.Where(x => !SitList?.Any(s => s.SitName.Trim() == x.SitName?.Trim()) ?? false).GroupBy(x => x.SitName))
+                        {
+                            <div class="mb-3 d-flex align-items-start justify-content-between">
+                                <label class="form-label w-50">@item.Key</label>
+                                <select class="form-select w-50" value="@item.Key" @onchange="(e)=>ChangeSitName(e, item.Key)">
+                                    <option></option>
+                                    @if (SitList != null)
+                                    {
+                                        @foreach (var sitItem in SitList)
+                                        {
+                                            <option>@sitItem.SitName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        }
+                    }
+                }
+                @if (NoInsertList?.Count > 0)
+                {
+                    @if (NoInsertList.Count(x => x.AbonID == -1) > 0)
+                    {
+                        @*Если не найден абонент*@
+                        <h5>@AsoRep["NO_ABONENT"]</h5>
+                        @foreach (var item in NoInsertList.Where(x => x.AbonID == -1).GroupBy(x => x.AbonName))
+                        {
+                            <div class="mb-3 d-flex align-items-start justify-content-between">
+                                <label class="form-label w-50">@item.Key</label>
+                                <input type="text" list="AbonList" value="@item.Key" @onblur="()=>ChangeAbName(item.Key)" class="form-control w-50" @oninput="GetFiltrAbonForName" />
+                                @if (AbonList != null)
+                                {
+                                    <datalist id="AbonList">
+                                        @foreach (var itemAbon in AbonList)
+                                        {
+                                            <option value="@itemAbon.Str"></option>
+                                        }
+                                    </datalist>
+                                }
+                            </div>
+                        }
+                    }
+                    @if (NoInsertList.Count(x => x.AbonID >= 0 && x.ParamValue.Contains("$old$")) > 0)
+                    {
+                        <h5>@AsoRep["ERROR_PARAM_VALUE"]</h5>
+                        <p class="alert alert-warning">
+                            <ul>
+                                @foreach (var item in NoInsertList.Where(x => x.AbonID >= 0 && x.ParamValue.Contains("$old$")))
+                                {
+                                    <li>
+                                        <b>@item.ParamName</b>: @AsoRep["NEW"] - @item.ParamValue.Split("$old$")[0], @AsoRep["OLD"] - @item.ParamValue.Split("$old$")[1]
+                                    </li>
+                                }
+                            </ul>
+                            <div class="alert alert-danger">
+                                @AsoRep["DELETE_OLD_PARAM"]
+                                <br />
+                                <BDelete OnClick="DeleteOldParam" />
+                            </div>
+                        </p>
+                    }
+                    @if (NoInsertList.Count(x => x.AbonID >= 0 && !x.ParamValue.Contains("$old$")) > 0)
+                    {
+                        <h5>@AsoRep["ERROR_PARAM_VALUE1"]</h5>
+                        <p class="alert alert-danger">
+                            <ul>
+                                @foreach (var item in NoInsertList.Where(x => x.AbonID >= 0 && !x.ParamValue.Contains("$old$")))
+                                {
+                                    <li>
+                                        <b>@item.ParamName</b>: @item.ParamValue
+                                    </li>
+                                }
+                            </ul>
+                        </p>
+                    }
+
+                }
+            </BodyContent>            
+            <ButtonContent>
+                @if (!ImportList?.Any(x => !SitList?.Any(s => s.SitName.Trim() == x.SitName?.Trim()) ?? false) ?? false)
+                {
+                    <BDark Text="@GsoRep["IDS_STRING_NEXT"]" OnClick="InsertMsgParam" />
+                }                
+                <BClose OnClick="()=>IsImport=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @*Редактирование(создание)*@
+    @if (IsViewEdit == true)
+    {
+        <CreatePatterns CallBack="CallBackEvent" Model="@(SelectList?.Count > 0?new AbonMsgParam(SelectList.Last()):new())" />
+    }
+    @*Удаление*@
+    @if (IsDelete == true && SelectList?.Count > 0)
+    {
+        <ModalDialog Title="@AsoRep["DELETE_PARAM"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["Q_DELETE_MAGPARAM"]
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="DeleteMsgParam" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

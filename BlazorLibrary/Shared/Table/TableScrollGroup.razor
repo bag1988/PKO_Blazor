@@ -1,0 +1,55 @@
+﻿@typeparam TItem
+@typeparam TKey
+@inherits TableScroll<TItem>
+
+<div @ref="div" @onscroll="OnScroll" class="table-scroll-v table-responsive" style="max-height:@(WindowHeight)px;">
+    <table class="table table-hover table-bordered" style="min-width: @(MinWidth)px;">
+        <thead class="table-dark @(IsSticky==true? "position-sticky":"") top-0" style="z-index:2;">
+            <tr>
+                @Thead
+            </tr>
+        </thead>
+        <tbody @ref="Elem" tabindex="0" @onkeydown="KeySet" @onkeydown:preventDefault="true">
+            @if (ItemsGroup != null)
+            {
+                @if (ItemsGroup.Any())
+                {
+                    @foreach (var item in ItemsGroup)
+                    {
+                        @if (TbodyGroup is not null)
+                        {
+                            @foreach (var t in item)
+                            {
+                                <tr class="@((SelectList?.Any(x=> IsSelectGroup? item.Contains(x): x.Equals(t))??false)?"bg-select":"") pointer" @ondblclick="DbCallback" @onclick="(e)=>AddSelectItem(e, IsSelectGroup?item.First(): t)">
+                                    @TbodyGroup(new Tuple<bool, TItem>((item.Count()==0|| (t?.Equals(item.First())??false)?true:false), t))
+                                </tr>
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    <TrNoData Colspan="@Colspan" />
+                }
+            }
+            else
+            {
+                <TrLoad Colspan="@Colspan" />
+            }
+        </tbody>
+
+        @if (TSticky != null)
+        {
+            <tfoot class="alert-secondary @(IsSticky==true? "position-sticky":"") bottom-0" style="z-index:2;">
+                <tr>
+                    <td colspan="@Colspan" class="border-top">
+                        @TSticky
+                    </td>
+                </tr>
+            </tfoot>            
+        }
+
+    </table>
+</div>
+
+

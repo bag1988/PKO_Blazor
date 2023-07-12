@@ -1,0 +1,13 @@
+﻿<p class="alert alert-info">
+    <ul>
+        <Virtualize Items="Process" Context="item">
+            <li>@item</li>
+        </Virtualize>
+    </ul>
+</p>
+
+@code {
+    [Parameter]
+    public List<string>? Process { get; set; }
+
+}

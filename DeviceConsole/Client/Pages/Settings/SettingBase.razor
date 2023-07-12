@@ -1,0 +1,117 @@
+﻿@page "/SettingBase"
+@inherits CancellableComponent
+@using SharedLibrary.Models;
+<TitleView>@GsoRep["IDS_PR_GEN_1"]</TitleView>
+
+<TableScroll Colspan="3" TItem="BackupInfo" Items="Model" DbClick="()=>IsRestore=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.FirstOrDefault()">
+    <Thead>
+        <ThSort SortTable="SetSort" BFlagDefault="@request.BFlagDirection" CurrentTd="@request.LSortOrder" ThList="ThList" />
+    </Thead>
+    <Tbody Context="item">
+    <td>@(Path.ChangeExtension(item.Name, null))</td>
+    <td>@item.Created?.ToString("G")</td>
+    <td>@((item.SizeFile / 1024 / 1000).ToString("N0")) MB</td>
+    </Tbody>
+    <TSticky>
+        <CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.General">
+            @*Создать бэкап*@
+            <BCreate OnClick="ViewCreateBackUp" />
+            @*Загрузить*@
+            <BInfo Text="@DeviceRep["Upload"]" OnClick="()=>IsLoadFile=true" />
+            @if (SelectItem != null)
+            {
+                @*Восстановить*@
+                <BWarning OnClick="()=>IsRestore=true" Text="@DeviceRep["Restore"]" />
+                @*Удалить*@
+                <BDelete OnClick="()=>IsDelete=true" />
+                <BDark IsOutline="true" OnClick="DownLoadFile" Text="@DeviceRep["Download"]" />
+            }
+        </CheckP>
+    </TSticky>
+</TableScroll>
+
+
+<CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.General">
+    @*Сохранение базы данных в файл*@
+    @if (IsCreate)
+    {
+        <ModalDialog Title="@DeviceRep["IDS_REG_BACKUP"]" ButtonCloseEvent="()=>IsCreate=false">
+            <BodyContent>
+                @*Имя файла*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@DeviceRep["NameFileBackup"]</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" @bind="BackupPath">
+                    </div>
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                <CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.General">
+                    <BSave OnClick="StartBackup" />
+                    <BCancel OnClick="()=>IsCreate=false" />
+                </CheckP>
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @*Удаление*@
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@AsoRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @GsoRep["IDS_Q_DELBACKUP"]: <b>@(Path.ChangeExtension(SelectItem.Name, null))</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="DeleteBackup" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @*Восстановление*@
+    @if (IsRestore == true && SelectItem != null)
+    {
+        <ModalDialog Title="@DeviceRep["IDS_REG_RESORE"]" ButtonCloseEvent="()=>IsRestore=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @GsoRep["IDS_Q_RESTOREBACKUP"]: <b>@(Path.ChangeExtension(SelectItem.Name, null))</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BWarning OnClick="RestoreBackup" Text="@DeviceRep["Restore"]" />
+                <BCancel OnClick="()=>IsRestore=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @*Выбор файла*@
+    @if (IsLoadFile)
+    {
+        <ModalDialog Title="@DeviceRep["IDS_REG_RESORE"]" ButtonCloseEvent="()=>{IsLoadFile=false; channel?.Writer.TryComplete(new OperationCanceledException());}">
+            <BodyContent>
+                @*Загрузить файл*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@DeviceRep["UploadFile"]</label>
+                    <div class="col-md-8">
+                        <InputFile class="form-control m-1" OnChange="@LoadFiles" />
+                    </div>
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                @if (file != null)
+                {
+                    <BDark Text="@($"{(_uploaded>0?$" {_uploaded}KB / {file?.Size / 1024}KB":DeviceRep["Upload"])}")" OnClick="UploadSignalR" />
+                }
+                <BCancel OnClick="()=>{IsLoadFile=false; channel?.Writer.TryComplete(new OperationCanceledException());}" />
+            </ButtonContent>
+
+        </ModalDialog>
+    }
+
+</CheckP>
+
+
+
+

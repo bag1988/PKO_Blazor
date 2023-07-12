@@ -1,0 +1,21 @@
+﻿@using SMDataServiceProto.V1;
+
+<option value="0">@GsoRep["IDS_STRING_NO_MESSAGE"]</option>
+@if (MsgList != null)
+{
+    @foreach (var m in MsgList.Where(x => IsAllMsg == true ? true : x.OBJID.SubsystemID == SubsystemID))
+    {
+        <option value="@m.OBJID?.ObjID">@m.Name @(string.IsNullOrEmpty(m.Comm) ? "" : " (" + m.Comm + ")")</option>
+    }
+}
+
+@code {
+    [Parameter]
+    public List<Objects>? MsgList { get; set; }
+
+    [Parameter]
+    public int? SubsystemID { get; set; } = SubsystemType.SUBSYST_ASO;
+
+    [Parameter]
+    public bool? IsAllMsg { get; set; } = false;
+}

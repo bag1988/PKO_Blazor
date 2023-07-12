@@ -1,0 +1,9 @@
+﻿<div class="nav-item px-2">
+    
+        @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

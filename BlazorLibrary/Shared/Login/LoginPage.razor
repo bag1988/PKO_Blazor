@@ -1,0 +1,28 @@
+﻿<TitleView>@Rep["Authorize"]</TitleView>
+<div class="row">
+    <div class="col-md-8 offset-md-2" tabindex="0">
+        <EditForm Model="loginRequest" OnSubmit="SetLogin">
+            @if (ErrorString != null)
+            {
+                <div class="mb-3 row">
+                    <p class="alert alert-danger">@ErrorString</p>
+                </div>
+            }
+            <div class="mb-3 row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">@Rep["LoginName"]</label>
+                <div class="col-sm-10">
+                    <InputFocus @bind-Value="loginRequest.User"/>                   
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="inputPassword" class="col-sm-2 col-form-label">@Rep["Password"]</label>
+                <div class="col-sm-10">
+                    <input type="password" name="Password" class="form-control" @bind="loginRequest.Password">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <BSumbit AddClass="mb-3" Text="@Rep["Login"]" ColorButton="primary" IsProcessing="IsProcessing" />
+            </div>
+        </EditForm>
+    </div>
+</div>

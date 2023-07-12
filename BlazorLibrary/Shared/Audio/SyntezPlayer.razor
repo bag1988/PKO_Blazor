@@ -1,0 +1,8 @@
+﻿<div class="d-flex align-items-center">
+    <BPrimary HotKey="@KeyCode.Sintez" AddClass="my-2 me-2" Text="@DeviceRep["ToListen"]" OnClick="TextSynthesisStream" />
+
+    @if (ViewPlayer)
+    {
+        <AudioPlayerStream @ref="player" IsAutoPlay="true" BgColor="audio-white" />
+    }
+</div>

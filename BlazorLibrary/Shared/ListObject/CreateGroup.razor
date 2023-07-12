@@ -1,0 +1,183 @@
+﻿@using UUZSDataProto.V1;
+
+<ModalDialog Title="@(DeviceObj_ID?.ObjID > 0?Model?.GroupName:UUZSRep["IDS_STRING_NEW_GROUP"])" ButtonCloseEvent="CallAction">
+    <BodyContent>
+        <form id="creategroup" @onsubmit="OnOK">
+            @if (Model != null)
+            {
+                @*Наименование группы*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-3">@UUZSRep["IDS_STRING_NAME_GROUP"]</label>
+                    <div class="col-md-9">
+                        <InputFocus @bind-Value="Model.GroupName" />
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    @*Групповой номер*@
+                    <div class="row col-md-6">
+                        <label class="form-label col-md-4">@UUZSRep["IDS_STRING_GROUP_NUMBER"]</label>
+                        <div class="col-md-8">
+                            @if (DeviceObj_ID?.ObjID > 0)
+                            {
+                                <label class="form-control">@Model.GroupID</label>
+                            }
+                            else
+                            {
+                                <input type="number" class="form-control" @bind="Model.GroupID">
+                            }
+                        </div>
+                    </div>
+                    @*Длина таймслота*@
+                    <div class="row col-md-6">
+                        <label class="form-label col-md-4">@UUZSRep["IDS_STRING_LENGTH_TIMESLOT"], @UUZSRep["IDS_STRING_MSEK"]</label>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control" @bind="Model.TimeslotLength">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    @*Приоритет группы*@
+                    <div class="row col-md-6">
+                        <label class="form-label col-md-4">@UUZSRep["IDS_STRING_PRIOR_GROUP"]</label>
+                        <div class="col-md-8">
+                            <input type="number" min="1" max="50" class="form-control" @bind="Model.Prior">
+                        </div>
+                    </div>
+
+                    @*Общая линия группы*@
+                    <div class="row col-md-6">
+                        <label class="form-label col-md-4">@UUZSRep["IDS_STRING_LINE_GROUP"]</label>
+                        <div class="col-md-8">
+                            @if (DeviceObj_ID?.ObjID > 0)
+                            {
+                                <label class="form-control">@(m_vTypes?.FirstOrDefault(x => x.ConnParam == Model.ConnParam)?.GroupLineName)</label>
+                            }
+                            else
+                            {
+                                <select class="form-select" value="@Model.ConnParam" @onchange="ChangeSelect">
+                                    <option value="">-----</option>
+                                    @if (m_vTypes != null)
+                                    {
+                                        @foreach (var item in m_vTypes)
+                                        {
+                                            <option value="@item.ConnParam">@item.GroupLineName</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <PLoad />
+            }
+
+            <div class="row">
+                <div class="col-md-6">
+                    <DivScroll SetClass="pe-2">
+                        <PHeader>
+                            @*Доступные устройства выбранного типа*@
+                            @UUZSRep["IDS_STRING_SELECT_TYPE"]
+                        </PHeader>
+                        <ResultView IsSetFocus="false" TItem="CLineGroupDev" Items="GetListTree" SelectList="SelectData" SetSelectList="(e)=>SelectData=e" DbClick="AddSelect">
+                            <ChildContent Context="item">
+                                <span class="oi oi-volume-high text-warning"></span>@item.DevName
+                            </ChildContent>
+                        </ResultView>
+                        <PSticky Color="secondary text-end" StyleBottom="0">
+                            <BCancel OnClick="CallAction" />
+                            @if (GetListTree?.Any() ?? false)
+                            {
+                                <div class="ms-auto">
+                                    <BSecondary HotKey="@KeyCode.AddSelect" IsOutline="true" OnClick="AddSelect">
+                                        <span class="oi oi-caret-right me-0 ms-2"></span>
+                                    </BSecondary>
+                                    <BSecondary HotKey="@KeyCode.AddSelectAll" IsOutline="true" OnClick="AddAll">
+                                        <span class="oi oi-media-skip-forward me-0 ms-2"></span>
+                                    </BSecondary>
+                                </div>
+                            }
+                        </PSticky>
+                    </DivScroll>
+                </div>
+                <div class="col-md-6">
+                    <DivScroll SetClass="pe-2">
+                        <PHeader>
+                            @*Устройства группы*@
+                            @UUZSRep["IDS_STRING_DEVICE_GROUP"]
+                        </PHeader>
+                        <ResultView IsSetFocus="false" TItem="CLineGroupDev" Items="SelectedFolders" SelectList="SelectItem" SetSelectList="(e)=>SelectItem=e" DbClick="RemoveSelect">
+                            <ChildContent Context="item">
+                                <span class="oi oi-volume-high text-warning"></span>@item.DevName
+                            </ChildContent>
+                        </ResultView>
+                        @if (SelectedFolders?.Any() ?? false)
+                        {
+                            <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                                <PSticky Color="secondary" StyleBottom="0">
+                                    @*Удалить все объекты из списка*@
+                                    <BSecondary IsOutline="true" HotKey="@KeyCode.AddSelectAll" OnClick="RemoveAll">
+                                        <span class="oi oi-media-skip-backward"></span>
+                                    </BSecondary>
+
+                                    @*Удаление выбранный объект из списка*@
+                                    <BSecondary IsOutline="true" HotKey="@KeyCode.AddSelect" OnClick="RemoveSelect">
+                                        <span class="oi oi-caret-left"></span>
+                                    </BSecondary>
+                                    <BSumbit IsProcessing="IsProcessing" FormId="creategroup" AddClass="m-1 ms-auto" />
+                                </PSticky>
+                            </CheckP>
+                        }
+                    </DivScroll>
+                </div>
+            </div>
+        </form>
+    </BodyContent>
+</ModalDialog>
+
+
+
+<CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+    @if (IsViewWarning)
+    {
+        <ModalDialog Title="@GsoRep["IDS_STRING_EDITING"]" ButtonCloseEvent="()=>IsViewWarning=false">
+            <BodyContent>
+                @if (ListObj != null && ListObj.Any())
+                {
+                    <Cards AddClass="alert-warning" Header="@UUZSRep["IDS_STRING_E_DELETE_GROUP"]">
+                        <ul>
+                            <Virtualize Items="ListObj" Context="item">
+                                <li>@item</li>
+                            </Virtualize>
+                        </ul>
+                        <p>
+                            @DeviceRep["IDS_STRING_WARNING_DELETE"]
+                        </p>
+                    </Cards>
+                }
+            </BodyContent>
+            <ButtonContent>
+                <BEdit OnClick="@(()=>{IsDeleteAnyWay=true; IsViewWarning=false; })" />
+                <BDark IsOutline="true" HotKey="@KeyCode.Escape" Text="@($"{GsoRep["IDS_STRING_CANCEL"]} ({Remained.TotalSeconds.ToString("N0")})")" OnClick="()=>IsViewWarning=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsTimeslot)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_REALLY_DATA_Q"]" ButtonCloseEvent="()=>IsTimeslot=false">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    @UUZSRep["IDS_STRING_VERY_SMALL_TIMESLOT"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BSave OnClick="@(()=>{IsNextOk=null; IsTimeslot=false; })" />
+                <BDark IsOutline="true" HotKey="@KeyCode.Escape" Text="@($"{GsoRep["IDS_STRING_CANCEL"]} ({Remained.TotalSeconds.ToString("N0")})")" OnClick="()=>IsTimeslot=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

@@ -1,0 +1,148 @@
+﻿@page "/CmdBinding"
+@using SMP16XProto.V1;
+@using SharedLibrary.Utilities
+@inherits FiltrInherits<SitObjectsFiltr>
+@*Соответствие  команд П160 (П164) или ПДУ сценариям системы оповещения*@
+<TitleView>@SMP16xFormRep["SIT_COMMAND"]</TitleView>
+<div class="row">
+    <div class="col-md-8">
+        <div class="mb-3" tabindex="1">
+            @*Устройство*@
+            <label class="form-label">@Rep["Device"]</label>
+            <select class="form-select" value="@m_ComboP16xDeviceSelect" @onchange="(e)=>GetUnitCommandList(e)">
+                <option value="0">-----</option>
+                @if (m_ComboP16xDevice != null)
+                {
+                    @foreach (var item in m_ComboP16xDevice)
+                    {
+                        <option value="@item.Unit?.ObjID">@item.Name</option>
+                    }
+                }
+                else
+                {
+                    <option value="0">@Rep["Load"]</option>
+                }
+            </select>
+        </div>
+
+        <TableVirtualize @ref="table" TItem="Tuple<bool, CCmdListWithSit>" Provider="GetProvider" SetSelectList="OnSelectCmd" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" MinWidth="0">
+            <Tbody Context="item">
+                @if (item.Item1)
+                {
+                <td>@item.Item2.SitItem?.CmdID?.ObjID.ToString("D2")</td>
+                <td>@item.Item2.CmdName</td>
+                <td>
+                        @if (SelectItem?.Item2.Equals(item.Item2) ?? false)
+                        {
+                        <select class="form-select form-select-sm" value="@item.Item2.CustomMessage" @onchange="ChangeSound">
+                            <option value="1">@UUZSRep["IDS_STRING_YES"]</option>
+                            <option value="0">@UUZSRep["IDS_STRING_NO"]</option>
+                        </select>
+                        }
+                        else
+                        {
+                            @UUZSRep[item.Item2.CustomMessage==1 ? "IDS_STRING_YES":"IDS_STRING_NO"]
+                        }
+                </td>
+                <td>
+                        @if (SelectItem?.Item2.Equals(item.Item2) ?? false)
+                        {
+                        <select class="form-select form-select-sm" value="@item.Item2.ConfirmMode" @onchange="ChangeMode">
+                            <option value="0">@SMP16xFormRep["IDS_STRING_AUTOMATIC"]</option>
+                            <option value="2">@SMP16xFormRep["IDS_STRING_MANUAL_OD"]</option>
+                        </select>
+                        }
+                        else
+                        {
+                            @SMP16xFormRep[item.Item2.ConfirmMode==2 ? "IDS_STRING_MANUAL_OD":"IDS_STRING_AUTOMATIC"]
+                        }
+                </td>
+                }
+                else
+                {
+                <td colspan="4"></td>
+                }
+            <td>@GetNameSit(item.Item2)</td>
+            </Tbody>
+            <TSticky>
+                <BCreate OnClick="()=>IsAddCommand=true" />
+                @if (SelectItem != null)
+                {
+                    <BDelete OnClick="()=>IsDeleteCommand=true" />
+                }
+            </TSticky>
+        </TableVirtualize>
+    </div>
+    <div class="col-md-4">
+        <DivScroll>
+            @*Наименование сценариев*@
+            <PHeader>@SMP16xFormRep["IDS_STRING_NAME_SITS"]</PHeader>
+            @if (!IsPageLoad)
+            {
+                <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+                <ResultView TItem="Objects" Items="ShowSituationList" Context="item" SelectList="SelectSit" SetSelectList="SetSelectList" IsSetFocus="false">
+                    <ChildContent>
+                        @item.Name
+                    </ChildContent>
+                </ResultView>
+                <ButtonModal>
+                    <p class="alert alert-warning">@SMP16xFormRep["SIT_INFO_COMMAND"]</p>
+                    @if (SelectSit?.Count > 0)
+                    {
+                        @*Назначить*@
+                        <BDark Text="@SMP16xFormRep["SET_SIT"]" OnClick="AddSit" />
+                    }
+                    @if (SelectItem?.Item2.SitItem?.SitID?.ObjID > 0)
+                    {
+                        <BDelete OnClick="DeleteSit" />
+                    }
+                    <BSave OnClick="OnOK" />
+                </ButtonModal>
+            }
+        </DivScroll>
+    </div>
+</div>
+
+<CheckP BitPos="NameBitsPos.Create">
+
+    @if (IsAddCommand)
+    {
+        @*Создание пользовательской команды*@
+        <ModalDialog Title="@SMP16xFormRep["CREATE_CMD"]" ButtonCloseEvent="()=>IsAddCommand=false">
+            <BodyContent>
+                <form id="addcmdcommand" @onsubmit="AddCommand">
+                    @*Номер команды (1-255)*@
+                    <div class="mb-3">
+                        <label class="form-label">@SMP16xFormRep["NUMBER_CMD"]</label>
+                        <input type="number" min="1" max="255" class="form-control" @bind="NewCmdId">
+                    </div>
+                    @*Название команды*@
+                    <div class="mb-3">
+                        <label class="form-label">@SMP16xFormRep["NAME_CMD"]</label>
+                        <input type="text" class="form-control" @bind="NewNameCmd">
+                    </div>
+                </form>
+            </BodyContent>
+            <ButtonContent>
+                <BSumbit FormId="addcmdcommand" Text="@GsoRep["Add"]" IsProcessing="IsProcessing" />
+                <BClose OnClick="()=>IsAddCommand=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsDeleteCommand && SelectItem != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDeleteCommand=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @SMP16xFormRep["DELETE_CMD"]:
+                    <b>@SelectItem.Item2.CmdName</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="RemoveCommand" />
+                <BCancel OnClick="()=>IsDeleteCommand=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

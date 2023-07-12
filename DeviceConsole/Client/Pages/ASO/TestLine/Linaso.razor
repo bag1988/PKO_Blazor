@@ -1,0 +1,78 @@
+﻿@page "/Linaso"
+@inherits CancellableComponent
+<TitleView>@DeviceRep["TEST_LINE"]</TitleView>
+<form id="testline" @onsubmit="OnBnClickedOk">
+    <div class="row">
+        <div class="col-md-6">
+            @*Телефон*@
+            <div class="mb-2">
+                <label class="form-label">@AsoRep["IDS_ABPHONE"]</label>
+                <InputFocus @bind-Value="Phone" />
+            </div>
+            @*Сообщение*@
+            <div class="mb-2">
+                <label class="form-label">@AsoRep["MESSAGE"]</label>
+                <select class="form-select" @bind="Message">
+                    @foreach (var item in msgList ?? new())
+                    {
+                        <option value="@item.OBJID?.ObjID">@($"{item.Name}{GetMsgTypeName(item.Type)}")</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            @*проговоров*@
+            <div class="mb-2">
+                <label class="form-label">@AsoRep["REPEAT"]</label>
+                <input type="number" min=1 max=50 class="form-control" @bind="RepeatCount">
+            </div>
+            @*дозвонов*@
+            <div class="mb-0 mt-3">
+                <label class="form-label">@AsoRep["COUNT_CALL"]</label>
+                <b class="ms-2">1</b>
+                @* <label class="form-control bg-light ms-2">1</label>*@
+            </div>
+            @*Подтверждение паролем*@
+            <div class="mb-2">
+                <label class="form-check-label me-1">@AsoRep["PASSWORD_CONFIRM"] <input type="checkbox" class="form-check-input" @bind="PasswordConfirm" /></label>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+
+<TableScroll IsSetFocus="false" Colspan="4" TItem="LineInfoEx" Items="GetListItems" SelectList="SelectItems" SetSelectList="SetSelectItems">
+    <Thead>
+    <th>@AsoRep["LINE_NUMBER"]</th>
+    <th>@AsoRep["IDS_DEVSTATUS"]</th>
+    <th>@AsoRep["ATTEMPT"]</th>
+    <th>@AsoRep["IDS_DEVNAME"]</th>
+    </Thead>
+    <Tbody Context="item">
+    <td>@($"{item.line_name}{(!string.IsNullOrEmpty(item.line?.PPhone) ? $" [{item.line?.PPhone}]" : "")}")</td>
+    <td>@item.AnswerNl</td>
+    <td></td>
+    <td>@GetLineInfo(item.device)</td>
+    </Tbody>
+    <TSticky>
+        @if (!string.IsNullOrEmpty(StatusStr))
+        {
+            <p class="alert alert-warning">
+                @StatusStr
+            </p>
+        }
+        @if (SelectItems?.Count > 0)
+        {
+            <BSumbit FormId="testline" Text="@GetButtonText" IsProcessing="IsProcessing" />
+        }
+        @if (SelectItems?.Count != line_list?.Count)
+        {
+            <BDark Text="@AsoRep["SelectAll"]" OnClick="SelectAll" />
+        }
+        @if (SelectItems?.Count > 0)
+        {
+            <BDark IsOutline="true" Text="@AsoRep["Deselect"]" OnClick="UnSelectAll" />
+        }
+    </TSticky>
+</TableScroll>

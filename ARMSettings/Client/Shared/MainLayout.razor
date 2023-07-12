@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+<Main Title="@GsoRep["ARMSETTING"]">
+    <Menu>
+        <DivNavLink>
+            <NavLink Match="NavLinkMatch.All" class="nav-link" href="/">@ARMSetRep["TITLE_OBJECT"]</NavLink>
+            <NavLink class="nav-link" href="/SecuritySubSystem">@ARMSetRep["SECURITY_SUB_SYSTEM"]</NavLink>
+            <NavLink class="nav-link" href="/SitGroups">@ARMSetRep["SITUATION_GROUPS"]</NavLink>
+        </DivNavLink>
+    </Menu>
+    <ChildContent>
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
+    </ChildContent>
+</Main>

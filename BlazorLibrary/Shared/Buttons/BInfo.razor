@@ -1,0 +1,3 @@
+﻿@inherits ButtonDefault
+
+<button disabled="@(IsProcessing?"disabled":null)" type="button" hotkey="@(!string.IsNullOrEmpty(HotKey)?HotKey:null)" @onclick="OnClickAction" class="btn btn@(IsOutline==true?"-outline":"")-info @(TextWrap==true?"text-wrap":"text-nowrap") @AddClass">@_content</button>

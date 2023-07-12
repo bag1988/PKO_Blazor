@@ -1,0 +1,12 @@
+﻿
+<div class="alert alert-secondary position-sticky bottom-0 p-2 mt-3 @AddClass">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? AddClass{ get; set; }
+}

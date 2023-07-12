@@ -1,0 +1,24 @@
+﻿<div @onclick="RemoveDialogAction" class="modal-backdrop fade show visible"></div>
+<div class="offcanvas top-0 end-0 col-12 col-lg-7 col-sm-10 col-md-9 show visible" style="z-index:@ZIndex">
+    <div tabindex="0" @ref="elem" class="offcanvas-body">
+        <PHeader ZIndex="@(ZIndex+1)">
+            @if (ButtonCloseEvent.HasDelegate)
+            {
+                <span class="px-2 pointer float-end" @onclick="ButtonCloseAction">X</span>
+            }
+            <text>
+                @Title
+            </text>
+        </PHeader>
+        @if(BodyContent!=null)
+        {
+            @BodyContent
+        }
+        @if (ButtonContent != null)
+        {
+            <ButtonModal>
+                @ButtonContent
+            </ButtonModal>
+        }
+    </div>
+</div>

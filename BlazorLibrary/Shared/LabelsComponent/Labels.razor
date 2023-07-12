@@ -1,0 +1,70 @@
+﻿<h5 class="pointer" @onclick="()=>IsViewSpecification=!IsViewSpecification"><span class="oi oi-@(IsViewSpecification?"minus":"plus")"></span> @DeviceRep["SPECIFICATIONS"]</h5>
+
+@if (!IsPageLoad)
+{
+    <div class="@(IsViewSpecification?"d-block":"d-none")">
+        <TableVirtualize @ref="table" TItem="TableItem" Provider="GetProvider" IsSetFocus="false" SelectList="(new(){SelectItem??new()})" SetSelectList="SetSelectItem" IsSticky="false">
+            <Tbody Context="item">
+            <td>
+                    @if (item.Type == TypeField.Input && item.IdField == 0 && string.IsNullOrEmpty(item.NameField))
+                    {
+                    <div>
+                        <input type="text" list="FreeKey" class="form-control form-control-sm" value="@item.NameField" @onchange="SetNameField">
+                            @if (GetFreeKey != null)
+                            {
+                            <datalist id="FreeKey">
+                                    @foreach (var item in GetFreeKey)
+                                    {
+                                    <option value="@item" />
+                                    }
+                            </datalist>
+                            }
+                    </div>
+                    }
+                    else
+                    {
+                        @item.NameField
+                    }
+            </td>
+            <td>
+                    @if (SelectItem?.Equals(item) ?? false)
+                    {
+                        @if (item.Type == TypeField.Input)
+                        {
+                        <div>
+                            <input list="ValueList" type="text" class="form-control form-control-sm" value="@item.NameValue" @onchange="SetValueField" >
+                                @if (GetHelpValueList != null)
+                                {
+                                <datalist id="ValueList">
+                                        @foreach (var item in GetHelpValueList)
+                                        {
+                                        <option value="@item" />
+                                        }
+                                </datalist>
+                                }
+                        </div>
+                        }
+                    }
+                    else
+                    {
+                        @if (item.Type == TypeField.Input)
+                        {
+                            @item.NameValue
+                        }                        
+                    }
+
+            </td>
+            </Tbody>
+            <TSticky>
+                <CheckP BitPos="NameBitsPos.Create">
+                    @*Добавить*@
+                    <BDark Text="@UUZSRep["IDS_STRING_ADD"]" OnClick="AddSpicification" />
+                    @*@if (SelectItem != null)
+                {
+                <BDelete OnClick="@RemoveItem" />
+                }*@
+                </CheckP>
+            </TSticky>
+        </TableVirtualize>
+    </div>
+}

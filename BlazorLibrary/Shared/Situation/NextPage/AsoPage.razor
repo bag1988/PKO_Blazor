@@ -1,0 +1,35 @@
+﻿@using SMDataServiceProto.V1;
+
+<ModalDialog Title="@AsoDataRep["IDS_STRING_MESSAGE_COMMENT"]" ButtonCloseEvent="Cancel">
+    <BodyContent>
+        <ResultView TItem="Objects" Items="Model?.Where(x => IsAllMsg ? true : x.OBJID?.SubsystemID == SubsystemType.SUBSYST_ASO)" Context="item" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem=e?.FirstOrDefault()">
+            <ChildContent>
+                @item.Name @(item.Comm != "" ? " (" + item.Comm + ")" : "")
+            </ChildContent>
+        </ResultView>
+    </BodyContent>
+    <ButtonContent>
+        <div class="d-flex align-items-center">
+            <label class="form-check-label me-2">
+                <input class="form-check-input" checked="@IsAllMsg" type="checkbox" @onchange="@((e)=>SetAllView(e))"> @Rep["AllMessage"]
+            </label>
+            <BDark HotKey="@KeyCode.Insert" OnClick="@(()=>{SelectItem=null; ViewInfoMessage=true; IsNewMessage=true;})" Text="@GsoRep["ID_RECORD"]" />
+            @if (SelectItem != null)
+            {
+                <BDark OnClick="@(()=>{ViewInfoMessage=true; IsNewMessage=false;})" Text="@AsoRep["ReadMessage"]" />
+            }
+            <div class="ms-auto">
+                @if (SelectItem != null)
+                {
+                    <BDark HotKey="@KeyCode.Enter" Text="@GsoRep["IDS_STRING_NEXT"]" OnClick="Next" />
+                }
+                <BSecondary HotKey="@KeyCode.Escape" IsOutline="true" OnClick="Cancel" Text="@GsoRep["IDS_STRING_BACK"]" />
+            </div>
+        </div>
+    </ButtonContent>
+</ModalDialog>
+
+@if (ViewInfoMessage)
+{
+    <CreateMessage TitleText="@AsoDataRep["IDS_STRING_MESSAGE_COMMENT"]" CallBack="SaveCallBack" MsgId="@(SelectItem?.OBJID.ObjID??null)" Edit="IsNewMessage" />
+}

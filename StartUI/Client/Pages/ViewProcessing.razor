@@ -1,0 +1,43 @@
+﻿@if (Model != null && Model.Any() && ActivTab != 1)
+{
+    <div class="progress mt-2 position-relative" style="height: 3rem; font-size: 2em;">
+        <div class="progress-bar bg-success" role="progressbar" style="width:@(Model.Sum(x=>x.AllObject)>0? Math.Round((double)(Model.Sum(x=>x.Success))/Model.Sum(x=>x.AllObject)*100):0)%"></div>
+        <span class="w-100 position-absolute">@(Model.Sum(x => x.AllObject) > 0 ? Math.Round((double)Model.Sum(x => x.Success) / Model.Sum(x => x.AllObject) * 100) : 0)%</span>
+
+    </div>
+    @foreach (var item in Model)
+    {
+        <div class="row mt-2 p-2">
+            @if (item.Type > 0)
+            {
+                <div class="col-md-12">
+                    @switch (item.Type)
+                    {
+                        case 1:
+                            @SMDataRep["SUBSYST_SZS1"]
+                            ; break;
+                        case 2:
+                            @SMDataRep["SUBSYST_SZS2"]
+                            ; break;
+                        case 3:
+                            @SMDataRep["SUBSYST_SZS3"]
+                            ; break;
+                    }
+                </div>
+            }
+            <div class="col-4">
+                <label title="@StartUIRep["IDS_COUNTALL"]" class="form-label small w-100 text-truncate">@StartUIRep["IDS_COUNTALL"]</label>
+                <label class="form-control">@item.AllObject</label>
+            </div>
+            <div class="col-4">
+                <label title="@StartUIRep["IDS_SUCC"]" class="form-label small w-100 text-truncate">@StartUIRep["IDS_SUCC"]</label>
+                <label class="form-control">@item.Success</label>
+            </div>
+            <div class="col-4">
+                <label title="@StartUIRep["IDS_FAIL"]" class="form-label small w-100 text-truncate">@StartUIRep["IDS_FAIL"]</label>
+                <label class="form-control">@item.Discard</label>
+            </div>
+        </div>
+    }
+
+}

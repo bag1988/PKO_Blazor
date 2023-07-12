@@ -1,0 +1,234 @@
+﻿@using BlazorLibrary.Shared.NavLink
+@*Местоположение*@
+<DivNavLink>
+    <span>@GSOFormRep["IDS_LOCATION"]</span>
+    <select class="form-select" @bind="request.SelectLocation">
+        @foreach (var item in LocationList)
+        {
+            <option value="@item.OBJID.ObjID">@item.Name</option>
+        }
+    </select>
+</DivNavLink>
+
+@*Сообщение*@
+<DivNavLink>
+    <span>@GsoRep["MESSAGE"]</span>
+    <select class="form-select form-select-sm" @bind="request.SelectMessage">
+        @foreach (var m in MessageList)
+        {
+            <option value="@m.OBJID?.ObjID">@m.Name @(string.IsNullOrEmpty(m.Comm) ? "" : " (" + m.Comm + ")")</option>
+        }
+    </select>
+</DivNavLink>
+
+<DivNavLink>
+    <InputFile class="form-control my-2" OnChange="@LoadFiles" />
+</DivNavLink>
+@if (IsProcessing)
+{
+    <DivNavLink>
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span><b>@Rep["Load"] @($"{_uploaded}KB / {FileSize / 1024}KB")</b>
+    </DivNavLink>
+}
+@if (WorkSheets.Count > 0 && request.FileRequest.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+{
+    @*Лист*@
+    <DivNavLink>
+        <span>@GsoRep["WORK_SHEET"]</span>
+        <select class="form-select form-select-sm" value="@request.FileRequest.SelectSheet" @onchange="(e)=>ChangeRequest(e, 3)">
+            @foreach (var m in WorkSheets)
+            {
+                <option value="@m.Key">@m.Value</option>
+            }
+        </select>
+    </DivNavLink>
+}
+@if (request.FileRequest.ContentType == "text/plain")
+{
+    @*Текстовый файл*@
+    <DivNavLink>
+        <h5>@GsoRep["TEXT_FILE"]</h5>
+    </DivNavLink>
+    @*Кодовая страница*@
+    <DivNavLink>
+        <span>@GsoRep["CODE_PAGE"]</span>
+        <select class="form-select form-select-sm" value="@request.FileRequest.CodePage" @onchange="(e)=>ChangeRequest(e, 1)">
+            <option value="0">-----</option>
+            @foreach (var item in System.Text.Encoding.GetEncodings())
+            {
+                <option value="@item.CodePage">@item.DisplayName</option>
+            }
+        </select>
+    </DivNavLink>
+
+    @*Разделитель*@
+    <DivNavLink>
+        <span>@GsoRep["SEPARATOR"]</span>
+        <input type="text" class="form-control" value="@request.FileRequest.Separotor" @onchange="(e)=>ChangeRequest(e, 2)" />
+    </DivNavLink>
+}
+<HR />
+<DivNavLink>
+    @*Создание расписания*@
+    <h5>@GsoRep["CREATE_SHEDULE"]</h5>
+</DivNavLink>
+
+<DivNavLink>
+    @*Телефонная коммутируемая линия*@
+    <label class="form-check-label nav-link ps-1">
+        <input class="form-check-input" type="checkbox" @bind="request.PhoneLine"> @GsoRep["PHONE_LINE"]
+    </label>
+    @*Отправка SMS*@
+    <label class="form-check-label nav-link ps-1">
+        <input class="form-check-input" type="checkbox" @bind="request.SendSms"> @GsoRep["SEND_SMS"]
+    </label>
+    @*Ограничение по времени оповещения*@
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" @bind="request.TimeLimit" /> @GsoRep["TIME_LIMIT"]
+    </label>
+</DivNavLink>
+
+@if (request.TimeLimit)
+{
+    <DivNavLink>
+        <span>@AsoRep["IDS_TIMEBEGIN"]</span>
+        <input type="time" class="form-control" @bind-value="@request.StartTime" />
+    </DivNavLink>
+
+    <DivNavLink>
+        <span>@AsoRep["IDS_TIMEEND"]</span>
+        <input type="time" class="form-control" @bind-value="@request.EndTime" />
+    </DivNavLink>
+}
+
+<HR />
+<DivNavLink>
+    @*Отображение данных*@
+    <h5>@GsoRep["VIEW_DATA"]</h5>
+</DivNavLink>
+
+<DivNavLink>
+    @*Номер договора*@
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" value="@request.ContractNumber" @onchange="(e)=>ChangeRequestInfo(e, 1)" /> @GsoRep["CONTRACT_NUMBER"]
+    </label>
+    @*Код валюты*@
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" value="@request.CurrencyCode" @onchange="(e)=>ChangeRequestInfo(e, 2)" /> @GsoRep["CURRENCY_CODE"]
+    </label>
+    @*Ожидание тона*@
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" value="@request.WaitingTone" @onchange="(e)=>ChangeRequestInfo(e, 3)" /> @GsoRep["WAITING_TONE"]
+    </label>
+    @*Округлять*@
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" value="@request.RoundUp" @onchange="(e)=>ChangeRequestInfo(e, 4)" /> @GsoRep["ROUND_UP"]
+    </label>
+    @*Учитывать долг*@
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" value="@request.AccountDebt" @onchange="(e)=>ChangeRequestInfo(e, 5)" /> @GsoRep["ACCOUNT_DEBT"]
+    </label>
+</DivNavLink>
+
+<HR />
+<DivNavLink>
+    @*Получение данных*@
+    <h5>@GsoRep["LOAD_DATA"]</h5>
+</DivNavLink>
+@*Все данные*@
+@*<DivNavLink>
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" value="@request.AllData" @onchange="(e)=>ChangeRequest(e, 6)" /> @GsoRep["ALL_DATA"]
+    </label>
+</DivNavLink>*@
+
+@*Заголовок*@
+<DivNavLink>
+    <label class="form-check-label nav-link ps-1">
+        <input type="checkbox" class="form-check-input" value="@request.FileRequest.FirstStringAsName" @onchange="(e)=>ChangeRequest(e, 4)" /> @GsoRep["HEADER"]
+    </label>
+</DivNavLink>
+
+@*Игнорировать первые*@
+<DivNavLink>
+    <span>@GsoRep["IGNORE_FIRST"]</span>
+    <input type="number" class="form-control" value="@request.FileRequest.IgnoreStrFirstCount" @onchange="(e)=>ChangeRequest(e, 5)" />
+</DivNavLink>
+
+<HR />
+<DivNavLink>
+    @*Смещение к данным*@
+    <h5>@GsoRep["OFFSET_TO_DATA"]</h5>
+</DivNavLink>
+
+@*Фамилия*@
+<DivNavLink>
+    <span>@GsoRep["SURNAME"]</span>
+    <select class="form-select form-select-sm" value="@request.ColumnInfo.SurnameColumn" @onchange="(e)=>ChangeRequestInfo(e, 11)">
+        <option value="-1">-----</option>
+        @foreach (var m in ThListFile)
+        {
+            <option value="@m.Key">@m.Value</option>
+        }
+    </select>
+</DivNavLink>
+
+@*Телефон*@
+<DivNavLink>
+    <span>@AsoRep["IDS_ABPHONE"]</span>
+    <select class="form-select form-select-sm" value="@request.ColumnInfo.PhoneColumn" @onchange="(e)=>ChangeRequestInfo(e, 10)">
+        <option value="-1">-----</option>
+        @foreach (var m in ThListFile)
+        {
+            <option value="@m.Key">@m.Value</option>
+        }
+    </select>
+</DivNavLink>
+
+@*Задолженность*@
+<DivNavLink>
+    <span>@GsoRep["ARREARS"]</span>
+    <select class="form-select form-select-sm" value="@request.ColumnInfo.ArrearsColumn" @onchange="(e)=>ChangeRequestInfo(e, 7)">
+        <option value="-1">-----</option>
+        @foreach (var m in ThListFile)
+        {
+            <option value="@m.Key">@m.Value</option>
+        }
+    </select>
+</DivNavLink>
+
+@*Код валюты*@
+<DivNavLink>
+    <span>@GsoRep["CURRENCY_CODE"]</span>
+    <select class="form-select form-select-sm" value="@request.ColumnInfo.CodeColumn" @onchange="(e)=>ChangeRequestInfo(e, 8)">
+        <option value="-1">-----</option>
+        @foreach (var m in ThListFile)
+        {
+            <option value="@m.Key">@m.Value</option>
+        }
+    </select>
+</DivNavLink>
+
+@*Номер договора*@
+<DivNavLink>
+    <span>@GsoRep["CONTRACT_NUMBER"]</span>
+    <select class="form-select form-select-sm" value="@request.ColumnInfo.ContractColumn" @onchange="(e)=>ChangeRequestInfo(e, 9)">
+        <option value="-1">-----</option>
+        @foreach (var m in ThListFile)
+        {
+            <option value="@m.Key">@m.Value</option>
+        }
+    </select>
+</DivNavLink>
+
+@*Адрес*@
+<DivNavLink>
+    <span>@AsoRep["IDS_ABADDRESS"]</span>
+    <select class="form-select form-select-sm" value="@request.ColumnInfo.AddressColumn" @onchange="(e)=>ChangeRequestInfo(e, 6)">
+        <option value="-1">-----</option>
+        @foreach (var m in ThListFile)
+        {
+            <option value="@m.Key">@m.Value</option>
+        }
+    </select>
+</DivNavLink>

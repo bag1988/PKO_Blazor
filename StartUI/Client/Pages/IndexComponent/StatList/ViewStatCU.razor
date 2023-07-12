@@ -1,0 +1,21 @@
+﻿@using StaffDataProto.V1
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<GetItemsINotifySessEx>
+<CheckP BitPos="NameBitsPos.ViewArhive">
+
+    @if (!IsPageLoad)
+    {
+        <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+        <TableVirtualize @ref="table" TItem="CResultsCache" Provider="GetProvider" Devision="2" IsSetFocus="false">
+            <Tbody Context="item">
+            <td>@item.CUNotifyOut?.SitName / @item.CUSitName</td>
+            <td>@item.CUNotifyOut?.CUName / @SMDataRep[BaseReplace.Get<SMDataReplace>(item.CUNotifyOut?.FromCUID?.ObjType??0)]</td>
+            <td>@item.CUNotifyOut?.StartTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+            <td>@item.CUNotifyOut?.CurTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+            <td>@item.CUNotifyOut?.Status</td>
+            <td>@item.CUNotifyOut?.Succ</td>
+            <td>@item.CUNotifyOut?.Fail</td>
+            </Tbody>           
+        </TableVirtualize>
+    }
+</CheckP>

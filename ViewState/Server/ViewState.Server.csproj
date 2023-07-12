@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>1a93234f-0425-473a-a611-7c35e259ec21</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerfileContext>..\..</DockerfileContext>
+		<DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapr.AspNetCore" />
+		<PackageReference Include="Dapr.Client" />
+		<PackageReference Include="Grpc.Net.Client" />
+		<PackageReference Include="Grpc.Net.Client.Web" />
+		<PackageReference Include="Grpc.Tools">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\ServerLibrary\ServerLibrary.csproj" />
+		<ProjectReference Include="..\..\ServiceLibrary\ServiceLibrary.csproj" />
+		<ProjectReference Include="..\Client\ViewState.Client.csproj" />
+		<ProjectReference Include="..\..\src\library\SharedSettings\SharedSettings.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\..\src\library\SharedSettings\sharedappsettings.Development.json" Link="sharedappsettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedappsettings.json" Link="sharedappsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedservicessettings.Development.json" Link="sharedservicessettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedservicessettings.json" Link="sharedservicessettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedsettings.Development.json" Link="sharedsettings.Development.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\src\library\SharedSettings\sharedsettings.json" Link="sharedsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="wwwroot\" />
+		<Folder Include="wwwroot\" />
+		<Folder Include="wwwroot\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="app-entrypoint.sh">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+
+</Project>

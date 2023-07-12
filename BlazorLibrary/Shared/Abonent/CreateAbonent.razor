@@ -1,0 +1,97 @@
+﻿
+
+<ModalDialog Title="@AsoRep[Abon != null? "IDS_REG_AB_SAVE" : "IDS_REG_AB_INSERT"]" ButtonCloseEvent="()=>CallbackEvent.InvokeAsync(true)">
+    <BodyContent>
+
+        @if (Model.Dep != null)
+        {
+            <form id="createabonent" @onsubmit="SetAbInfo">
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABONENT"]</label>
+                    <InputFocus @bind-Value="Model.AbName" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_DEPCOMMENT"]</label>
+                    <input type="text" class="form-control" @bind="Model.AbComm">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABDEPARTMENT"]</label>
+                    <select class="form-select" @bind="Model.Dep.ObjID">
+                        @foreach (var item in DepartmentList.Where(x => x.Dep != null).ToArray())
+                        {
+                            <option value="@item.Dep.ObjID">@item.Name</option>
+                        }
+
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABPOSITION"]</label>
+                    <input type="text" class="form-control" @bind="Model.Position">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_STRING_AB_STATE"]</label>
+                    <select class="form-select" @bind="Model.AbStatus">
+                        @foreach (var item in AbStatusList)
+                        {
+                            <option value="@item.Number">@item.Str</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_STRING_AB_ROLE"]</label>
+                    <select class="form-select" @bind="Model.Role">
+                        <option value="0">@AsoRep["IDS_STRING_REGULAR"]</option>
+                        <option value="1">VIP</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_STRING_AB_PRIOR"]</label>
+                    <input type="number" min=1 max=99 class="form-control" @bind="Model.AbPrior">
+                </div>                
+                <div class="mb-3">
+                    <label class="pointer mt-4" @onclick="()=>AddPassword=!AddPassword"><span class="oi oi-@(AddPassword?"minus":"plus")"></span> @AsoRep["IDS_STRING_CREATE_PASSWORD"]</label>
+                </div>
+                @if (AddPassword)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_STRING_AB_PASSWORD"]</label>
+                        <InputPassword type="password" class="form-control" Pattern="^[0-9AB]{0,9}$" ErrorMessage="@Rep["ERROR_PASSWORD"]" @bind-Value="@Model.Password" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Password))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">@AsoRep["IDS_STRING_REPEAT_AB_PASSWORD"]</label>
+                            <InputPassword type="password" class="form-control" Pattern="@($"^{Model.Password}$")" ErrorMessage="@Rep["ERROR_RE_PASSWORD"]" @bind-Value="@Password" />
+                        </div>
+                    }
+                }
+            </form>
+            <h5>@AsoRep["IDS_STRING_NOTIFY_SHEDULE"]</h5>
+            @if (Model.Abon != null)
+            {
+                <ViewSchedule Abon="@Model.Abon" SheduleList="SheduleList" />
+            }
+            <BlazorLibrary.Shared.LabelsComponent.Labels @ref="_labels" IdForm="@GetOBJ_Key" />
+        }
+        else
+        {
+            <PLoad />
+        }
+
+    </BodyContent>
+    <ButtonContent>
+        <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+            @if (IsSave)
+            {
+                <p class="alert alert-success">
+                    @AsoRep["IDS_OK_SAVE"]
+                </p>
+            }
+            <BSumbit FormId="createabonent" IsProcessing="IsProcessing" />
+        </CheckP>
+        @if (CallbackEvent.HasDelegate)
+        {
+            <BCancel OnClick="()=>CallbackEvent.InvokeAsync(true)" />
+        }
+    </ButtonContent>
+</ModalDialog>

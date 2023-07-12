@@ -1,0 +1,12 @@
+﻿<ModalDialog Title="@GSOFormRep["AddUserParam"]" ButtonCloseEvent="CallbackInvoke">
+    <BodyContent>
+        <div class="mb-3">
+            <label class="form-label">@GSOFormRep["NameUserParam"]</label>
+            <InputFocus @bind-Value="NameRestrict" />
+        </div>
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="AddRestrict" />
+        <BCancel OnClick="CallbackInvoke" />
+    </ButtonContent>
+</ModalDialog>

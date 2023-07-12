@@ -1,0 +1,41 @@
+﻿@using SMDataServiceProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<GetItemsINotifySessFilter>
+<CheckP BitPos="NameBitsPos.ViewArhive">
+
+    @if (!IsPageLoad)
+    {
+        <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+        <TableVirtualize @ref="table" TItem="CResults" Provider="GetProvider" IsOnKeyDown="false" IsSetFocus="false">
+            <Tbody Context="item">
+            <td>@item.TSitName</td>
+            <td>@item.TObjName</td>
+            <td>@item.TPriority</td>
+            <td>@item.TDepart</td>
+            <td>
+                @item.TStatus
+                <DetailsComponent Details="@item.Details" />
+            </td>
+            <td>@item.TTime?.ToDateTime().ToLocalTime().ToString("T")</td>
+            <td>@item.TConnect</td>
+            <td>@item.TCount</td>
+            </Tbody>
+            <TSticky>
+                <CheckP BitPos="4">
+                    <BPrint OnClick="GetReport" />
+                </CheckP>
+                @*Просмотр истории дозвона*@
+                <BSecondary OnClick="GetInfoCall" Text="@StartUIRep["Info"]" />
+                <BPrimary Text="@GsoRep["DOWNLOAD_ANSWER"]" OnClick="GetPhonogramListBySess" />
+                <span class="me-2">@StartUIRep["IDS_COUNTYES"]: @CountCall.CountCall</span>
+                <span>@StartUIRep["IDS_COUNTNO"]: @CountCall.CountUnCall</span>
+            </TSticky>
+        </TableVirtualize>
+    }
+
+    @*Просмотр детальной статистики по дозвону*@
+    @if (IsViewHistory)
+    {
+        <DetaliInfoCallAbon SessId="SelectSession?.ObjID?.ObjID" SitName="@table?.GetNextOrFirstItem?.TSitName" ActionNext="()=>IsViewHistory=false" />
+    }
+</CheckP>

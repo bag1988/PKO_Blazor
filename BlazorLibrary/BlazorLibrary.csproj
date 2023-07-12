@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="FolderForInherits\PushInherits.js" />
+	  <None Remove="wwwroot\script\site.js" />
+	</ItemGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>	
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+	  <PackageReference Include="Microsoft.Extensions.Localization" />
+	</ItemGroup>	
+	<ItemGroup>
+	  <ProjectReference Include="..\ReplaceLibrary\ReplaceLibrary.csproj" />
+	  <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
+	</ItemGroup>
+</Project>

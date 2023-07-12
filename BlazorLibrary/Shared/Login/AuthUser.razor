@@ -1,0 +1,15 @@
+﻿@if (user == null)
+{
+    @Authorizing
+}
+else
+{
+    @if (IsAuthenticated)
+    {
+        @Authorized?.Invoke(user.Identity?.Name)
+    }
+    else
+    {
+        @NotAuthorized
+    }
+}

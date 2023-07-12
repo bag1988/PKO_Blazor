@@ -1,0 +1,86 @@
+﻿
+<ModalDialog Title="@AsoRep["SettingSit"]" ButtonCloseEvent="Cancel">
+    <BodyContent>       
+        <form id="editsubparam" @onsubmit="SaveParam">
+            @if (SubParam != null)
+            {
+                @*Режим оповещения*@
+                @if (SubParam.SubsystemID == SubsystemType.SUBSYST_ASO)
+                {
+                    <div class="row mb-2">
+                        <label class="form-label col-md-4">@AsoRep["AlertMode"]</label>
+                        <div class="col-md-8">
+                            <select class="form-select" @bind="SubParam.Call4AllShedule">
+                                <option value="0">@GsoRep["IDS_STRING_NOTIFY_MODE_1"]</option>
+                                <option value="1">@GsoRep["IDS_STRING_NOTIFY_MODE_2"]</option>
+                                <option value="2">@GsoRep["IDS_STRING_NOTIFY_MODE_3"]</option>
+                                <option value="3">@GsoRep["IDS_STRING_NOTIFY_MODE_4"]</option>
+                                <option value="4">@GsoRep["IDS_STRING_NOTIFY_MODE_5"]</option>
+                            </select>
+                            @if (SubParam.Call4AllShedule != 1)
+                            {
+                                <label class="form-check-label me-3"><input type="checkbox" class="form-check-input me-2" checked="@(SubParam.AllowTTS==1? "checked": null)" @onchange="(e)=>{SubParam.AllowTTS=(bool)(e.Value??false)?1:0;}" />@AsoRep["TextToAudio"]</label>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @*Количество проговоров сообщения*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@AsoRep["RepeatCount"]</label>
+                    <div class="col-md-8">
+                        <input type="number" min=1 max=50 class="form-control" @bind="SubParam.CountRepeat">
+                    </div>
+                </div>
+                @*Кол-во дозвонов*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@AsoRep["CountCall"]</label>
+                    <div class="col-md-8">
+                        <input type="number" min=1 max=50 class="form-control" @bind="SubParam.CountCall">
+                    </div>
+                </div>
+                @*Таймаут между дозвонами при "нет ответа" (с):(Таймаут между дозвонами (с):)*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@GsoRep[(SubParam.SubsystemID==SubsystemType.SUBSYST_SZS?"IDC_STATTMCALL":"IDS_STRING_TIMEOUT_BETWEEN_CALL")]</label>
+                    <div class="col-md-8">
+                        <input type="number" class="form-control" @bind="SubParam.TimeoutAb">
+                    </div>
+                </div>
+                @if (SubParam.SubsystemID == SubsystemType.SUBSYST_ASO)
+                {
+                    @*Таймаут между дозвонами при ответе "занято" (с):*@
+                    <div class="row mb-2">
+                        <label class="form-label col-md-4">@GsoRep["IDS_STRING_TIMEOUT_BETWEEN_CALL_BUSY"]</label>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control" @bind="SubParam.TimeoutAbBu">
+                        </div>
+                    </div>
+                    @*Таймаут между дозвонами при "нет ответа" для Vip абонентов (с):*@
+                    <div class="row mb-2">
+                        <label class="form-label col-md-4">@AsoRep["TimoutNoAnswerVip"]</label>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control" @bind="SubParam.VipTioutNo">
+                        </div>
+                    </div>
+                    @*Таймаут между дозвонами при ответе "занято" для Vip абонентов (с):*@
+                    <div class="row mb-2">
+                        <label class="form-label col-md-4">@AsoRep["TimoutBusyVip"]</label>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control" @bind="SubParam.VipTioutBu">
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <PNoData />
+            }
+        </form>
+    </BodyContent>
+    <ButtonContent>
+        <BCancel OnClick="Cancel" />
+        <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+            <BSumbit FormId="editsubparam" />
+        </CheckP>
+    </ButtonContent>
+</ModalDialog>

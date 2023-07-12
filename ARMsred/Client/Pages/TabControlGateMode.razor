@@ -1,0 +1,13 @@
+﻿@inherits CancellableComponent
+<OnLoadData Data="P16Groups">
+    <div>
+        <div class="tabControl">
+            @foreach (var item in context)
+            {
+                <div class="@(item.Equals(ActiveTab)?"tabControlActive":"")" @onclick="(()=>{SetGroupId.InvokeAsync(item); ActiveTab=item;})">
+                    @item.GroupName
+                </div>
+            }
+        </div>
+    </div>
+</OnLoadData>

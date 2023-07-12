@@ -1,0 +1,28 @@
+﻿@typeparam TItem
+@inherits MultiSelect<TItem>
+
+<div class="@SetClass" @ref="Elem" @onkeyup="KeySet" @onkeydown:preventDefault="_shouldPreventDefault" tabindex="0">
+    @if (Items != null)
+    {
+        @if (Items.Any())
+        {
+            if (ChildContent is not null)
+            {
+                @foreach (var item in Items)
+                {
+                    <div class="@((SelectList?.Contains(item)??false)?"bg-select":"") @ClassItems" @onclick="(e)=>AddSelectItem(e, item)" @ondblclick="DbCallback">
+                        @ChildContent(item)
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <PNoData />
+        }
+    }
+    else
+    {
+        <PLoad />
+    }
+</div>

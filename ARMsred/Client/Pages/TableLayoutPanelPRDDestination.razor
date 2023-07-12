@@ -1,0 +1,16 @@
+﻿@inherits CancellableComponent
+<OnLoadData Data="stateArray">
+    <div class="RegionList p-2 @(GroupId==null?"bg-danger":"")" style="grid-template-columns: repeat(@GetCountColumn,1fr);grid-template-rows: repeat(@GetCountColumn,1fr);">
+        @foreach (var item in context)
+        {
+            <button class="btn btn-@(SetStatus(item).BGColor) text-@(SetStatus(item).Color)" @ondblclick="()=>ActionDbClick(item)" @onclick="()=>SetSelectItem(item)">
+                @if (item.LastCmd > 0)
+                {
+                    <small class="d-block position-relative top-0 text-dark">@($"{ARMRep["Command"]} №{item.LastCmd}")</small>
+                }
+                <b>@item.ObjectName</b>
+                <small class="d-block position-relative bottom-0 text-dark">@item.Comment</small>
+            </button>
+        }
+    </div>
+</OnLoadData>

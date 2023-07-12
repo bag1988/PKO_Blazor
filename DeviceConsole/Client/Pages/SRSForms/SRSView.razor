@@ -1,0 +1,163 @@
+﻿@page "/SRSView"
+@using SharedLibrary.Models;
+@using SharedLibrary.Utilities;
+
+@inject IStringLocalizer<SRSReplace> SRSRep
+@inherits CancellableComponent
+
+<TitleView>@DeviceRep["IDS_STRING_NOTIFY_PARAMS"]</TitleView>
+
+
+<TableScroll Colspan="4" TItem="SRSLine" Items="Model" DbClick="()=>NewOrEdit()" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+    <Thead>
+        <ThSort ThList="ThList" />
+    </Thead>
+    <Tbody Context="item">
+    <td>@(item.Version == 1 ? "LPT" : IpAddressUtilities.UintToString(item.Port))</td>
+    <td>@item.Line</td>
+    <td>@(SubSystemList.FirstOrDefault(x => x.Key?.SubSystID == item.SubSystID).Key?.Name)</td>
+    <td>@(SubSystemList.SelectMany(x => x.Value).FirstOrDefault(x => x.OBJID?.SubsystemID == item.SubSystID && x.OBJID?.ObjID == item.SitID)?.Name)</td>
+    </Tbody>
+    <TSticky>
+        @*Создать бэкап*@
+        <BDark HotKey="@KeyCode.Insert" Text="@GsoRep["Add"]" OnClick="()=>NewOrEdit(false)" />
+        <CheckP BitPos="NameBitsPos.Create">
+            @if (SelectItem != null)
+            {
+                <BEdit OnClick="()=>NewOrEdit()" />
+                @*Удалить*@
+                <BDelete OnClick="()=>IsDelete=true" />
+
+            }
+        </CheckP>
+    </TSticky>
+</TableScroll>
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsAddObject)
+    {
+        @*Настройка СРС*@
+        <ModalDialog Title="@SRSRep["SETTING_SRS"]" ButtonCloseEvent="()=>IsAddObject=false">
+            <BodyContent>
+                <form id="createsrs" @onsubmit="SaveSrs">
+                    @*Способ подключения*@
+                    <div class="mb-3">
+                        <label class="form-label">@SRSRep["CONNECT_TYPE"]</label>
+                        @if (NewItem.Id > 0)
+                        {
+                            <label class="form-control bg-light">@(NewItem.Version == 1 ? "LPT" : NewItem.Version == 2 ? "COM" : NewItem.Version == 3 ? "TCP" : Rep["NoData"])</label>
+                        }
+                        else
+                        {
+                            <select class="form-select" @bind="TypeConnect">
+                                <option value="1">LPT</option>
+                                <option value="2">COM</option>
+                                <option value="3">TCP</option>
+                            </select>
+                        }
+
+                    </div>
+                    @*Порт*@
+                    @if (NewItem.Version == 3)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">@SRSRep["IDS_STRING_ADDR"]</label>
+                            @if (NewItem.Id > 0)
+                            {
+                                <label class="form-control bg-light">@IpAddress</label>
+                            }
+                            else
+                            {
+                                <InputIpAddress @bind-Value="IpAddress" />
+                            }
+                        </div>
+                    }
+                    else if (NewItem.Version == 2)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">@SRSRep["IDS_STRING_PORT"]</label>
+                            @if (NewItem.Id > 0)
+                            {
+                                <label class="form-control bg-light">@NewItem.Port</label>
+                            }
+                            else
+                            {
+                                <input type="number" max="127" class="form-control" @bind="NewItem.Port">
+                            }
+                        </div>
+                    }
+
+                    @*Линия*@
+                    <div class="mb-3">
+                        <label class="form-label">@SRSRep["IDS_STRING_LINE"]</label>
+                        @if (NewItem.Id > 0)
+                        {
+                            <label class="form-control bg-light">@NewItem.Line</label>
+                        }
+                        else
+                        {
+                            <input type="number" max="64" class="form-control" @bind="NewItem.Line">
+                        }
+                    </div>
+
+                    @*Подсистема*@
+                    <div class="mb-3">
+                        <label class="form-label">@SRSRep["IDS_STRING_SUBSYSTEM"]</label>
+                        @if (SubSystemList.Count > 0)
+                        {
+                            <select class="form-select" value="@NewItem.SubSystID" @onchange="ChangeEventArgsSubsystem">
+                                @foreach (var item in SubSystemList)
+                                {
+                                    <option value="@item.Key.SubSystID">@item.Key.Name</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <label class="form-control bg-light">@Rep["NoData"]</label>
+                        }
+                    </div>
+
+                    @*Сценарий*@
+                    <div class="mb-3">
+                        <label class="form-label">@SRSRep["IDS_STRING_SITUATION"]</label>
+                        @if (SubSystemList.FirstOrDefault(x => x.Key?.SubSystID == NewItem.SubSystID).Value?.Count > 0)
+                        {
+                            <select class="form-select" @bind="NewItem.SitID">
+                                @foreach (var item in SubSystemList.FirstOrDefault(x => x.Key?.SubSystID == NewItem.SubSystID).Value)
+                                {
+                                    <option value="@item.OBJID?.ObjID">@item.Name</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <label class="form-control bg-light">@Rep["NoData"]</label>
+                        }
+                    </div>
+                </form>                
+            </BodyContent>
+            <ButtonContent>
+                <BSumbit FormId="createsrs" IsProcessing="IsProcessing" />
+                <BCancel OnClick="()=>IsAddObject=false" />
+            </ButtonContent>
+
+        </ModalDialog>
+    }
+
+    @if (IsDelete && SelectItem != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @SRSRep["IDS_STRING_Q_DELETE_PARAM"]:
+                    <b>@($"{(SelectItem.Version == 1 ? "LPT" : IpAddressUtilities.UintToString(SelectItem.Port))}, {SRSRep["IDS_STRING_SITUATION"]} - {SubSystemList.SelectMany(x => x.Value).FirstOrDefault(x => x.OBJID?.SubsystemID == SelectItem.SubSystID && x.OBJID?.ObjID == SelectItem.SitID)?.Name}")</b>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="DeleteSrs" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

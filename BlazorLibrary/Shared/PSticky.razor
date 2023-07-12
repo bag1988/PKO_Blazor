@@ -1,0 +1,21 @@
+﻿<p class="alert alert-@Color position-sticky py-2" style="z-index:2; @(StyleTop!=null? "top:"+StyleTop+"px;":"") @(StyleBottom!=null? "bottom:"+StyleBottom+"px;":"")">
+    <div class="d-flex align-items-center flex-wrap">
+        @ChildContent
+    </div>   
+</p>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public int? StyleTop{ get; set; }
+
+    [Parameter]
+    public int? StyleBottom{ get; set; }
+
+    [Parameter]
+    public string? Color { get; set; } = "success";
+
+}
+

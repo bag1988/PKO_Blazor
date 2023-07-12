@@ -1,0 +1,180 @@
+﻿@using SharedLibrary.GlobalEnums
+
+
+<ModalDialog Title="@GSOFormRep[ShedileID?.StaffID>0?"IDS_REG_SHEDULE_UPDATE":"IDS_REG_SHEDULE_INSERT"]" ButtonCloseEvent="CalBackEvent">
+    <BodyContent>
+        @if (Model == null)
+        {
+            <PLoad />
+        }
+        else
+        {
+            @if (Model.CSheduleInfo != null && Model.CSheduleInfo.LineParams != null && Model.CSheduleInfo.WeekDays != null && Model.CSheduleInfo.ConnParams?.LocationID != null && Model.CSheduleInfo.TimeRestr != null)
+            {
+                <EditForm id="createschedule" Model="Model" OnValidSubmit="AddShedle">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div>
+                                <label class="form-label">@AsoRep["IDS_STRING_Schedule"]</label>
+                                @*Выбор типа дней*@
+                                <InputRadioGroup @bind-Value="@Model.CSheduleInfo.WeekDays.DayType">
+                                    @foreach (var item in Enum.GetValues<TypeDayName>())
+                                    {
+                                        <div class="form-check">
+                                            <label class="form-check-label"><InputRadio class="form-check-input" Value="@((int)item)" />@AsoRep[item.ToString()]</label>
+                                        </div>
+                                    }
+                                </InputRadioGroup>
+                                @if (Model.CSheduleInfo.WeekDays.DayType == 4)
+                                {
+                                    <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.CSheduleInfo.WeekDays.WeekDay.ToCharArray()[1]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(1)" /> @AsoRep[Days.Mo.ToString()]</label>
+                                    <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.CSheduleInfo.WeekDays.WeekDay.ToCharArray()[2]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(2)" /> @AsoRep[Days.Tu.ToString()]</label>
+                                    <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.CSheduleInfo.WeekDays.WeekDay.ToCharArray()[3]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(3)" /> @AsoRep[Days.We.ToString()]</label>
+                                    <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.CSheduleInfo.WeekDays.WeekDay.ToCharArray()[4]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(4)" /> @AsoRep[Days.Th.ToString()]</label>
+                                    <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.CSheduleInfo.WeekDays.WeekDay.ToCharArray()[5]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(5)" /> @AsoRep[Days.Fr.ToString()]</label>
+                                    <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.CSheduleInfo.WeekDays.WeekDay.ToCharArray()[6]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(6)" /> @AsoRep[Days.Sa.ToString()]</label>
+                                    <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.CSheduleInfo.WeekDays.WeekDay.ToCharArray()[0]=='1'? "checked" : null)" class="form-check-input" @onclick="()=>SetDayWeek(0)" /> @AsoRep[Days.Su.ToString()]</label>
+                                }
+                            </div>
+                            <hr />
+                            <div class="mb-3">
+                                <label class="form-check-label me-1"><input type="checkbox" class="form-check-input" checked="@(Model.CSheduleInfo.TimeRestr.TimeType==1? "checked" : null)" @onchange="(e)=>Model.CSheduleInfo.TimeRestr.TimeType=((bool)(e?.Value??false)==true?1:0)" /> @AsoRep["IDS_STRING_Limits"]</label>
+                                @if (Model.CSheduleInfo.TimeRestr.TimeType == 1)
+                                {
+                                    @*Начало*@
+                                    <div class="mt-2 mb-3 d-flex align-items-center">
+                                        <label class="form-label w-25">@AsoRep["IDS_TIMEBEGIN"]</label>
+                                        <input type="time" class="form-control" @bind-value="@StartTime" />
+                                    </div>
+                                    @*Окончание*@
+                                    <div class="mb-3 d-flex align-items-center">
+                                        <label class="form-label w-25">@AsoRep["IDS_TIMEEND"]</label>
+                                        <input type="time" class="form-control" @bind-value="@EndTime" />
+                                    </div>
+                                }
+                            </div>
+
+                            @*Контроль состояния*@
+                            <div class="mb-3">
+                                <label class="form-check-label me-1"><input type="checkbox" class="form-check-input" @bind="m_bCheckDeviceEnable" /> @GSOFormRep["IDC_CHECK_STATE"]</label>
+                                @if (SheduleList != null && m_bCheckDeviceEnable)
+                                {
+                                    <select class="form-select" @bind="SheduleID">
+                                        @foreach (var item in SheduleList)
+                                        {
+                                            <option value="@item.SheduleID">@string.Format("{0:#,##0} ч. {1:mm} мин.", Math.Truncate(item.Duration.ToTimeSpan().TotalHours), item.Duration.ToTimeSpan())</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+
+                            @*Сжатие звука при передаче*@
+                            <div class="mb-3">
+                                <label class="form-check-label me-1"><input type="checkbox" checked="@(Model.MsgPack==1? "checked" : null)" class="form-check-input" @onchange="(e)=>Model.MsgPack=((bool)(e?.Value??false)==true?1:0)" /> @GSOFormRep["IDC_MSG_PACK"]</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+
+                            @*Тип линии связи*@
+                            <div class="mb-3">
+                                <label class="form-label">@GSOFormRep["TypeLine"]</label>
+                                <select class="form-select" @bind="Model.CSheduleInfo.ConnParams.ConnType">
+                                    @foreach (var item in LineTypes)
+                                    {
+                                        <option value="@item.Number">@item.Str</option>
+                                    }
+                                </select>
+                            </div>
+
+                            @*Выбрана телефонная линия*@
+                            @if (Model.CSheduleInfo.ConnParams.ConnType == (int)BaseLineType.LINE_TYPE_DIAL_UP)
+                            {
+                                @*Параметры и характеристики линии связи*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GSOFormRep["ParamLine"]</label>
+                                    @if (RestrictList?.Any() ?? false)
+                                    {
+                                        @foreach (var item in RestrictList)
+                                        {
+                                            <div class="pointer">
+                                                <label class="form-check-label me-1">
+                                                    <input type="checkbox" checked="@(IsChecked(item)? "checked" : null)" class="form-check-input" @onclick="()=>SetRestrictBitStatus(item)" />
+                                                    @item.RestrictName
+                                                </label>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+                                <hr />
+
+                                @*Тип оповещения*@
+                                <div class="mb-3">
+                                    <label class="form-label w-50">@AsoRep["TypeNotify"]</label>
+                                    <select class="form-select" @bind="Model.CSheduleInfo.ConnParams.DeviceType">
+                                        @if (ConnTypes != null)
+                                        {
+                                            @foreach (var item in ConnTypes)
+                                            {
+                                                <option value="@item.Number">@item.Str</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                @*Местоположение линии связи*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GSOFormRep["LocationLine"]</label>
+                                    <select class="form-select" @bind="Model.CSheduleInfo.ConnParams.LocationID.ObjID">
+                                        @foreach (var item in LocationList)
+                                        {
+                                            <option value="@item.OBJID.ObjID">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                @*Номер телефона*@
+                                <div class="mb-3">
+                                    <label class="form-label">@AsoRep["PhoneNumber"]</label>
+                                    <input type="text" class="form-control" @bind="Model.CSheduleInfo.ConnParams.ConnParam">
+                                </div>
+                            }
+                            @*Выбрана ЛВС*@
+                            @if (Model.CSheduleInfo.ConnParams.ConnType == (int)BaseLineType.LINE_TYPE_UNDEF)
+                            {
+                                @*Сетевое имя*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GSOFormRep["IDS_CU_UNC"]</label>
+                                    <input type="text" class="form-control" @bind="Model.CSheduleInfo.ConnParams.ConnParam">
+                                </div>
+                            }
+
+                            @*Выбрана выделенная линия*@
+                            @if (Model.CSheduleInfo.ConnParams.ConnType == (int)BaseLineType.LINE_TYPE_DEDICATED)
+                            {
+                                @*Номер линии*@
+                                <div class="mb-3">
+                                    <label class="form-label">@GsoRep["NumberLine"]</label>
+                                    <input type="number" min="1" max="99" class="form-control" @bind="Model.CSheduleInfo.ConnParams.ConnParam">
+                                </div>
+                            }
+                            @*Приоритет*@
+                            <div class="mb-3">
+                                <label class="form-label">@GSOFormRep["IDS_PRIORITY"]</label>
+                                <input type="number" min="1" max="99" class="form-control" @bind="Model.CSheduleInfo.ConnParams.Prior">
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            }
+        }
+    </BodyContent>
+    <ButtonContent>
+        <CheckP BitPos="NameBitsPos.Create">
+            <BSumbit FormId="createschedule" AddClass="me-2" Text="@(ShedileID?.ObjID>0?GsoRep["IDS_STRING_SAVE"]: AsoRep["IDS_STRING_ADD_SHEDULE"])" IsProcessing="IsProcessing" />
+        </CheckP>
+        <BCancel OnClick="CalBackEvent" />
+    </ButtonContent>
+</ModalDialog>
+
+

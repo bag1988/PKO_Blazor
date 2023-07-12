@@ -1,0 +1,61 @@
+﻿@page "/ViewMessages"
+
+@using SMSSGsoProto.V1;
+@inherits FiltrInherits<MessageFiltr>
+
+<TitleView>@TitleName</TitleView>
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="MessageItem" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="SelectedList" SetSelectList="AddItem">
+        <Tbody Context="item">
+        <td>@item.MsgName</td>
+        <td>@item.MsgComm</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                <BCreate OnClick="()=>{SelectedList=null;IsViewEdit=true;}" />
+                @if (SelectedList?.Any() ?? false)
+                {
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                }
+                @if (SelectedList?.Count > 0)
+                {
+                    <BDelete OnClick="ViewDelete" />
+                }
+                <BSecondary AddClass="m-1 float-end" Text="@GsoRep[request.ObjID.SubsystemID==0?"IDS_STRING_SUBSYSTEM_MESSAGES":"IDS_STRING_OTHER_MESSAGES"]" OnClick="ChangeView" />
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateMessage TitleText="@GsoRep[SelectedList?.LastOrDefault()!=null?"IDS_REG_MESS_UPDATE":"IDS_REG_MESS_INSERT"]" CallBack="CallBackEvent" MsgId="@SelectedList?.LastOrDefault()?.MsgID" Edit="true" />
+    }
+
+    @if ((SelectedList?.Any() ?? false) && IsDelete == true)
+    {
+        <ModalDialog Title="@GsoRep["IDS_REG_MESS_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_STRING_MULTI_DELETE_Q"]:
+                </p>
+                <p class="alert alert-danger">
+                    <ul>
+                        @foreach (var item in SelectedList)
+                        {
+                            <li>@item.MsgName</li>
+                        }
+                    </ul>
+                </p>
+            </BodyContent>           
+            <ButtonContent>
+                <BDelete OnClick="DeleteMsg" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

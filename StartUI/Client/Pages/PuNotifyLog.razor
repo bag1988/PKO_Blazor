@@ -1,0 +1,92 @@
+﻿@page "/PuNotifyLog/{SessId:int?}"
+@using SMSSGsoProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<SesionListFiltr>
+
+<TitleView>@StartUIRep["IDS_HELP_SESS_RESULTS"]</TitleView>
+@if (!IsPageLoad)
+{
+    <div class="row">
+        <div class="col-md-4">
+            <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+            <TableVirtualize @ref="table" TItem="Tuple<bool, CSessions>" Provider="GetProvider" SelectList="SelectedList" SetSelectList="GetItemInfo" MinWidth="0" IsSetFirstSelect="true">
+                <Tbody Context="item">
+                    @if (item.Item1)
+                    {
+                    <td>@item.Item2.TSessBeg?.ToDateTime().ToLocalTime()</td>
+                    <td>@item.Item2.TSessEnd?.ToDateTime().ToLocalTime()</td>
+                    }
+                    else
+                    {
+                    <td colspan="2"></td>
+                    }
+                <td>@item.Item2.TSitName</td>
+                </Tbody>
+                <TSticky>
+                    <BPrint OnClick="GetReport" />
+                    <CheckP BitPos="NameBitsPos.DeleteResultNotify">
+                        @if (SelectedList?.Any() ?? false)
+                        {
+                            <BDelete OnClick="@(()=>IsViewDelete=true)" />
+                        }
+                    </CheckP>
+                </TSticky>
+            </TableVirtualize>
+        </div>
+        <div class="col-md-8">
+            @if (SubsystemID == SubsystemType.SUBSYST_GSO_STAFF)
+            {
+                <DataGridViewCommonInfo @ref="dataGridViewCommn"></DataGridViewCommonInfo>
+                <DataGridViewDetailInfoResult @ref="dataGridViewDetailInfoResult"></DataGridViewDetailInfoResult>
+            }
+            else if (SubsystemID == SubsystemType.SUBSYST_ASO)
+            {
+                <DataGridViewCommonInfoASO @ref="dataGridViewAso"></DataGridViewCommonInfoASO>
+            }
+            else if (SubsystemID == SubsystemType.SUBSYST_SZS)
+            {
+                <DataGridViewCommonInfoUUZS @ref="dataGridViewUUZS"></DataGridViewCommonInfoUUZS>
+            }
+            else if (SubsystemID == SubsystemType.SUBSYST_P16x)
+            {
+                <DataGridViewCommonInfoSMP @ref="dataGridViewSMP"></DataGridViewCommonInfoSMP>
+            }
+        </div>
+    </div>
+
+    <CheckP BitPos="NameBitsPos.DeleteResultNotify">
+        @if (IsViewDelete)
+        {
+            <ModalDialog Title="@StartUIRep["IDS_DELRESTITLE"]" ButtonCloseEvent="CloseDelete">
+                <BodyContent>
+                    @if (SelectedList != null)
+                    {
+                        <p class="alert alert-danger">
+                            @StartUIRep["IDS_ASKDELRES"]@*Вы действительно хотите удалить выбранные сеансы оповещения?*@
+                        </p>
+                        <p class="alert alert-danger">
+
+                            @foreach (var item in SelectedList.Select(x => x.Item2).GroupBy(x => x.ObjID.ObjID))
+                            {
+                                <span class="d-block">@($"№{item.Key}, {StartUIRep["IDS_SITUATIONCOLUMN"]} - {string.Join(", ", item.Select(x => x.TSitName))}")</span>
+                            }
+                        </p>
+                    }
+                </BodyContent>
+                <ButtonContent>
+                    @if (!IsDeleteProcessing)
+                    {
+                        <BClose OnClick="CloseDelete" />
+                    }
+                    @if (SelectedList?.Any() ?? false)
+                    {
+                        <BDelete OnClick="@(()=>DeleteSession())" />
+                    }
+                </ButtonContent>
+            </ModalDialog>
+        }
+    </CheckP>
+}
+
+
+

@@ -1,0 +1,79 @@
+﻿@*Запись сообщения*@
+<h5>@DeviceRep["RecordMessage"]</h5>
+
+@*Используемая звуковая карта*@
+<div class="row mb-2">
+    <label class="form-label col-md-4">@DeviceRep["SoundCardUsed"]</label>
+    <div class="col-md-8">
+        <select @ref="elem" class="form-select" @bind="SettingRec.Interfece">
+            <option value="">@Rep["DEFAULT"]</option>
+            @if (Model != null)
+            {
+                @foreach (var item in Model.Where(x => x.kind == "audioinput" && x.deviceId != "communications" && x.deviceId != "default"))
+                {
+                    <option value="@item.deviceId">@item.label</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+@*Уровень записи (%)*@
+<div class="row mb-2">
+    <label class="form-label col-md-4">@DeviceRep["RecordingLevel"]</label>
+    <div class="col-md-8">
+        <input type="number" class="form-control" @bind="SettingRec.SndLevel">
+    </div>
+</div>
+
+@*Формат сообщения*@
+@if (SettingRec?.SndFormat != null)
+{
+    <EditFormatSound HeaderSound="@(new(SettingRec.SndFormat.ToBytes()))" ActionNext="ChangeFormat" />
+}
+@*Прослушивание сообщения*@
+<h5>@DeviceRep["ListenMessage"]</h5>
+
+@*Используемая звуковая карта*@
+<div class="row mb-2">
+    <label class="form-label col-md-4">@DeviceRep["SoundCardUsed"]</label>
+    <div class="col-md-8">
+        <select class="form-select" @bind="SettingSound.Interfece">
+            <option value="">@Rep["DEFAULT"]</option>
+            @if (Model != null)
+            {
+                @foreach (var item in Model.Where(x => x.kind == "audiooutput" && x.deviceId != "communications" && x.deviceId != "default"))
+                {
+                    <option value="@item.deviceId">@item.label</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+@*Уровень воспроизведения (%)*@
+<div class="row mb-2">
+    <label class="form-label col-md-4">@DeviceRep["PlaybackLevel"]</label>
+    <div class="col-md-8">
+        <input type="number" class="form-control" @bind="SettingSound.SndLevel">
+    </div>
+</div>
+
+<ButtonModal>
+    <CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.Create">
+        <BSave OnClick="SaveSetting" />
+        @if (Callback.HasDelegate)
+        {
+            <BClose OnClick="()=>Callback.InvokeAsync()" />
+        }
+        else
+        {
+            <BDark IsOutline="true" Text="@GsoRep["Reset"]" OnClick="OnInitializedAsync" />
+            @if (IsSave)
+            {
+                <span class="m-2 text-success">@AsoRep["IDS_OK_SAVE"]</span>
+            }
+        }
+
+    </CheckP>
+</ButtonModal>

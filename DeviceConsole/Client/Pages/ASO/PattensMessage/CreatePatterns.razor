@@ -1,0 +1,59 @@
+﻿@inherits CancellableComponent
+
+<ModalDialog Title="@AsoRep[Model!=null?"EDIT_PARAM":"ADD_PARAM"]" ButtonCloseEvent="Close">
+    <BodyContent>
+        @*Сценарий*@
+        <div class="mb-3">
+            <label class="form-label">@StartUIRep["IDS_SITUATION"]</label>
+            <select class="form-select" @bind="NewModel.SitID">
+                <option value="0">@AsoRep["ALL_SIT"]</option>
+                @if (SitList != null)
+                {
+                    @foreach (var item in SitList)
+                    {
+                        <option value="@item.SitID">@item.SitName</option>
+                    }
+                }
+            </select>
+        </div>
+        @*Абонент*@
+        <div class="mb-3">
+            <label class="form-label">@AsoRep["IDS_ABONENT"]</label>
+            <input type="text" placeholder="@AsoRep["ALL_ABON"]" list="AbonList" value="@NewModel.AbonName" class="form-control" @onblur="SetAbName" @oninput="GetFiltrAbonForName" />
+            @if (AbonList != null)
+            {
+                <datalist id="AbonList">
+                    @foreach (var item in AbonList)
+                    {
+                        <option value="@item.Str"></option>
+                    }
+                </datalist>
+            }
+            @if (NewModel.AbonName.Length < 3 && NewModel.AbonName.Length > 0)
+            {
+                <small>@GsoRep["INPUT_MIN_LENGTH"]</small>
+            }
+            else if ((AbonList == null || AbonList.Count == 0) && NewModel.AbonName.Length > 2 && NewModel.AbonID == 0)
+            {
+                <small class="text-danger">@GsoRep["ABON_NOT_FOUND"]</small>
+            }
+
+        </div>
+
+        @*Имя параметра*@
+        <div class="mb-3">
+            <label class="form-label">@AsoRep["PARAM_NAME"]</label>
+            <InputFocus @bind-Value="NewModel.ParamName" />
+        </div>
+
+        @*Значение параметра*@
+        <div class="mb-3">
+            <label class="form-label">@AsoRep["PARAM_VALUE"]</label>
+            <textarea class="form-control" @bind="NewModel.ParamValue"></textarea>
+        </div>
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="SaveMsgParam" />
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>

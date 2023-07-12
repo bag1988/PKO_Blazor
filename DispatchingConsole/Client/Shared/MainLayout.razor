@@ -1,0 +1,49 @@
+﻿@using BlazorLibrary.FolderForInherits;
+@using BlazorLibrary.Shared.ObjectTree;
+@using SMDataServiceProto.V1;
+@using SharedLibrary.Models;
+@inherits PushInherits;
+
+<Main Title="Пульт оперативно-диспетчерской связи" Width="300">
+    <Menu>
+        <video @ref="localVideo" class="m-2 d-none" id="localVideo" muted autoplay poster="/novideo.svg"></video>
+
+        <DivNavLink>
+            <BDark Text="Добавить" AddClass="w-100" OnClick="()=>IsAdd=true" />
+            <TreeListUnlimit TItem="CGetRegList" Items="GetItemsStaff" SelectList="@SelectList" SetSelectList="SetSelectList">
+                <ContentView Context="item">
+                    @item.CCURegistrList?.CUName
+                </ContentView>
+            </TreeListUnlimit>
+        </DivNavLink>
+    </Menu>
+    <ChildContent>
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
+    </ChildContent>
+</Main>
+
+@if (IsAdd)
+{
+    <ModalDialog Title="Добавить пункт" ButtonCloseEvent="CloseDialog">
+        <BodyContent>
+            <form id="createendpoint" @onsubmit="AddConnectInfo">
+                @*Наименование*@
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["IDS_STRING_NAME"]</label>
+                    <InputFocus @bind-Value="NewName" />
+                </div>
+                @*Ip адрес*@
+                <div class="mb-3">
+                    <label class="form-label">Ip адрес</label>
+                    <InputIpAddress @bind-Value="NewIp" />
+                </div>
+            </form>
+        </BodyContent>
+        <ButtonContent>
+            <BSumbit FormId="createendpoint" />
+            <BCancel OnClick="CloseDialog" />
+        </ButtonContent>
+    </ModalDialog>
+}

@@ -1,0 +1,432 @@
+﻿@page "/Settings"
+@using SyntezServiceProto.V1
+@using SharedLibrary.Models
+<TitleView>@GsoRep["IDS_STRING_SYSTEM_PARAMS"]</TitleView>
+
+@if (Model != null)
+{
+    <FormDefault FormID="settingform" OnSumbit="SetParamsList">
+        <div class="row">
+            <div class="col-md-6">
+                @*Идентификатор ПУ*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@GsoRep["STAFFID"]</label>
+                    <div class="col-md-8 d-flex align-items-center">
+                        <label class="form-control bg-light">@request.ObjID.StaffID</label>
+                        <BWarning Text="@GsoRep["IDS_STRING_EDIT"]" OnClick="()=>IsChangeStafID=true" />
+                    </div>
+                </div>
+
+                @*Адрес локального ПУ*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.LocalIpAddress)]</label>
+                    <div class="col-md-8 d-flex align-items-baseline">
+                        <InputIpAddress @bind-Value="IpAdress" />
+                        <b>:</b>
+                        <label class="form-control bg-light ms-1 w-25">@Port</label>
+                    </div>
+                </div>
+
+                @*Показывать окно информационных сообщений*@
+                <div class="row mb-2">
+                    <label class="form-check-label">@DeviceRep[nameof(ParamsSystem.NotifyStaff)] <input type="checkbox" class="form-check-input" checked="@(Model.NotifyStaff=="1"? "checked" : null)" @onchange="@((e)=>Model.NotifyStaff=((bool)(e.Value??false))?"1":"0")" /></label>
+                </div>
+
+                @*Имя ПЭВМ (IP адрес) для вывода окна информационных сообщений*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.NotifyStaffName)]</label>
+                    <div class="col-md-8">
+                        <input disabled="@(Model.NotifyStaff=="0"? "disabled":null)" type="text" class="form-control" @bind="@Model.NotifyStaffName">
+                    </div>
+                </div>
+
+                @*Имя домена*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.NotifyStaffDomain)]</label>
+                    <div class="col-md-8">
+                        <input disabled="@(Model.NotifyStaff=="0"? "disabled":null)" type="text" class="form-control" @bind="@Model.NotifyStaffDomain">
+                    </div>
+                </div>
+
+                @*Имя пользователя ОС для доступа к ПЭВМ*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.NotifyStaffUserName)]</label>
+                    <div class="col-md-8">
+                        <input disabled="@(Model.NotifyStaff=="0"? "disabled":null)" type="text" class="form-control" @bind="@Model.NotifyStaffUserName">
+                    </div>
+                </div>
+
+                @*Пароль пользователя ПЭВМ*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.NotifyStaffPassword)]</label>
+                    <div class="col-md-8">
+                        <input disabled="@(Model.NotifyStaff=="0"? "disabled":null)" type="password" class="form-control" @bind="@Model.NotifyStaffPassword">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                @*Показывать окно информационных сообщений*@
+                <div class="row mb-2">
+                    <label class="form-check-label">@DeviceRep[nameof(ParamsSystem.ControlUnitMode)] <input disabled="@(Model.NotifyStaff=="0"? "disabled":null)" type="checkbox" class="form-check-input" checked="@(Model.ControlUnitMode=="1"? "checked" : null)" @onchange="@((e)=>Model.ControlUnitMode=((bool)(e.Value??false))?"1":"0")" /></label>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        @*Сигнализация при ошибках "Нет связи с УЗС"*@
+                        <label class="form-check-label">@DeviceRep[nameof(ParamsSystem.UZSMonitorTimeOutDetect)] <input type="checkbox" class="form-check-input" checked="@(Model.UZSMonitorTimeOutDetect=="1"? "checked" : null)" @onchange="@((e)=>Model.UZSMonitorTimeOutDetect=((bool)(e.Value??false))?"1":"0")" /></label>
+                        @*Сигнализация при ошибках тестирования УЗС*@
+                        <label class="form-check-label">@DeviceRep[nameof(ParamsSystem.UZSMonitorErrorDetect)] <input type="checkbox" class="form-check-input" checked="@(Model.UZSMonitorErrorDetect=="1"? "checked" : null)" @onchange="@((e)=>Model.UZSMonitorErrorDetect=((bool)(e.Value??false))?"1":"0")" /></label>
+                    </div>
+                    <div class="col-md-6">
+                        @*Минимальное время между оповещениями обслуживающего персонала об авариях*@
+                        <label class="form-label">@DeviceRep[nameof(ParamsSystem.MinTimeBetweenSupportNotify)]</label>
+                        <div class="col-md-12">
+                            <input type="time" class="form-control" value="@(TimeSpan.Parse(Model.MinTimeBetweenSupportNotify??"00:00"))" @onchange="@((e)=>Model.MinTimeBetweenSupportNotify=e.Value?.ToString())">
+                        </div>
+                    </div>
+
+                </div>
+
+                @*Оповещение обслуживающего персонала при авариях*@
+                <div class="row mb-2">
+                    <label class="form-label">@DeviceRep[nameof(ParamsSystem.SitSupportNotify)]</label>
+                    <div class="col-md-12">
+                        <select disabled="@((Model.UZSMonitorErrorDetect=="0" && Model.UZSMonitorTimeOutDetect=="0")? "disabled":null)" class="form-select" value="@Model.SitSupportNotify" @onchange="@((e)=>Model.SitSupportNotify=e.Value?.ToString())">
+                            <option value="0 0 0">@GsoRep["IDS_STRING_WITHOUT_NOTIFY"]</option>
+                            @if (ListSit != null)
+                            {
+                                @foreach (var item in ListSit)
+                                {
+                                    <option value="@($"{item.SitID} {request.ObjID.StaffID} {request.ObjID.SubsystemID}")">@item.SitName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        @*Синтез фонограм из текста*@
+        <h5>@DeviceRep["TTSFonogramm"]</h5>
+        <div>
+            @*Частота*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.TTSFREQUENCY)]</label>
+                <div class="col-md-8">
+                    <select class="form-select" @bind="@Model.TTSFREQUENCY">
+                        <option value="8000">8000</option>
+                        <option value="16000">16000</option>
+                        <option value="22050">22050</option>
+                    </select>
+                </div>
+            </div>
+
+            @*Голос(мужскойб женский)*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep["Voice"]</label>
+                <div class="col-md-8">
+                    <select class="form-select" @bind="@Model.TTSVoice">
+                        <option value="1">@DeviceRep["Male"]</option>
+                        <option value="0">@DeviceRep["Female"]</option>
+                    </select>
+                </div>
+
+            </div>
+
+            @*Прослушать сообщение*@
+            <div class="row mb-2">
+                <div class="col-md-12">
+                    <textarea class="form-control" @bind="@TestText" @bind:event="oninput"></textarea>
+                    <SyntezPlayer Text="@TestText" Rate="@int.Parse(Model.TTSFREQUENCY)" VoiceIsMen="@(Model.TTSVoice=="0"?false:true)" />
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        <div style="display:none;">
+            @*Каталог формируемых фонограмм*@
+            <h5>@DeviceRep["CatalogFonogramm"]</h5>
+
+            @*В подсистеме П16х*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.P16xFolder)]</label>
+                <div class="col-md-8 d-flex align-items-start">
+                    <input type="text" class="form-control" @bind="@Model.P16xFolder">
+                    <BDark AddClass="ms-1" Text="..." OnClick="@(()=>ViewFolder(nameof(ParamsSystem.P16xFolder)))" />
+                </div>
+            </div>
+
+            @*В АРМ руководителя*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.ARMPath)]</label>
+                <div class="col-md-8 d-flex align-items-start">
+                    <input type="text" class="form-control" @bind="@Model.ARMPath">
+                    <BDark AddClass="ms-1" Text="..." OnClick="@(()=>ViewFolder(nameof(ParamsSystem.ARMPath)))" />
+                </div>
+            </div>
+
+            @*В системе управления*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.Message_Log)]</label>
+                <div class="col-md-8 d-flex align-items-start">
+                    <input type="text" class="form-control" @bind="@Model.Message_Log">
+                    <BDark AddClass="ms-1" Text="..." OnClick="@(()=>ViewFolder(nameof(ParamsSystem.Message_Log)))" />
+                </div>
+            </div>
+
+            @*Каталог сохранения сообщений*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.PathSaveMsg)]</label>
+                <div class="col-md-8 d-flex align-items-start">
+                    <input type="text" class="form-control" @bind="@Model.PathSaveMsg">
+                    <BDark AddClass="ms-1" Text="..." OnClick="@(()=>ViewFolder(nameof(ParamsSystem.PathSaveMsg)))" />
+                </div>
+            </div>
+
+            @*Каталог записи ответов*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.PathAsoRecord)]</label>
+                <div class="col-md-8 d-flex align-items-start">
+                    <input type="text" class="form-control" @bind="@Model.PathAsoRecord">
+                    <BDark AddClass="ms-1" Text="..." OnClick="@(()=>ViewFolder(nameof(ParamsSystem.PathAsoRecord)))" />
+                </div>
+
+            </div>
+
+            @*Каталог хранения сформированных фонограмм*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep[nameof(ParamsSystem.TTSMessagePath)]</label>
+                <div class="col-md-8 d-flex align-items-start">
+                    <input type="text" class="form-control" @bind="@Model.TTSMessagePath">
+                    <BDark AddClass="ms-1" Text="..." OnClick="@(()=>ViewFolder(nameof(ParamsSystem.TTSMessagePath)))" />
+                </div>
+            </div>
+
+
+            @*Каталог фонограмм*@
+            @* <div class="row mb-2">
+        <label class="form-label col-md-4">@DeviceRep["PathFonogramm"]</label>
+        <div class="col-md-8 d-flex align-items-start">
+        <input type="text" class="form-control" @bind="@Model.PathFonogramm">
+        <BDark AddClass="ms-1" Text="..." OnClick="@(()=>ViewFolder("PathFonogramm"))" />
+        </div>
+        </div>*@
+
+            <hr />
+        </div>
+
+        @*Период оперативного хранения(в сутках)*@
+        <h5>@DeviceRep["PeriodSaveDay"]</h5>
+
+        <div class="row">
+            <div class="col-md-6">
+                @*Протокол работы устройства*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["STORAGE_CHECKDEVICE_PERIOD"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.STORAGE_CHECKDEVICE_PERIOD">
+                    </div>
+                </div>
+
+                @*Журнал событий*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["STORAGE_EVENTLOG_PERIOD"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.STORAGE_EVENTLOG_PERIOD">
+                    </div>
+                </div>
+
+                @*История оповещения*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["STORAGE_NOTIFYHISTORY_PERIOD"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.STORAGE_NOTIFYHISTORY_PERIOD">
+                    </div>
+                </div>
+
+                @*Сохранять запись ответа(фонограммы) не более, суток*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["SaveMaxDayRecord"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.SaveDay">
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-6">
+
+                @*Фонограммы АРМ*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["STORAGE_MSG_ARM_PERIOD"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.STORAGE_MSG_ARM_PERIOD">
+                    </div>
+                </div>
+
+                @*Фонограммы П16х*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["STORAGE_MSG_P16x_PERIOD"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.STORAGE_MSG_P16x_PERIOD">
+                    </div>
+                </div>
+
+                @*Фонограммы TTS*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["STORAGE_MSG_TTS_PERIOD"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.STORAGE_MSG_TTS_PERIOD">
+                    </div>
+                </div>
+
+                @*Фонограммы ПУ*@
+                <div class="row mb-2">
+                    <label class="form-label col-md-6">@DeviceRep["STORAGE_MSG_CU_PERIOD"]</label>
+                    <div class="col-md-6">
+                        <input type="number" min=0 max=9999 class="form-control" @bind="Model.STORAGE_MSG_CU_PERIOD">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <hr />
+
+        <div style="display:none;">
+            @*При критическом сбое(отсутствии связи)*@
+            <h5>@DeviceRep["InCriticalError"]</h5>
+
+            <div class="row mb-2">
+                @*Перезагрузка ПЭВМ*@
+                <label class="form-check-label">@DeviceRep["RESTART_ON_CRITICAL_ERROR"] <input type="checkbox" class="form-check-input" checked="@(Model.RESTART_ON_CRITICAL_ERROR=="1"? "checked" : null)" @onchange="@((e)=>Model.RESTART_ON_CRITICAL_ERROR=((bool)(e.Value??false))?"1":"0")" /></label>
+                @*Отключение питания*@
+                <label class="form-check-label">@DeviceRep["POWEROFF_ON_CRITICAL_ERROR"] <input type="checkbox" class="form-check-input" checked="@(Model.POWEROFF_ON_CRITICAL_ERROR=="1"? "checked" : null)" @onchange="@((e)=>Model.POWEROFF_ON_CRITICAL_ERROR=((bool)(e.Value??false))?"1":"0")" /></label>
+
+                @*Список серверов, пропадание связи с которыми является критическим сбоем*@
+                <div class="col-md-12">
+                    <input type="text" class="form-control" @bind="@Model.SERVER_LIST_4_CHECK_NETWORK">
+                </div>
+
+            </div>
+
+            <hr />
+        </div>
+
+        @*Отчеты*@
+        <h5>@RepoterRep["IDS_REPORT"]</h5>
+
+        <div>
+            @*Адрес сервера отчетов*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep["ServerReporterAddress"]</label>
+                <div class="col-md-8">
+                    <input type="text" class="form-control" @bind="@Model.ServerReporterAddress">
+                </div>
+            </div>
+
+            @*Параметр адрес отправителя отчётов.*@
+            <div class="row mb-2">
+                <label class="form-label col-md-4">@DeviceRep["ReporterMailRecipient"]</label>
+                <div class="col-md-8">
+                    <input type="text" class="form-control" @bind="@Model.ReporterMailRecipient">
+                </div>
+            </div>
+        </div>
+
+        <hr />
+    </FormDefault>
+    <ButtonModal>
+        <CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.Create">
+            <BSumbit FormId="settingform" IsProcessing="IsProcessing" />
+            <BDark HotKey="@KeyCode.Escape" IsOutline="true" Text="@GsoRep["Reset"]" OnClick="OnInitializedAsync" />
+            @if (IsSave)
+            {
+                <span class="m-2 text-success">@AsoRep["IDS_OK_SAVE"]</span>
+            }
+        </CheckP>
+    </ButtonModal>
+
+}
+else
+{
+    <PLoad />
+}
+
+<CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.Create">
+
+    @if (IsChangeStafID)
+    {
+        <ModalDialog Title="@DeviceRep["IDS_STRING_WARNING"]" ButtonCloseEvent="()=>IsChangeStafID=false">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    @GsoRep["WARNING_UPDATE_STAFFID"]
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BWarning Text="@GsoRep["IDS_STRING_EDIT"]" OnClick="GenerateStaffId" />
+                <BCancel OnClick="()=>IsChangeStafID=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsViewDir)
+    {
+        <ModalDialog Title="@DeviceRep["SelectFolder"]" ButtonCloseEvent="()=>IsViewDir=false">
+            <BodyContent>
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+
+                            <li @onclick="()=>GoBackDir(null)" class="breadcrumb-item"><span class="pointer link-primary">....</span></li>
+                            @if (SelectDir?.Count > 0)
+                            {
+                                @foreach (var item in SelectDir)
+                                {
+
+                                    @if (SelectDir.Last().Equals(item))
+                                    {
+                                        <li class="breadcrumb-item active" aria-current="page">@item</li>
+                                    }
+                                    else
+                                    {
+                                        <li @onclick="()=>GoBackDir(item)" class="breadcrumb-item"><span class="pointer link-primary">@item</span></li>
+                                    }
+                                }
+                            }
+                        </ol>
+                    </nav>
+
+                    @if (ChildDirectories != null)
+                    {
+                        @if (ChildDirectories.Any())
+                        {
+                            @foreach (var item in ChildDirectories)
+                            {
+                                <span class="d-block pointer" @onclick="()=>ChangeSelectDir(item.ToList())">
+                                    @item.LastOrDefault()
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <PNoData />
+                        }
+
+                    }
+                    else
+                    {
+                        <PLoad />
+                    }
+                </div>
+            </BodyContent>
+            <ButtonContent>
+                <BSave OnClick="@(()=>SetNewPathToParam())" />
+                <BCancel OnClick="()=>IsViewDir=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

@@ -1,0 +1,129 @@
+﻿@page "/"
+@using BlazorLibrary.Shared.FiltrComponent
+@using BlazorLibrary.Shared.ObjectTree
+@using ArmODProto.V1;
+@using FiltersGSOProto.V1;
+@using SMDataServiceProto.V1;
+@inherits FiltrInherits<ObjectArmFiltr>
+
+<TitleView>@ARMSetRep["OBJECT_ARM"]</TitleView>
+<div class="row">
+    <div class="col-md-4">
+        <DivScroll>
+            @*Группы*@
+            <PHeader>@ARMSetRep["GROUP"]</PHeader>
+            <TreeListUnlimit TItem="FillNodeGroupItems" Items="GetItemsGroup" DbClick="()=>NewOrEditGroup()" SelectList="@(SelectList!=null ? new (){SelectList}:null)" SetSelectList="SetSelectList">
+                <ContentView>
+                    @context.ObjectName
+                </ContentView>
+            </TreeListUnlimit>
+            <ButtonModal>
+                @*Добавить*@
+                <BDark HotKey="@KeyCode.Insert" Text="@GsoRep["Add"]" OnClick="()=>NewOrEditGroup(false)" />
+                @if (GetSelectGroup != null && GetSelectObj == null)
+                {
+                    <BEdit OnClick="()=>NewOrEditGroup()" />
+                    <BDelete OnClick="()=>IsDeleteGroup=true" />
+                }
+                @if (GetSelectObj != null)
+                {
+                    <BDelete OnClick="DeleteItemToGroup" />
+                }
+                @if (CommandList?.Count > 0)
+                {
+                    <hr class="w-75 m-auto mt-2 mb-3">
+                    <div class="bg-white mt-2">
+                        <TableDefault MinWidth="0" Colspan="2" Items="CommandList" IsSetFocus="false" IsOnKeyDown="false">
+                            <Thead>
+                            <th style="width:2%;">№</th>
+                            <th>@ARMSetRep["NAME_COMMAND"]</th>
+                            </Thead>
+                            <Tbody>
+                            <td>@context.Command</td>
+                            <td>
+                                <input type="text" class="form-control form-control-sm" value="@context.CommandName" @oninput="(e)=> ChangeCommandName(e, context)" />
+                            </td>
+                            </Tbody>
+                        </TableDefault>
+                    </div>
+                }
+            </ButtonModal>
+        </DivScroll>
+    </div>
+    <div class="col-md-8">
+
+        @if (!IsPageLoad)
+        {
+            <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+            <TableVirtualize IsSetFocus="false" MinWidth="0" @ref="table" TItem="ReDrawList" Provider="GetProvider" DbClick="()=>NewOrEdit()" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e.LastOrDefault()">
+                <Tbody Context="item">
+                <td>@item.ObjectName</td>
+                <td>@item.DevName</td>
+                <td>@item.UnitName</td>
+                <td>@item.Shedule</td>
+                </Tbody>
+                <TSticky>
+                    @if (SelectItem != null && SelectList?.GroupID > 0)
+                    {
+                        <BSecondary IsOutline="true" OnClick="AddItemToGroup">
+                            <span class="oi oi-caret-left"></span>
+                        </BSecondary>
+                    }
+                    <BDark HotKey="@KeyCode.Insert" Text="@GsoRep["Add"]" OnClick="()=>NewOrEdit(false)" />
+                    @if (SelectItem != null)
+                    {
+                        <BEdit OnClick="()=>NewOrEdit()" />
+                        <BDelete OnClick="()=>IsDeleteObject=true" />
+                    }
+                </TSticky>
+            </TableVirtualize>
+        }
+    </div>
+</div>
+
+<CheckP BitPos="NameBitsPos.Create">
+    @*Группы*@
+    @if (IsAddGroup)
+    {
+        @*Параметры группы*@
+        <GroupEdit ActionBack="ActionBackGroup" Item="@(new(GetSelectGroup??new()))" />
+    }
+
+    @if (IsDeleteGroup && GetSelectGroup != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDeleteGroup=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @ARMSetRep["IS_DELETE_GROUP"]:
+                    <b>@GetSelectGroup.GroupName</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="RemoveGroup" />
+                <BCancel OnClick="()=>IsDeleteGroup=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsAddObject)
+    {
+        @*Параметры объекта*@
+        <ObjectEdit ActionBack="ActionBackObject" Item="@(new(SelectItem??new()))" />
+    }
+
+    @if (IsDeleteObject && SelectItem != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDeleteObject=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @ARMSetRep["DELETE_OBJECT"]:
+                    <b>@SelectItem.ObjectName</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="P16xObjectList_ToolStripButtonRemoveObject_Click" />
+                <BCancel OnClick="()=>IsDeleteObject=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

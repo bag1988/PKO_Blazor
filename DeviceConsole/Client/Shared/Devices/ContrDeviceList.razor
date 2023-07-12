@@ -1,0 +1,59 @@
+﻿@page "/Devices"
+@inherits FiltrInherits<SzsDeviceFiltr>
+<TitleView>@TitleName</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="CContrDevice" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+        <Tbody Context="item">
+        <td>@item.Name</td>
+        <td>@ParseConnect(item.BlockNo)</td>
+        <td>@item.Port</td>
+        <td>@item.PortNo</td>
+            @if (SubsystemID == SubsystemType.SUBSYST_SZS)
+            {
+            <td>@item.LineName</td>
+            }
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                @*Добавить устройство*@
+                @if (SubsystemID == SubsystemType.SUBSYST_SZS)
+                {
+                    <BCreate OnClick="()=>{IsViewEdit=true; SelectItem=null;}" />
+                }
+                @if (SelectItem != null)
+                {
+                    @*Ркдактировать устройство*@
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    @*Удалить устройство*@
+                    <BDelete OnClick="()=>IsDelete=true" />
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateContrDevice CallBack="CallBackEvent" DeviceObj_ID="@(SelectItem!=null?new OBJ_ID(request.ObjID){ ObjID= SelectItem.ChannelBoardID, StaffID=SelectItem.DeviceID}:null)" />
+    }
+
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@AsoRep["IDS_REG_BLOCK_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_STRING_MULTI_DELETE_Q"]: <b>@SelectItem.Name</b>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="DeleteControllingDevice" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>

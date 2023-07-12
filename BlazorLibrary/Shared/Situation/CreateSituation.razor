@@ -1,0 +1,176 @@
+﻿@using FiltersGSOProto.V1;
+@using SMDataServiceProto.V1;
+@inherits FiltrInherits<SitStartFiltr>
+
+<ModalDialog ButtonCloseEvent="GoCallBack" Title="@GetTextTitle">
+    <BodyContent>
+        @if (!IsPageLoad)
+        {
+            <form id="createsituation" @onsubmit="NextPage">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label">@AsoRep["NameSit"]</label>
+                            <InputFocus @bind-Value="NewSit.SitName" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">@AsoRep["CommSit"]</label>
+                            <input type="text" class="form-control" @bind="NewSit.SitComm">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-2">
+                            @*Приоритет*@
+                            <div class="col-md-4">
+                                <label class="form-label">@AsoRep["IDS_ABPRIORITY"]</label>
+                                <input type="number" min=1 max=50 class="form-control" @bind="NewSit.SitPriority">
+                            </div>
+                            @*Настройки*@
+                            <div class="col-md-8">
+                                <label class="form-label">@AsoRep["SettingSit"]</label>
+                                <div class="d-flex align-items-center">
+                                    <select class="form-select" @bind="NewSit.SysSet">
+                                        <option value="1">@AsoRep["SystemRadio"]</option>
+                                        <option value="0">@AsoRep["UserRadio"]</option>
+                                    </select>
+                                    @if (NewSit.SysSet == 0)
+                                    {
+                                        <BSecondary AddClass="mx-1" IsOutline="true" OnClick="@(()=>EditSubParam=true)" Text="@AsoRep["Settings"]" />
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+
+                        @if (SubsystemID == SubsystemType.SUBSYST_SZS)
+                        {
+                            <div class="mb-2">
+                                <label class="form-label">@GsoRep["IDS_COMMAND"]</label>
+                                <select class="form-select" @bind="IsIndividualMode">
+                                    <option value="0">@GsoRep["IDS_COMMONCOMMAND"]</option>
+                                    <option value="1">@GsoRep["IDS_PRIVATECOMMAND"]</option>
+                                </select>
+                            </div>
+                        }
+                        else if (SubsystemID == SubsystemType.SUBSYST_ASO)
+                        {
+
+                            <div class="row mb-2">
+                                @*Доп характеристики*@
+                                <div class="col-md-6">
+                                    <h5 class="pointer mt-4 @(FiltrModel.Dynamic.Any()?"text-warning":"")" @onclick="()=>IsViewSpecification=!IsViewSpecification"><span class="oi oi-@(IsViewSpecification?"minus":"plus")"></span> @Rep[FiltrName.FiltrSitStart]</h5>
+                                </div>
+                                @*Подтверждение паролем*@
+                                <div class="col-md-6">
+                                    <label class="form-label w-50">@AsoRep["Confirmation"]</label>
+                                    <select class="form-select" @bind="ConfirmPassword.ID">
+                                        <option value="0">-----</option>
+                                        <option value="1">@AsoRep["IDS_STRING_TICKER_CONFIRM"]</option>
+                                        <option value="2">@AsoRep["IDS_STRING_PASSWORD_CONFIRM"]</option>
+                                    </select>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </form>
+            <ListTreeNew Folders="Folders" SelectItems="SelectFolders" ListId="SitId" IsCreateList="false">
+                <AddTopContent>
+                    @if (IsViewSpecification)
+                    {
+                        <FiltrTable AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+                    }
+                </AddTopContent>
+                <AddBackButons>
+                    @if (CallbackEvent.HasDelegate)
+                    {
+                        <BCancel OnClick="@GoCallBack" />
+                        @if (!IsReadOnly)
+                        {
+                            <DropdownMenu TextButton="@UUZSRep["IDS_STRING_ADD"]">
+                                <ChildButton>
+                                    @if (SubsystemID == SubsystemType.SUBSYST_ASO)
+                                    {
+                                        @*Add abonent*@
+                                        <li><span hotkey="@KeyCode.AddAbon" class="dropdown-item pointer" @onclick="@(()=>Abon=0)">@StartUIRep["IDS_ABONENTNAME"]</span></li>
+                                        @*Add list*@
+                                        <li><span hotkey="@KeyCode.AddListAbon" class="dropdown-item pointer" @onclick="@(()=>IsAddListAbon=true)">@GsoRep["IDS_ABONENTLIST"]</span></li>
+                                    }
+                                    else if (SubsystemID == SubsystemType.SUBSYST_SZS)
+                                    {
+                                        @*Добавить оконечное устройство*@
+                                        <li><span hotkey="@KeyCode.AddAbon" class="dropdown-item pointer" @onclick="@(()=>IsCreateDevice=true)">@GsoRep["IDS_DEVICE"]</span></li>
+                                        @*Добавить список*@
+                                        <li><span hotkey="@KeyCode.AddListAbon" class="dropdown-item pointer" @onclick="@(()=>IsAddListAbon=true)">@GsoRep["IDS_DEVICELIST"]</span></li>
+                                        @*Добавить групп*@
+                                        <li><span hotkey="@KeyCode.AddListAbon" class="dropdown-item pointer" @onclick="@(()=>IsCreateGroup=true)">@GsoRep["IDS_DEVICEGROUP"]</span></li>
+                                    }
+                                </ChildButton>
+                            </DropdownMenu>
+                        }
+                    }
+                </AddBackButons>
+                <AddNextButons>
+                    @if (context.Any() && !string.IsNullOrEmpty(NewSit.SitName))
+                    {
+                        <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                            <BSumbit FormId="createsituation" Text="@GsoRep["IDS_STRING_NEXT"]" AddClass="m-1 ms-auto" />
+                        </CheckP>
+                    }
+                </AddNextButons>
+            </ListTreeNew>
+
+            <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                @*Добавить устройство*@
+                @if (IsCreateDevice == true)
+                {
+                    <CreateDeviceSZS CallBack="()=>IsCreateDevice=false" DevType="1" DeviceObj_ID="@(new OBJ_ID(){ StaffID=StaffId, SubsystemID=SubsystemID})" />
+                }
+                @*Добавить группу*@
+                @if (IsCreateGroup == true)
+                {
+                    <CreateGroup ActionBack="()=>IsCreateGroup=false" DeviceObj_ID="@(new OBJ_ID(){ StaffID=StaffId})" />
+                }
+
+                @*Создаем абонента*@
+                @if (Abon != null)
+                {
+                    <CreateAbonent CallbackEvent="()=>{Abon=null;}" Abon="Abon" />
+                }
+
+                @*Добавляем список*@
+                @if (IsAddListAbon)
+                {
+                    <CreateList CallbackEvent="()=>{IsAddListAbon=false;}" />
+                }
+
+                @*Редактируем параметры*@
+                @if (EditSubParam)
+                {
+                    <EditSubsystemParam CallBackParam="CallBackSubParam" SubParam="@(NewSit.Param!=null? new(NewSit.Param): new SMDataServiceProto.V1.SubsystemParam(SubParam))" />
+                }
+
+                @*Следущая страница*@
+                @if (ViewMessageList)
+                {
+                    @if (SubsystemID == SubsystemType.SUBSYST_ASO)
+                    {
+                        <AsoPage MsgID="MsgID" NextAction="SaveSit" />
+                    }
+                    else if (SubsystemID == SubsystemType.SUBSYST_SZS)
+                    {
+                        <SzsPage IsIndividualMode="@(IsIndividualMode==1?true:false)" ObjectList="SelectFolders?.SelectMany(x=>x.Child).ToList()" IsReadOnly="IsReadOnly" NextAction="SaveSitSzs" />
+                    }
+                }
+
+            </CheckP>
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+</ModalDialog>
+
+

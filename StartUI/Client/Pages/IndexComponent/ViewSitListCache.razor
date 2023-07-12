@@ -1,0 +1,84 @@
+﻿@using SMSSGsoProto.V1;
+@using FiltersGSOProto.V1;
+@inherits FiltrInherits<SituationSelectFiltr>
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="Situation" Provider="GetProvider" SelectList="SelectList" SetSelectList="SetSelectList">
+        <Tbody Context="item">
+        <td class="@(item.StatusName!=""?"fw-bold":"")">
+                @item.SitName
+        </td>
+        <td class="@(item.StatusName!=""?"fw-bold":"")">
+                @item.StatusName
+        </td>
+        </Tbody>
+        <TSticky>
+            @if (SelectList.Count > 0)
+            {
+                <div class="mt-2 text-danger overflow-auto" style="max-height:20rem;">
+                    @if (InfoList != null)
+                    {
+                        <ol>
+                            @foreach (var item in InfoList.OrderByDescending(x => x.Key.OBJID.StaffID).ThenByDescending(x => x.Key.SitPrior).ThenBy(x => x.Key.SitName))
+                            {
+                                <li>
+                                    @foreach (var i in item.Value)
+                                    {
+                                        <span class="d-block">
+                                            @i
+                                        </span>
+                                    }
+                                </li>
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <PLoad />
+                    }
+                </div>
+            }
+            else
+            {
+                <div>
+                    @StartUIRep["IDS_NOSELSITUATION"]
+                </div>
+            }
+        </TSticky>
+    </TableVirtualize>
+}
+
+@if (IsConfirmSit)
+{
+    <ModalDialog Title="@StartUIRep["ID_SIT_SELECT_CONFIRM"]" ButtonCloseEvent="()=> IsConfirmSit = false">
+        <BodyContent>
+            <ResultView SetClass="alert alert-secondary" ClassItems="" Items="TempItem.Value" IsSetFocus="false" IsOnKeyDown="false">
+                <ChildContent>
+                    @context
+                </ChildContent>
+            </ResultView>
+        </BodyContent>        
+        <ButtonContent>
+            <BSuccess HotKey="@KeyCode.Enter" Text="@StartUIRep["Resume"]" OnClick="()=>{ IsConfirmSit = false; IsAddNewItem=true;}" />
+            <BDark IsOutline="true" HotKey="@KeyCode.Escape" Text="@($"{GsoRep["IDS_STRING_CANCEL"]} ({TimerCancel.Seconds})")" OnClick="()=> IsConfirmSit = false" />
+            @if (IsButtonViewInfo)
+            {
+                <BSecondary Text="@StartUIRep["View"]" OnClick="@(()=>IsViewInfoSit=true)" />
+            }
+        </ButtonContent>
+    </ModalDialog>
+}
+
+@*Просмотр сценария*@
+@if (IsViewInfoSit && TempItem.Key?.OBJID != null)
+{
+    @if (SubsystemID == SubsystemType.SUBSYST_GSO_STAFF)
+    {
+        <CreateSitStaff SitId="@TempItem.Key.OBJID.ObjID" IsReadOnly="true" CallbackEvent="()=>IsViewInfoSit=false" />
+    }
+    else if (SubsystemID == SubsystemType.SUBSYST_ASO || SubsystemID == SubsystemType.SUBSYST_SZS)
+    {
+        <CreateSituation SitId="@TempItem.Key.OBJID.ObjID" IsReadOnly="true" CallbackEvent="()=>IsViewInfoSit=false" />
+    }
+}

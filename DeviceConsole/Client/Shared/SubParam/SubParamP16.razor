@@ -1,0 +1,108 @@
+﻿@page "/SubParamP16"
+
+<TitleView>@TitleName</TitleView>
+
+<form id="supparamp16" @onsubmit="SaveSetting">
+
+    @if (p16XSetting != null)
+    {
+        @*Режим оповещения*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@AsoRep["AlertMode"]</label>
+            <div class="col-md-8">
+                <select @ref="elem" class="form-select" @bind="p16XSetting.AutoConfirm">
+                    <option value="1">@SMP16xFormRep["IDS_STRING_MODE_AUTO"]</option>
+                    <option value="2">@SMP16xFormRep["IDS_STRING_MODE_RETRANSMIT"]</option>
+                    <option value="3">@SMP16xFormRep["IDS_STRING_MODE_RECIVE"]</option>
+                </select>
+            </div>
+        </div>
+
+        <p>
+            @switch (p16XSetting.AutoConfirm)
+            {
+                case 1:
+                    <b>@SMP16xFormRep["IDS_STRING_MODE_1_AUTO"]</b>
+                    break;
+                case 2:
+                    <b>@SMP16xFormRep["IDS_STRING_MODE_2_RETRANSMIT"]</b>
+                    break;
+                case 3:
+                    <b>@SMP16xFormRep["IDS_STRING_MODE_3_RECIVE"]</b>
+                    break;
+            }
+        </p>
+
+        @*Максимальное время ожидания результатов оповещения*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@SMP16xFormRep["IDC_NOTIFYTIME"]</label>
+            <div class="col-md-8">
+                <input @bind:format="HH:mm:ss" class="form-control" @bind="IDC_NOTIFYTIME">
+            </div>
+        </div>
+
+        @*Параметры звуковой карты*@
+        <h5>@SMP16xFormRep["PARAM_SOUND"]</h5>
+
+        @*Звуковая карта используемая подсистемой при запуске*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@SMP16xFormRep["IDC_SB_LIST"]</label>
+            <div class="col-md-8">
+                <select class="form-select" @bind="p16XSetting.Interfece">
+                    <option value="">------</option>
+                    @if (Model != null)
+                    {
+                        @foreach (var item in Model.Where(x => x.kind == "audioinput" && x.deviceId != "communications" && x.deviceId != "default"))
+                        {
+                            <option value="@item.label">@item.label</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+
+        @*Формат записи пользовательского сообщения (IDC_MSGFORMAT)*@
+        @if (p16XSetting.SndFormat != null)
+        {
+            <EditFormatSound HeaderSound="@(new(p16XSetting.SndFormat.ToBytes()))" ActionNext="ChangeFormat" />
+        }
+
+        @*Источник записи пользовательского сообщения*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@SMP16xFormRep["IDC_COMBO_LINES"]</label>
+            <div class="col-md-8">
+                <input disabled="disabled" type="number" max="99" class="form-control" @bind="p16XSetting.SndSource">
+            </div>
+        </div>
+
+
+        @*Уровень воспроизведения (%)*@
+        <div class="row mb-2">
+            <label class="form-label col-md-4">@AsoRep["IDC_LAVEL_PLAY"]</label>
+            <div class="col-md-8">
+                <input type="number" min=0 max=100 class=" form-control" @bind="p16XSetting.SndLevel">
+            </div>
+        </div>
+
+        @*Прерывание текущего оповещения при получении команды*@
+        <div class="mb-3">
+            <label class="form-check-label"><input type="checkbox" class="form-check-input" @bind="m_BNotifyStaff"> @SMP16xFormRep["IDC_CHECK_TOTALSTOP"]</label>
+        </div>
+    }
+    else
+    {
+        <PLoad />
+    }
+</form>
+<ButtonModal>
+    <CheckP BitPos="NameBitsPos.Create">
+        <BSumbit FormId="supparamp16" IsProcessing="IsProcessing" />
+        <BDark IsOutline="true" Text="@GsoRep["Reset"]" OnClick="OnInitializedAsync" />
+        @if (IsSave)
+        {
+            <span class="m-2 text-success">@AsoRep["IDS_OK_SAVE"]</span>
+        }
+    </CheckP>
+</ButtonModal>
+

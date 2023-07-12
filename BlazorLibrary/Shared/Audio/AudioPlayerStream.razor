@@ -1,0 +1,17 @@
+﻿<div class="px-2 audio-player @BgColor">
+    @if (IsLoadAudio)
+    {
+        <div class="d-inline align-middle">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <b>@Rep["Load"]</b>
+        </div>
+    }
+    else if (IsSoundUrl)
+    {
+        <audio @ref="player" autoplay="@(IsAutoPlay==true? "autoplay":null)" controls="controls" preload="metadata" title="@(!string.IsNullOrEmpty(TitleName)?TitleName:null)" src="@Blob" type="audio/wav">
+            @Rep["AudioSupport"]
+        </audio>
+    }
+</div>
+
+

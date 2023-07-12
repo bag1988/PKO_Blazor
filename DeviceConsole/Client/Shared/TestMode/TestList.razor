@@ -1,0 +1,175 @@
+﻿@page "/TestMode"
+@using SCSChLService.Protocol.Grpc.Proto.V1;
+@using SharedLibrary.Utilities
+@inherits FiltrInherits<TestSzsDeviceFiltr>
+<TitleView>@TitleName</TitleView>
+<div class="row">
+    <div class="col-md-6">
+
+        @if (!IsPageLoad)
+        {
+            <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+            <TableVirtualize @ref="table" TItem="PortInfoTag" Provider="GetProvider" SelectList="@(SelectVecPorts!=null ? new (){SelectVecPorts}:null)" SetSelectList="(e)=>SelectVecPorts = e?.LastOrDefault()" MinWidth="0">
+                <Tbody Context="item">
+                <td>@item.PortName</td>
+                <td>@GetTypeName(item.PortNo)</td>
+                <td>@UUZSRep["IDS_STRING_CHANNELS_COUNT"]: @item.DevCount шт.</td>
+                <td>
+                        @if (GetDevType(item.PortNo) != DevType.SZS)
+                        {
+                        <select class="form-select form-select-sm" value="@GetSoundFormat(item.PortNo)" @onchange="(e)=>SaveSoundFormat(e)">
+                                @foreach (var t in m_SoundFormat)
+                                {
+                                <option value="@t.Key">@t.Value</option>
+                                }
+                        </select>
+                        }
+                </td>
+                <td>
+                        @if (GetDevType(item.PortNo) == DevType.SZS || GetDevType(item.PortNo) == DevType.UXPORT)
+                        {
+                        <SelectShedule OnChange="SaveShedule" SheduleList="SheduleList" PortNo="@item.PortNo" StaffId="@StaffId" />
+                        }
+                </td>
+                </Tbody>
+                <TSticky>
+                    <CheckP BitPos="NameBitsPos.Create">
+                        <BDark Text="@GsoRep["Add"]" OnClick="()=>IsAdd=true" />
+                        <BSecondary Text="@StartUIRep["IDS_REFRESHRESULTS"]" OnClick="UpdateList" />
+                        <BDark IsOutline="true" Text="@UUZSRep["IDS_STRING_SAVE_SETTING"]" OnClick="Leave" />
+                        @if (SelectVecPorts != null)
+                        {
+                            <BDelete OnClick="()=>IsDelete=true" />
+                        }
+                    </CheckP>
+                </TSticky>
+            </TableVirtualize>
+        }
+    </div>
+    <div class="col-md-6">
+        <RealDeviceList @ref="realDev"/>
+    </div>
+</div>
+
+<CheckP BitPos="NameBitsPos.Create">
+
+    @if (IsAdd)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_ADD"]" ButtonCloseEvent="()=>IsAdd=false">
+            <BodyContent>
+                @*Порт*@
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["IDS_STRING_PORT"]</label>
+                    <input type="text" class="form-control" @bind="@NewPort.PortNo">
+                </div>
+                @*IP адрес*@
+                <div class="mb-3">
+                    <label class="form-label">@UUZSRep["IDS_STRING_ADRESS"]</label>
+                    <InputIpAddress @bind-Value="NewPort.IpAdress" />
+                </div>
+                @*Звук*@
+                <div class="mb-3">
+                    <label class="form-label">@UUZSRep["IDS_STRING_SOUND"]</label>
+                    <select class="form-select" @bind="@NewPort.fmt">
+                        @foreach (var item in m_SoundFormat)
+                        {
+                            <option value="@item.Key">@item.Value</option>
+                        }
+                    </select>
+                </div>
+                @*Контроль*@
+                <div class="mb-3">
+                    <label class="form-label">@UUZSRep["IDS_STRING_CONTROL"]</label>
+                    <select class="form-select" @bind="@NewPort.Shedule">
+                        @foreach (var item in SheduleList)
+                        {
+                            <option value="@item.SheduleID">@string.Format("{0:#,##0} ч. {1:mm} мин.", Math.Truncate(item.Duration.ToTimeSpan().TotalHours), item.Duration.ToTimeSpan())</option>
+                        }
+                    </select>
+                </div>
+            </BodyContent>            
+            <ButtonContent>
+                <BCreate OnClick="AddPort" />
+                <BClose OnClick="()=>IsAdd=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+    @if (IsDelete && SelectVecPorts != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_STRING_DELETE_PROCESS"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @UUZSRep["IDS_STRING_MULTI_DELETE_Q"]:
+                    <b>@SelectVecPorts.PortName</b>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="ConfigDeletePort" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+
+
+    @if (IsOld)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_DETECT_OLD_DEVICE"]" ButtonCloseEvent="()=>IsOld=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @UUZSRep["IDS_STRING_DELETE_FROM_CONFIG_Q"]:
+                    <ul>
+                        @foreach (var item in vecDbDevs.Where(x => x.Status == (int)LineChannelState.CHAN_OLD))
+                        {
+                            <li>@IpAddressUtilities.UintToString((uint)item.PortNo) @item.Name</li>
+                        }
+                    </ul>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BDelete OnClick="DeleteOldDBDevices" />
+                <BCancel OnClick="()=>IsOld=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @if (IsNew && GetRealList != null)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_DETECT_NEW_DEVICES"]" ButtonCloseEvent="()=>IsNew=false">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    @UUZSRep["IDS_STRING_ENTER_IN_CONFIG_Q"]:
+                    <ul>
+                        @foreach (var item in GetRealList.Where(x => x.OwnStatus == 0))
+                        {
+                            <li>@IpAddressUtilities.UintToString((uint)item.PortNo) @GetNameDev(item.DevType, item.DevSerNo)</li>
+                        }
+                    </ul>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BSave OnClick="SaveNewRealDevices" />
+                <BCancel OnClick="()=>IsNew=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @if (IsChange)
+    {
+        <ModalDialog Title="@UUZSRep["IDS_STRING_PARAMS_SOME_DEVICE_CHANGED"]" ButtonCloseEvent="()=>IsChange=false">
+            <BodyContent>
+                <p class="alert alert-warning">
+                    @UUZSRep["IDS_STRING_ENTER_IN_CONFIG_Q"]:
+                    <ul>
+                        @foreach (var item in vecDbDevs.Where(x => x.Status == (int)LineChannelState.CHAN_MOVED_ON_PORT || x.Status == (int)LineChannelState.CHAN_MOVED_PORT))
+                        {
+                            <li>@IpAddressUtilities.UintToString((uint)item.PortNo) @item.Name</li>
+                        }
+                    </ul>
+                </p>
+            </BodyContent>            
+            <ButtonContent>
+                <BSave OnClick="UpdateDirtyRealDevices" />
+                <BCancel OnClick="()=>IsChange=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>

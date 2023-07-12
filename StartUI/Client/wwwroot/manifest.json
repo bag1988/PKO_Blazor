@@ -1,0 +1,42 @@
+{
+  "name": "Запуск оповещения",
+  "short_name": "Запуск оповещения",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#03173d",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "16x16 32x32 72x72 96x96 128x128 256x256"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Запуск сирен",
+      "short_name": "Запуск сирен",
+      "url": "/?systemId=2",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "type": "image/png",
+          "sizes": "16x16 32x32 72x72 96x96 128x128 256x256"
+        }
+      ]
+    },
+    {
+      "name": "Запуск ПУ",
+      "short_name": "Запуск ПУ",
+      "url": "/?systemId=3",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "type": "image/png",
+          "sizes": "16x16 32x32 72x72 96x96 128x128 256x256"
+        }
+      ]
+    }
+  ]
+}

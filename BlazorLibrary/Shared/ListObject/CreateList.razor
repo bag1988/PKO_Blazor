@@ -1,0 +1,54 @@
+﻿<ModalDialog ButtonCloseEvent="GoCallBack" Title="@GetTextTitle">
+    <BodyContent>
+        @if (!IsPageLoad)
+        {
+            <form id="createlist" @onsubmit="AddList">
+                <div class="row" tabindex="0">
+                    <div class="col-md-8">
+                        <div class="mb-2">
+                            <label class="form-label">@AsoRep["NameList"]</label>
+                            <InputFocus @bind-Value="ListModel.Name" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label class="form-label">@AsoRep["PriorList"]</label>
+                            <input type="number" min=1 max=50 class="form-control" @bind="ListModel.Type">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="mb-2">
+                        <label class="form-label">@AsoRep["IDS_STRING_COMMENT"]</label>
+                        <input type="text" class="form-control" @bind="ListModel.Comm">
+                    </div>
+                </div>
+            </form>
+            <ListTreeNew Folders="Folders" SelectItems="SelectFolders" ListId="ListId">
+                <AddBackButons>
+                    @if (CallbackEvent.HasDelegate)
+                    {
+                        <BCancel OnClick="GoCallBack" />
+                    }
+                </AddBackButons>
+                <AddNextButons>
+                    @if (SelectFolders?.Count > 0)
+                    {
+                        <CheckP BitPosList="@(new[]{NameBitsPos.Create, NameBitsPos.CreateNoStandart})">
+                            <BSumbit IsProcessing="IsProcessing" FormId="createlist" AddClass="m-1 ms-auto" />
+                        </CheckP>
+                    }
+                </AddNextButons>
+            </ListTreeNew>
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+</ModalDialog>
+
+
+
+
+

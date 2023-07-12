@@ -1,0 +1,122 @@
+﻿
+<ModalDialog Title="@AsoRep["IDS_STRING_MULTI_EDIT"]" ButtonCloseEvent="()=>CallBackOn()">
+    <BodyContent>
+        <form id="checksaveabon" @onsubmit="OnSaveChange">
+            @if (Model.Dep != null)
+            {
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABDEPARTMENT"]</label>
+                    <select class="form-select" @bind="Model.Dep.ObjID">
+                        <option value="-1"></option>
+                        @foreach (var item in DepartmentList.Where(x => x.Dep != null).ToArray())
+                        {
+                            <option value="@item.Dep.ObjID">@item.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_ABPOSITION"]</label>
+                    <input type="text" class="form-control" @bind="Model.Position">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_STRING_AB_STATE"]</label>
+                    <select class="form-select" @bind="Model.AbStatus">
+                        <option value="-1"></option>
+                        @foreach (var item in AbStatusList)
+                        {
+                            <option value="@item.Number">@item.Str</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_STRING_AB_ROLE"]</label>
+                    <select class="form-select" @bind="Model.Role">
+                        <option value="-1"></option>
+                        <option value="0">@AsoRep["IDS_STRING_REGULAR"]</option>
+                        <option value="1">VIP</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@AsoRep["IDS_STRING_AB_PRIOR"]</label>
+                    <input type="number" min=1 max=99 class="form-control" @bind="Model.AbPrior">
+                </div>              
+                <div class="mb-3">
+                    <label class="pointer mt-4" @onclick="()=>AddPassword=!AddPassword"><span class="oi oi-@(AddPassword?"minus":"plus")"></span> @AsoRep["IDS_STRING_CREATE_PASSWORD"]</label>
+                </div>
+                @if (AddPassword)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["IDS_STRING_AB_PASSWORD"]</label>
+                        <InputPassword type="password" class="form-control" Pattern="^[0-9AB]{0,9}$" ErrorMessage="@Rep["ERROR_PASSWORD"]" @bind-Value="@Model.Password" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Password))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">@AsoRep["IDS_STRING_REPEAT_AB_PASSWORD"]</label>
+                            <InputPassword type="password" class="form-control" Pattern="@($"^{Model.Password}$")" ErrorMessage="@Rep["ERROR_RE_PASSWORD"]" @bind-Value="@Password" />
+                        </div>
+                    }
+                }
+            }
+        </form>
+    </BodyContent>
+    <ButtonContent>
+        <CheckP BitPos="NameBitsPos.Create">
+            <BSumbit FormId="checksaveabon" />
+            @if (CallbackEvent.HasDelegate)
+            {
+                <BCancel OnClick="()=>CallBackOn()" />
+            }
+        </CheckP>
+    </ButtonContent>
+</ModalDialog>
+
+
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsSave)
+    {
+        <ModalDialog Title="@AsoRep["IDS_STRING_INFO"]" ButtonCloseEvent="()=>IsSave=false">
+            <BodyContent>
+                <form id="setabinfo" @onsubmit="SetAbInfo">
+                    <Cards AddClass="alert-warning" Header="@AsoRep["IDS_STRING_CHANGE_AB_FIELDS"]">
+                        <ul>
+                            @if (!OldModel.Dep.Equals(Model.Dep))
+                            {
+                                <li>@AsoRep["IDS_ABDEPARTMENT"]</li>
+                            }
+                            @if (!OldModel.Position.Equals(Model.Position))
+                            {
+                                <li>@AsoRep["IDS_ABPOSITION"]</li>
+                            }
+                            @if (!OldModel.AbStatus.Equals(Model.AbStatus))
+                            {
+                                <li>@AsoRep["IDS_STRING_AB_STATE"]</li>
+                            }
+                            @if (!OldModel.Role.Equals(Model.Role))
+                            {
+                                <li>@AsoRep["IDS_STRING_AB_ROLE"]</li>
+                            }
+                            @if (!OldModel.AbPrior.Equals(Model.AbPrior))
+                            {
+                                <li>@AsoRep["IDS_STRING_AB_PRIOR"]</li>
+                            }
+                            @if (!OldModel.Password.Equals(Model.Password))
+                            {
+                                <li>@AsoRep["IDS_STRING_AB_PASSWORD"]</li>
+                            }
+                        </ul>
+                    </Cards>
+                </form>
+            </BodyContent>
+            <ButtonContent>
+                <BSumbit FormId="setabinfo" IsProcessing="IsProcessing" />
+                <BCancel OnClick="()=>IsSave=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+</CheckP>
+
+
+
+

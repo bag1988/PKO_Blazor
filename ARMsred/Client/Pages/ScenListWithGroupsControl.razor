@@ -1,0 +1,23 @@
+﻿@using SMDataServiceProto.V1
+@if (SituationGroups?.Count > 0)
+{
+    <div class="overflow-auto my-2">
+        @foreach (var item in SituationGroups)
+        {
+            <BSuccess IsOutline="@(ActiveSituationGroups.FirstOrDefault(r => r.SitGroupID == item.SitGroupID) != null?false:true)" Text="@item.SitGroupName" OnClick="() => HandleSitButtonClicked(item)" />
+        }
+    </div>
+}
+<TableScroll Colspan="5" TItem="SituationState" Items="SituationStateList" SelectList="SelectSit" SetSelectList="SetSelectSit" IsSetFocus="false" IsOnKeyDown="false">
+    <Thead>
+        <ThSort ThList="ThList" />
+    </Thead>
+    <Tbody Context="item">
+    <td>@item.SitName</td>
+    <td>@SubsystemsList?.FirstOrDefault(r=>r.Key==item.SitID.SubsystemID).Value </td>
+    <td>@item.CodeName</td>
+    <td>@SessionStateFromInt(item.SessStat)</td>
+    <td>@($"{item.CountNotify} {ARMRep["FROM"]} {item.CountNotify + item.CountNoNotify}")</td>
+    </Tbody>
+</TableScroll>
+

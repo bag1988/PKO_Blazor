@@ -1,0 +1,13 @@
+﻿<div class="text-danger overflow-auto mb-0 w-100" style="max-height:30rem;">
+    <h5 hotkey="@KeyCode.DopInfo" class="alert p-2 bg-dark position-sticky top-0 pointer mb-1" @onclick="()=>IsResultView=!IsResultView">@ResultTime</h5>
+    @if (IsResultView)
+    {
+        <GetInfoResult />
+    }
+    else
+    {
+        <p class="text-center mb-0">
+            <span class="oi oi-expand-up"></span>
+        </p>
+    }
+</div>

@@ -1,0 +1,152 @@
+﻿@page "/SecuritySubSystem"
+@using SMSSGsoProto.V1
+
+<TitleView>@ARMSetRep["SECURITY_SUB_SYSTEM"]</TitleView>
+<div class="row">
+    <div class="col-md-4">
+        <DivScroll>
+            <PHeader>
+                @*Пользователи*@
+                @AsoDataRep["IDS_STRING_USERS"]
+            </PHeader>
+            @*Список пользователей*@
+            <ResultView TItem="SharedLibrary.Models.UserInfo" Items="Model" Context="item" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="HandleUserSelected">
+                <ChildContent>
+                    @item.Login
+                </ChildContent>
+            </ResultView>
+        </DivScroll>
+
+    </div>
+
+    <div class="col-md-8">
+        <DivScroll Devision="2">
+            <PHeader>
+                @GsoRep["IDS_STRING_NAME"]
+            </PHeader>
+            <ResultView TItem="GsoUserSecurity" Items="SecurityObjectsList" DbClick="HandleSecurityObjectCheckBox" IsSetFocus="false">
+                <ChildContent>
+                    <label class="form-check-label"><input type="checkbox" class="form-check-input" checked="@(context.PermitAccess == 1? "checked" : null)" @onclick="@(()=>HandleSecurityObjectCheckBox(context))" /> @context.ObjectName</label>
+                </ChildContent>
+            </ResultView>
+
+            <CheckP SystemID="SubsystemType.SUBSYST_Security" BitPos="NameBitsPos.Create">
+                <PSticky Color="secondary p-2 mt-3" StyleBottom="0">
+                    <div class="d-inline-block me-2">
+                        <select class="form-select ms-1" value="@typeId" @onchange="ChangeCat">
+                            <option value="1">@ARMSetRep["GROUP_SCENARIOS"]</option>
+                            <option value="2">@ARMSetRep["GROUP_OBJECTS"]</option>
+                            <option value="3">@ARMSetRep["SCENARIOS"]</option>
+                        </select>
+                    </div>
+                    @if (typeId == 3)
+                    {
+                        <BDark Text="@ARMSetRep["ADD_OBJECT"]" OnClick="@(() => { if (SelectItem != null) {isAddObject = true;} } )" />
+                    }
+                    <BDark IsOutline="true" Text="@ARMSetRep["CHECK_ALL"]" OnClick="CheckAllSecurityObjects" />
+                    <BDark IsOutline="true" Text="@ARMSetRep["UNCHECK_ALL"]" OnClick="UncheckAllSecurityObjects" />
+                </PSticky>
+            </CheckP>
+        </DivScroll>
+
+        <DivScroll>
+            @if (securityTab == 0)
+            {
+                <TableScroll IsSetFocus="false" Colspan="3" TItem="SecurityGroup" Items="SecurityGroupList" SelectList="@(SelectedSecurityGroup!=null ? new (){SelectedSecurityGroup}:null)" SetSelectList="items => { SelectedSecurityGroup = items?.FirstOrDefault();}">
+                    <Thead>
+                    <th>@ARMSetRep["SECURITY_GROUPS"]</th>
+                    </Thead>
+                    <Tbody Context="item">
+                    <td>@item.SecurityGroupName</td>
+                    </Tbody>
+                    <TSticky>
+                        <div class="d-inline-block">
+                            <select class="form-select" @bind="securityTab">
+                                <option value="0">@ARMSetRep["SECURITY_GROUPS"]</option>
+                                <option value="1">@ARMSetRep["SECURITY_SETTINGS"]</option>
+                            </select>
+                        </div>
+                        <CheckP SystemID="SubsystemType.SUBSYST_Security" BitPos="NameBitsPos.Create">
+                            <BDark OnClick="@(() => isAddSecurityGroup = true)" Text="@ARMSetRep["ADD_TO_GROUP"]" />
+                            @if (SelectedSecurityGroup != null)
+                            {
+                                <BDelete OnClick="@(() => isDeleteSecurityGroup = true)" Text="@ARMSetRep["DELETE_FROM_GROUP"]" />
+                            }
+                        </CheckP>
+                    </TSticky>
+                </TableScroll>
+            }
+            @if (securityTab == 1)
+            {
+                <TableScroll Colspan="3" TItem="SecurityParams" Items="SecurityParamsList" SelectList="@(SelectedSecurityParam!=null ? new (){SelectedSecurityParam}:null)" SetSelectList="items => { SelectedSecurityParam = items?.FirstOrDefault();}">
+                    <Thead>
+                        <ThSort ThList="thListSecurityParams" ThWidthProcent="@(new List<int>(){80,10,10})" />
+                    </Thead>
+                    <Tbody Context="item">
+                    <td>@item.SecurityParamName</td>
+                    <td><input type="checkbox" class="form-check-input" checked="@(item.Access == 1? "checked" : null)" @onclick="@(()=> HandleSecurityParamAccess(item))" /></td>
+                    <td><input type="checkbox" class="form-check-input" checked="@(item.Denide == 1? "checked" : null)" @onclick="@(()=> HandleSecurityParamDenied(item))" /></td>
+                    </Tbody>
+                    <TSticky>
+                        <div class="d-inline-block">
+                            <select class="form-select" @bind="securityTab">
+                                <option value="0">@ARMSetRep["SECURITY_GROUPS"]</option>
+                                <option value="1">@ARMSetRep["SECURITY_SETTINGS"]</option>
+                            </select>
+                        </div>
+                        <CheckP BitPos="NameBitsPos.Create">
+                            <BDark OnClick="@(() => isAddSecurityParam = true)" Text="@ARMSetRep["ADD_SECURITY_PARAM"]" />
+                            @if (SelectedSecurityParam != null)
+                            {
+                                <BDelete OnClick="@(() => isDeleteSecurityParam = true)" Text="@ARMSetRep["DELETE_SECURITY_PARAM"]" />
+                            }
+                        </CheckP>
+                    </TSticky>
+                </TableScroll>
+            }
+        </DivScroll>
+    </div>
+</div>
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (isDeleteSecurityGroup && SelectedSecurityGroup != null)
+    {
+        <ModalDialog Title="@ARMSetRep["REMOVE_USER_FROM_SECURITY_GROUP"]" ButtonCloseEvent="() => isDeleteSecurityGroup = false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @ARMSetRep["CONFIRM_DELETE_USER_FROM_SECURITY_GROUP"] <b>@($"{SelectedSecurityGroup.SecurityGroupName}?")</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="RemoveSecurityUserGroup" />
+                <BCancel OnClick="() => isDeleteSecurityGroup = false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @if (isDeleteSecurityParam && SelectedSecurityParam != null)
+    {
+        <ModalDialog Title="@ARMSetRep["DELETE_SECURITY_PARAM_TITLE"]" ButtonCloseEvent="()=>isDeleteSecurityParam=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @ARMSetRep["CONFIRM_DELETE_SECURITY_PARAM"] <b>@($"{SelectedSecurityParam.SecurityParamName}?")</b>
+                </p>
+            </BodyContent>
+            <ButtonContent>
+                <BDelete OnClick="RemoveUserSecurityParam" />
+                <BCancel OnClick="()=>isDeleteSecurityParam=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    @if (isAddSecurityGroup)
+    {
+        <AddSecurityGroup ActionBack="AddSecurityUserGroups" />
+    }
+    @if (isAddSecurityParam)
+    {
+        <AddSecurityParam ActionBack="AddNewUserSecurityParams"/>
+    }
+    @if (isAddObject)
+    {
+       <AddObject ActionBack="HandleAddObjects"/>
+    }
+</CheckP>

@@ -1,0 +1,23 @@
+﻿@using BlazorLibrary.Models
+@typeparam TItem
+
+<div @ref="Elem" tabindex="0" @onkeydown="KeySet" @onkeydown:preventDefault="_shouldPreventDefault" >
+    @if (Items != null)
+    {
+        @if (Items.Any())
+        {
+            if (ContentView is not null)
+            {
+                <ViewTreeItem @ref="ElemTree" TItem="TItem" Items="Items" SetCurrentItem="SetCurrentItem" ContentView="ContentView" DbClick="DbClick" SetSelectList="SetSelectCallback" SelectList="SelectList" />
+            }
+        }
+        else
+        {
+            <PNoData />
+        }
+    }
+    else
+    {
+        <PLoad />
+    }
+</div>

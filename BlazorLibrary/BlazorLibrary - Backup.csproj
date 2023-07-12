@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="wwwroot\script\site.js" />
+	</ItemGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>	
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.6" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="6.0.6" />
+	  <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.2" />
+	</ItemGroup>	
+	<ItemGroup>
+	  <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
+	  <ProjectReference Include="..\DeviceConsole\Shared\DeviceConsole.Shared.csproj" />
+	  <ProjectReference Include="..\ReplaceLibrary\ReplaceLibrary.csproj" />
+	</ItemGroup>
+</Project>

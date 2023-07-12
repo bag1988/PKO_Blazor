@@ -1,0 +1,111 @@
+﻿@using Microsoft.AspNetCore.Components
+@using SMSSGsoProto.V1
+@using SMDataServiceProto.V1;
+@using static BlazorLibrary.Shared.Main;
+
+
+<ModalDialog Title="@ARMSetRep["GROUP_PARAMS"]" ButtonCloseEvent="Close">
+    <BodyContent>
+        <div class="mb-3">
+            <label class="form-label">@GsoRep["IDS_STRING_NAME"]</label>
+            <BlazorLibrary.Shared.InputElements.InputFocus @bind-Value="SitGroup.SitGroupName" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">@ARMSetRep["SUBSYSTEM"]</label>
+            <select class="form-select" style="width: 200px;" @bind="SitGroup.SitGroupSubsystemID">
+                <option value="@SubsystemType.SUBSYST_ASO">@ARMSetRep["ASO"]</option>
+                <option value="@SubsystemType.SUBSYST_SZS">@ARMSetRep["UZS"]</option>
+                <option value="@SubsystemType.SUBSYST_GSO_STAFF">@ARMSetRep["PU"]</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">@ARMSetRep["STATUS_ACTIVE"]</label>
+            <input type="checkbox" class="form-check-input" @bind="Status">
+        </div>
+
+    </BodyContent>
+    <ButtonContent>
+        <BDark Text="@ARMSetRep["CONFIRM"]" OnClick="Confirm" />
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>
+
+@code {
+    [Parameter]
+    public SitGroupInfo SitGroup { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<SitGroupInfo?> ActionBack { get; set; }
+
+    private bool Status { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        Status = Convert.ToBoolean(SitGroup.SitGroupStatus);
+    }
+
+    private async Task Confirm()
+    {
+        if (SitGroup.SitGroupID == 0)
+        {
+            await Add();
+        }
+        else
+        {
+            await Edit();
+        }
+    }
+
+    private async Task Add()
+    {
+        SitGroupInfo request = new()
+            {
+                SitGroupStatus = Convert.ToInt32(Status),
+                SitGroupName = SitGroup.SitGroupName,
+                SitGroupSubsystemID = SitGroup.SitGroupSubsystemID
+            };
+        var x = await Http.PostAsJsonAsync("api/v1/AddSitGroup", request);
+        if (!x.IsSuccessStatusCode)
+        {
+            MessageView?.AddError("", ARMSetRep["ERROR_EDIT_GROUP"]);
+            return;
+        }
+        else
+        {
+            var response = await x.Content.ReadFromJsonAsync<SitGroupIDResponse>();
+            if (response?.SitGroupID > 0)
+            {
+                request.SitGroupID = response.SitGroupID;
+            }
+            else
+            {
+                MessageView?.AddError("", ARMSetRep["ERROR_EDIT_GROUP"]);
+                return;
+            }
+        }
+        await ActionBack.InvokeAsync(request);
+    }
+
+    private async Task Edit()
+    {
+        SitGroupInfo request = new()
+            {
+                SitGroupStatus = Convert.ToInt32(Status),
+                SitGroupName = SitGroup.SitGroupName,
+                SitGroupSubsystemID = SitGroup.SitGroupSubsystemID,
+                SitGroupParentID = SitGroup.SitGroupParentID,
+                SitGroupID = SitGroup.SitGroupID
+            };
+        var x = await Http.PostAsJsonAsync("api/v1/UpdateSitGroup", request);
+        if (!x.IsSuccessStatusCode) return;
+        await ActionBack.InvokeAsync(request);
+    }
+
+
+    private async Task Close()
+    {
+        await ActionBack.InvokeAsync(null);
+    }
+}

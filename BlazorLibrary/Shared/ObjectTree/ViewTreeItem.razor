@@ -1,0 +1,215 @@
+﻿@using BlazorLibrary.Helpers;
+@using BlazorLibrary.Models;
+@using AsoDataProto.V1;
+@typeparam TItem
+
+@if (Items != null)
+{
+    @if (Items.Any())
+    {
+        if (ContentView is not null)
+        {
+            @foreach (var item in Items)
+            {
+                <div class="@((SelectList?.Contains(item.Key)??false)?"bg-select":"") p-1 m-1">
+                    @if (item.IsContainsChild)
+                    {
+                        <span class="oi oi-@((ItemViewChild != null && item.Key.Equals(ItemViewChild))?"minus":"plus") pointer" @onclick="()=>SetCurrentItemView(item.Key)"></span>
+                    }
+                    <text class="pointer" @ondblclick="DbClick" @onclick="(e)=>AddSelectItem(e, item.Key)">
+                        @ContentView(item.Key)
+                    </text>
+
+                    @if (ItemViewChild != null && item.Key.Equals(ItemViewChild) && item.IsContainsChild)
+                    {
+                        <ViewTreeItem @ref="ElemTree" TItem="TItem" Items="item.Childs" DbClick="DbClick" SetSelectList="SetSelectListAction" SetCurrentItem="SetCurrentItem" SelectList="SelectList" ContentView="ContentView" />
+                    }
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <div>
+            <b class="ms-2">@Rep["NoData"]</b>
+        </div>
+
+    }
+}
+else
+{
+    <div>
+        <span class="spinner-border spinner-border-sm ms-2 me-2" role="status" aria-hidden="true"></span>
+        <b>@Rep["Load"]</b>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public RenderFragment<TItem>? ContentView { get; set; }
+
+    [Parameter]
+    public IEnumerable<ChildItems<TItem>>? Items { get; set; } = null;
+
+    [Parameter]
+    public EventCallback DbClick { get; set; }
+
+    [Parameter]
+    public EventCallback<List<TItem>> SetSelectList { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> SetCurrentItem { get; set; }
+
+    [Parameter]
+    public List<TItem>? SelectList { get; set; }
+
+    TItem? ItemViewChild { get; set; }
+
+    ViewTreeItem<TItem>? ElemTree { get; set; }
+
+    async Task SetCurrentItemView(TItem item)
+    {
+        ItemViewChild = item.Equals(ItemViewChild) ? default : item;
+        if (SetCurrentItem.HasDelegate)
+            await SetCurrentItem.InvokeAsync(item);
+        else
+            await SetSelectListAction(new() { item });
+    }
+
+    async Task SetSelectListAction(List<TItem>? items)
+    {
+        if (SetSelectList.HasDelegate)
+            await SetSelectList.InvokeAsync(items);
+    }
+
+    public List<TItem> GetLevelItems
+    {
+        get
+        {
+            List<TItem> items = new();
+            if (Items != null)
+            {
+                foreach (var item in Items)
+                {
+                    items.Add(item.Key);
+                    if (item.Key.Equals(ItemViewChild))
+                    {
+                        if (ElemTree != null && ElemTree.GetLevelItems.Count > 0)
+                        {
+                            items.AddRange(ElemTree.GetLevelItems);
+                        }
+                    }
+                }
+            }
+            return items;
+        }
+    }
+
+
+    TItem? GetLastElem
+    {
+        get
+        {
+            if (SelectList != null)
+                return SelectList.LastOrDefault();
+
+            return default;
+        }
+    }
+
+    public void SetLevel(KeyboardEventArgs e)
+    {
+        if (Items == null)
+            return;
+        var index = e.Code == "ArrowUp" ? -1 : 1;
+
+        var newSelect = GetLevelItems.GetNextSelectItem(GetLastElem, index);
+
+        if (newSelect != null)
+        {
+            _ = SetSelectListAction(new() { newSelect });
+        }
+    }
+
+    public async Task ViewLevel(KeyboardEventArgs e)
+    {
+        if (Items?.Any(x => x.Key.Equals(GetLastElem)) ?? false)
+        {
+            if (e.Code == "ArrowRight" && (ItemViewChild == null || !ItemViewChild.Equals(GetLastElem)) && GetLastElem != null)
+            {
+                await SetCurrentItemView(GetLastElem);
+            }
+            else if (e.Code == "ArrowLeft")
+            {
+                ItemViewChild = default;
+            }
+        }
+        else if (ElemTree != null)
+        {
+           await ElemTree.ViewLevel(e);
+        }
+    }
+
+
+    public void AddSelectItem(MouseEventArgs e, TItem item)
+    {
+        if (SetSelectList.HasDelegate && (Items?.Any() ?? false))
+        {
+            if (SelectList == null) SelectList = new List<TItem>();
+
+            var newSelect = new List<TItem>(SelectList);
+
+            if (e.CtrlKey)
+            {
+                if (newSelect.Contains(item))
+                    newSelect.Remove(item);
+                else
+                    newSelect.Add(item);
+            }
+            else if (e.ShiftKey && newSelect.Count > 0)
+            {
+                var LastItem = newSelect.Last();
+                newSelect.Clear();
+
+                bool PlusOne = false;
+
+                var items = GetLevelItems;
+                if (items != null)
+                {
+                    newSelect.AddRange(items.SkipWhile(x =>
+                    {
+                        if (x == null) return true;
+                        if (x.Equals(item))
+                        {
+                            return false;
+                        }
+                        if (x.Equals(LastItem))
+                        {
+                            LastItem = item;
+                            return false;
+                        }
+                        return true;
+                    }).TakeWhile(x =>
+                    {
+                        if (x == null) return false;
+                        if (x.Equals(LastItem))
+                        {
+                            PlusOne = true;
+                            return true;
+                        }
+                        if (PlusOne)
+                        {
+                            return false;
+                        }
+                        return true;
+                    }));
+                }
+            }
+            else
+                newSelect = new() { item };
+
+            _ = SetSelectListAction(newSelect);
+        }
+    }
+}

@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+@if (MessageList.Any() || ErrorList.Any())
+{
+    <div tabindex="0" @ref="div">      
+        <ModalDialog RemoveDialog="true" Title="@AsoRep["IDS_INFO"]" ButtonCloseEvent="CloseDialog">
+            <BodyContent>
+                @if (ErrorList.Any())
+                {
+                    <Cards AddClass="alert-danger mb-3" Header="@Rep["ErrorTitle"]">
+                        <Virtualize Items="ErrorList" Context="item">
+                            <p>
+                                <strong>@item.Key</strong>
+                                <ul>
+                                    <Virtualize Items="item.Value" Context="error">
+                                        <li>@error</li>
+                                    </Virtualize>
+                                </ul>
+                            </p>
+                        </Virtualize>
+                    </Cards>
+                }
+                @if (MessageList.Any())
+                {
+                    <Cards AddClass="alert-success" Header="@Rep["TitleModal"]">
+                        <Virtualize Items="MessageList" Context="item">
+                            <p>
+                                <strong>@item.Key</strong>
+                                <ul>
+                                    <Virtualize Items="item.Value" Context="error">
+                                        <li>@error</li>
+                                    </Virtualize>
+                                </ul>
+                            </p>
+                        </Virtualize>
+                    </Cards>
+                }
+            </BodyContent>
+            <ButtonContent>
+                <BClose OnClick="CloseDialog" />
+                @if (ChildContent != null)
+                {
+                    @ChildContent
+                }
+            </ButtonContent>
+        </ModalDialog>
+    </div>
+
+}

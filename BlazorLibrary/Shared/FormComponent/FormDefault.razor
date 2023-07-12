@@ -1,0 +1,25 @@
+﻿<form id="@FormID" @onsubmit="SendSumbit">
+    @ChildContent
+</form>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public EventCallback OnSumbit { get; set; }
+
+    [Parameter]
+    public string? FormID { get; set; }
+
+    public bool IsProcessing = false;
+
+    async Task SendSumbit()
+    {
+        IsProcessing = true;
+        if (OnSumbit.HasDelegate)
+            await OnSumbit.InvokeAsync();
+        IsProcessing = false;
+    }
+
+}

@@ -1,0 +1,17 @@
+﻿@if (SubsystemID == SubsystemType.SUBSYST_ASO)
+{
+    <StartUI.Client.Pages.IndexComponent.StatList.ViewStatAso/>
+}
+else if (SubsystemID == SubsystemType.SUBSYST_SZS)
+{
+    <StartUI.Client.Pages.IndexComponent.StatList.ViewStatUuzs/>   
+}
+else if (SubsystemID == SubsystemType.SUBSYST_GSO_STAFF)
+{
+    <StartUI.Client.Pages.IndexComponent.StatList.ViewStatCU />
+    <StartUI.Client.Pages.IndexComponent.ResultList.ViewDetailInfoCU SetSubscribe="true">
+        <TSticky>
+            <ActivNotifySticky />
+        </TSticky>
+    </StartUI.Client.Pages.IndexComponent.ResultList.ViewDetailInfoCU>
+}

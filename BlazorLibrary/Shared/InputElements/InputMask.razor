@@ -1,0 +1,6 @@
+﻿@inherits BlazorLibrary.FolderForInherits.InputPattern
+<input @attributes="@InputAttributes" class="form-control" @bind="@bindValue">
+@if (!IsValid && !string.IsNullOrEmpty(ErrorMessage))
+{
+    <small class="text-danger">@ErrorMessage</small>
+}

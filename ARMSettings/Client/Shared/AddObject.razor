@@ -1,0 +1,34 @@
+﻿@using AsoDataProto.V1
+@using SharedLibrary.Models
+
+<ModalDialog Title="@ARMSetRep["ADD_OBJECT"]" ButtonCloseEvent="()=>CallBack()">
+    <BodyContent>
+        <TableScroll Colspan="4" TItem="SituationItem" Items="Model" DbClick="Confirm" SelectList="SelectedList" SetSelectList="AddItem">
+            <Thead>
+                <ThSort ThList="thList" ThWidthProcent="@(new List<int>(){40,10,40,10})" />
+            </Thead>
+            <Tbody Context="item">
+            <td>@item.SitName</td>
+            <td>@item.CodeName</td>
+            <td>@item.Comm</td>
+            <td>@item.SitPrior</td>
+            </Tbody>            
+        </TableScroll>
+    </BodyContent>
+    <ButtonContent>
+        <div class="d-inline-block me-2">
+            <select class="form-select" value="@subSystem" @onchange="HandleSubsystemChanged">
+                <option value="@SubsystemType.SUBSYST_ASO">@ARMSetRep["ASO"]</option>
+                <option value="@SubsystemType.SUBSYST_SZS">@ARMSetRep["UZS"]</option>
+                <option value="@SubsystemType.SUBSYST_GSO_STAFF">@ARMSetRep["PU"]</option>
+            </select>
+        </div>
+        @if (SelectItems?.Count > 0)
+        {
+            <BDark Text="@($"{ARMSetRep["CONFIRM"]} ({SelectItems.Count})")" OnClick="Confirm" />
+        }
+        <BCancel OnClick="()=>CallBack()" />
+    </ButtonContent>
+</ModalDialog>
+
+

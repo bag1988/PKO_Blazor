@@ -1,0 +1,25 @@
+﻿@using BlazorLibrary.Shared.Buttons
+@inherits LayoutComponentBase
+
+<Main Title="@ARMRep["ARMsredTitle"]">
+    <Menu>
+        <Link Match="NavLinkMatch.All" href="/">@ARMRep["LaunchingAnAlert"]</Link>
+        <HR />
+        <DivNavLink>
+            <BSecondary AddClass="w-100" IsOutline="true" OnClick="@(()=>NavigateToNewTab(_AppPortInfo.STARTUIAPPPORT))">
+                @ARMRep["STARTUI"] <span class="oi oi-external-link ms-1"></span>
+            </BSecondary>
+        </DivNavLink>
+
+        <DivNavLink>
+            <BSecondary AddClass="w-100" IsOutline="true" OnClick="@(()=>NavigateToNewTab(_AppPortInfo.VIEWSTATEAPPPORT))">
+                @ARMRep["VIEWSTATE"] <span class="oi oi-external-link ms-1"></span>
+            </BSecondary>
+        </DivNavLink>
+    </Menu>
+    <ChildContent>
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
+    </ChildContent>
+</Main>

@@ -1,0 +1,16 @@
+{
+  "name": "Настройка объектов АРМ",
+  "short_name": "Настройка объектов АРМ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#03173d",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "16x16 32x32 72x72 96x96 128x128 256x256"
+    }
+  ]
+}

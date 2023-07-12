@@ -1,0 +1,38 @@
+﻿@typeparam TItem
+
+<input @ref="input" @attributes="@InputAttributes" class="form-control" @bind="@bindValue">
+
+@code {
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? InputAttributes { get; set; }
+
+    [Parameter]
+    public TItem? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem?> ValueChanged { get; set; }
+
+    ElementReference? input { get; set; }
+
+    TItem? bindValue
+    {
+        get
+        {
+            return Value;
+        }
+        set
+        {
+            if (Value?.Equals(value) ?? false) return;
+            Value = value;
+            if (ValueChanged.HasDelegate)
+                ValueChanged.InvokeAsync(Value);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        input?.FocusAsync();
+    }
+}

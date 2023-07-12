@@ -1,0 +1,55 @@
+﻿@page "/ViewReports"
+@using GsoReporterProto.V1;
+
+<TitleView>@TitleName</TitleView>
+
+
+<DivScroll>
+    <PHeader>
+        @RepoterRep["IDS_REPORT"]
+    </PHeader>
+    <ResultView TItem="GetReportListItem" Items="Model" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="GetReportColumnList">
+        <ChildContent>
+            @context.MName
+        </ChildContent>
+    </ResultView>
+    <PHeader>
+        @RepoterRep["IDS_REPORT_SETTING"]
+    </PHeader>
+
+    @*Колонки*@
+    <p class="alert bg-secondary text-white p-2 mb-1">@RepoterRep["IDS_COLUMN"]</p>
+    <ResultView IsSetFocus="false" SetClass="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xxl-4 mx-0" ClassItems="col p-2" TItem="GetReportColumnListItem" Items="Columns?.Where(x => x.ObjId.ObjID < 99)" DbClick="(e)=>ChangeColumn(e?.ObjId)">
+        <ChildContent>
+            <label class="form-label m-0 p-0"> <input tabindex="-1" type="checkbox" class="form-check-input" checked="@(context.BNode==1?"checked":null)" @onchange="()=>ChangeColumn(context.ObjId)"> @context.MName</label>
+        </ChildContent>
+    </ResultView>
+
+    @if (ReportFont != null)
+    {
+        <hr />
+        <BlazorLibrary.Shared.ReportFont.FontChange ReportFont="ReportFont" />
+    }
+
+    <p class="alert bg-secondary text-white p-2 mb-1">@RepoterRep["IDS_SETTING_VIEW"]</p>
+    <ResultView IsSetFocus="false" SetClass="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xxl-4 mx-0" ClassItems="col p-2" TItem="GetReportColumnListItem" Items="Columns?.Where(x => x.ObjId.ObjID > 99)" DbClick="(e)=>ChangeColumn(e?.ObjId)">
+        <ChildContent>
+            <label class="form-label m-0 p-0"> <input tabindex="-1" type="checkbox" class="form-check-input" checked="@(context.BNode==1?"checked":null)" @onchange="()=>ChangeColumn(context.ObjId)"> @context.MName</label>
+        </ChildContent>
+    </ResultView>
+
+    <ButtonModal>
+        <CheckP BitPos="NameBitsPos.Create">
+            <BSave OnClick="CGsoReport" />
+            <BCancel OnClick="OnInitializedAsync" />
+            <BSecondary HotKey="@KeyCode.Print" Text="@AsoRep["IDS_STRING_VIEW_REPORT"]" OnClick="ViewReport" />
+
+            @if (IsUpdate)
+            {
+                <span class="m-2 text-success">@AsoRep["IDS_OK_SAVE"]</span>
+            }
+        </CheckP>
+
+    </ButtonModal>
+
+</DivScroll>

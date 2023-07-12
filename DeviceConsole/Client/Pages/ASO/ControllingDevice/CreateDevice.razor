@@ -1,0 +1,276 @@
+﻿
+<ModalDialog Title="@AsoRep[DeviceID!=null?"IDS_REG_BLOCK_UPDATE":"IDS_REG_BLOCK_INSERT"]" ButtonCloseEvent="Close">
+    <BodyContent>
+        @if (Model != null && Model.TypeConnect > 0)
+        {
+            @*Наименование*@
+            <div class="mb-3">
+                <label class="form-label">@GsoRep["IDS_STRING_NAME"]</label>
+                <InputFocus @bind-Value="Model.DeviceName" />
+            </div>
+
+            @*Комментарий*@
+            <div class="mb-3">
+                <label class="form-label">@DeviceComm</label>
+                <input type="text" class="form-control" @bind="Model.DeviceComm">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    @*Тип подключения*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_CONNECT_TYPE"]</label>
+                        <select disabled="@(DeviceID!=null?"disabled":null)" class="form-select" @onchange="(e)=>SetTypeConnect(int.Parse(e!.Value!.ToString()!))" value="@Model.TypeConnect">
+                            @foreach (var item in DictionryList.AsoTypeConnectList)
+                            {
+                                <option value="@item.Key">@item.Value</option>
+                            }
+                        </select>
+                    </div>
+
+                    @*Порт подключения*@
+                    <div class="mb-3">
+                        <label class="form-label">@AsoRep["PortID"]</label>
+                        @if (EditPortID)
+                        {
+                            <input type="number" class="form-control" @onchange="(e)=>ChangePortId(int.Parse(e!.Value!.ToString()!))" value="@PortId">
+                        }
+                        @if (PortID)
+                        {
+                            <div class="d-flex">
+                                <select class="form-select" @onchange="(e)=>ChangePortId(int.Parse(e!.Value!.ToString()!))" value="@PortId">
+                                    <option value="-1">----</option>
+                                    @foreach (var item in PortList)
+                                    {
+                                        <option value="@item.Key">@item.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @if (ShowMaxChannels)
+                    {
+                        //Канальность
+                        <div class="mb-3">
+                            <label class="form-label">@AsoRep["IDS_DEVCHANN"]</label>
+                            <select class="form-select" @onchange="(e)=>SetMaxChannels(int.Parse(e!.Value!.ToString()!))" value="@Model.CountChannel">
+                                @foreach (var item in СhannelsList)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    @if (ShowUserPassw)
+                    {
+                        //Доступ(Пользователь, пароль)
+                        <div class="mb-3">
+                            <label class="form-label">@DeviceRep["IDS_STRING_USER"]</label>
+                            <input type="text" class="form-control" @bind="Model.UserName">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@DeviceRep["IDS_STRING_PASSWORD"]</label>
+                            <input type="text" class="form-control" @bind="Model.Password">
+                        </div>
+                    }
+                </div>
+            </div>
+            <hr class="mt-0" />
+            @*Описание контроллера*@
+            <label class="form-label">@DeviceRep["ControllerName"]</label>
+            @*Разрешен*@
+            @if (ControllList != null && ControllList.Any(x => x.DeviceIndex == IndexController) && EnableTypeController)
+            {
+                <label class="form-check-label float-end">@AsoRep["IDS_STRING_PERMIT"] <input type="checkbox" class="form-check-input" checked="@(ControllList.First(x=>x.DeviceIndex==IndexController).Enable==true? "checked" : null)" @onchange="(e)=>{ControllList.First(x=>x.DeviceIndex==IndexController).Enable=(bool)(e.Value??false);}" /></label>
+            }
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        @*Контроллер*@
+                        <label class="form-label">@AsoDataRep["IDS_STRING_CONTROLLER"]</label>
+
+                        @if (ControllList != null)
+                        {
+                            <div class="d-flex">
+                                <select disabled="@(!EnableTypeController)" class="form-select" @bind="IndexController">
+                                    @foreach (var item in ControllList)
+                                    {
+                                        <option value="@item.DeviceIndex">@(((item.DeviceIndex - 1) * item.CountChannel) + 1) - @(item.DeviceIndex * item.CountChannel)</option>
+                                    }
+                                </select>
+                                @if (Model.TypeConnect == 0x0B)
+                                {
+                                    @*Канальность*@
+                                    <input disabled="@(!EnableTypeController)" type="number" class="form-control ms-1" value="@m_ddxChannelsPerController" @onchange="(e)=>ChangeInputChannels(int.Parse(e!.Value!.ToString()!))">
+                                    <BDark AddClass="ms-1" Text=">" OnClick="()=>ViewParamVoIP=true" />
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        @*Тип контроллера*@
+                        <label class="form-label">@AsoRep["IDS_DEVCONTRTYPE"]</label>
+                        @if (m_ctrlTypeController != null)
+                        {
+                            <select disabled="@(!EnableTypeController)" class="form-select" value="@ControllList?.FirstOrDefault()?.ControllerType" @onchange="(e)=>ControllList?.ForEach(x=>x.ControllerType=int.Parse(e!.Value!.ToString()!))">
+                                @foreach (var item in m_ctrlTypeController)
+                                {
+                                    <option value="@item.Key">@item.Value</option>
+                                }
+                            </select>
+                        }
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-0" />
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        @*Выбор таблицы*@
+                        <select class="form-select" @bind="TypeTable">
+                            <option value="1">@AsoRep["IDS_STRING_LINES"]</option>
+                            <option value="0">@AsoRep["IDS_STRING_PARAMS"]</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div>
+                @if (TypeTable == 1)
+                {
+                    <OnLoadData Data="ControllList">
+                        @{
+                            int CountChannels = context.First().CountChannel;
+                        }
+                        <TableDefault IsSetFocus="false" IsOnKeyDown="false" Colspan="3" Items="Enumerable.Range((1 + (CountChannels * IndexController - CountChannels)), CountChannels)" MinWidth="0">
+                            <Thead>
+                                <ThSort ThList="ThList" />
+                            </Thead>
+                            <Tbody Context="item">
+                                @{
+                                    int Number = item;
+                                }
+                            <td>@AsoRep["IDS_STRING_CHANNEL"] №@item</td>
+                            <td>
+                                <select value="@(LineInfo?.FirstOrDefault(x=>x.AsoLineBinding.LineBinding.ChannelID==item)?.AsoLineBinding.LineBinding.LineID??0)" class="form-select form-select-sm" @onchange="(e)=>ChangeBindingLine(e, Number)">
+                                    <option value="0">@AsoRep["IDS_STRING_LINE_NOT_CONNECTED"]</option>
+                                        @if (LineInfo?.Any(x => x.AsoLineBinding.LineBinding.ChannelID == item && !string.IsNullOrEmpty(x.LineName)) ?? false)
+                                        {
+                                        <option value="@LineInfo.First(x=>x.AsoLineBinding.LineBinding.ChannelID==item).AsoLineBinding.LineBinding.LineID">
+                                                @(
+                                                    LineInfo.First(x => x.AsoLineBinding.LineBinding.ChannelID == item).LineName + " " + LineInfo.First(x => x.AsoLineBinding.LineBinding.ChannelID == item).LineTypeName
+                                                    )
+                                        </option>
+                                        }
+                                        @if (FreeLine != null)
+                                        {
+                                            @foreach (var item in FreeLine.Where(x => !LineInfo?.Any(z => z.AsoLineBinding.LineBinding.LineID == x.LineID) ?? true))
+                                            {
+                                            <option value="@item.LineID">
+                                                    @(
+                                                item.LineName + " " + item.LineTypeName
+                                                )
+                                            </option>
+                                            }
+                                        }
+                                </select>
+                            </td>
+                            <td>
+                                    @if (LineInfo?.Any(x => x.AsoLineBinding.LineBinding.ChannelID == item && !string.IsNullOrEmpty(x.LineName)) ?? false)
+                                    {
+                                    <select class="form-select form-select-sm" value="@LineInfo.First(x=>x.AsoLineBinding.LineBinding.ChannelID==item && !string.IsNullOrEmpty(x.LineName)).AsoLineBinding.Enable" @onchange="(e)=>LineInfo.First(x=>x.AsoLineBinding.LineBinding.ChannelID==Number && !string.IsNullOrEmpty(x.LineName)).AsoLineBinding.Enable=int.Parse(e!.Value!.ToString()!)">
+                                        <option value="1">@AsoRep["IDS_STRING_PERMIT"]</option>
+                                        <option value="0">@AsoRep["IDS_STRING_NOT_PERMIT"]</option>
+                                    </select>
+                                    }
+                            </td>
+                            </Tbody>
+                        </TableDefault>
+                    </OnLoadData>
+                }
+                else
+                {
+                    <TableDefault Colspan="2" Items="ParamController" MinWidth="0" IsSetFocus="false" IsOnKeyDown="false">
+                        <Thead>
+                            <ThSort ThList="@(new Dictionary<int, string>(){{-1, AsoRep["Parameter"]},{-2, AsoRep["Value"]}})" />
+                        </Thead>
+                        <Tbody Context="item">
+                            @if (EnableTypeController)
+                            {
+                            <td>
+                                    @(item.SzNameParam + (item.SzDim != "" ? ", " + item.SzDim : ""))
+                            </td>
+                            <td>
+                                <input @onchange="(e)=>SetParamValue(item.DwCommand, e.Value?.ToString())" class="form-control form-control-sm" type="number" step="0.01" value="@((Math.Round(GetParamValue(item.DwCommand)*((float)item.DwRatio/item.DwDevide), 2)).ToString().Replace(",","."))" />
+                            </td>
+                            }
+                        </Tbody>
+                    </TableDefault>
+                }
+            </div>
+
+            <div>
+                <div class="mb-3">
+                    @*Устройство разрешено к использованию*@
+                    <label class="form-check-label">@AsoRep["EnableDevice"] <input type="checkbox" class="form-check-input" checked="@(Model.Enable==1? "checked" : null)" @onchange="(e)=>{Model.Enable=(bool)(e.Value??false)?1:0;}" /></label>
+                </div>
+                <div class="mb-3">
+                    @*Контроль состояния*@
+                    <label class="form-check-label">@GSOFormRep["IDC_CHECK_STATE"] <input type="checkbox" class="form-check-input" @bind="CheckState" /></label>
+                    @if (SheduleList != null && CheckState)
+                    {
+                        <select class="form-select" @bind="SheduleID">
+                            @foreach (var item in SheduleList)
+                            {
+                                <option value="@item.SheduleID">@string.Format("{0:#,##0} ч. {1:mm} мин.", Math.Truncate(item.Duration.ToTimeSpan().TotalHours), item.Duration.ToTimeSpan())</option>
+                            }
+                        </select>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="OnAdd" />
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>
+
+
+@if (Model != null && Model.TypeConnect == 0x0B && ViewParamVoIP)
+{
+    <ModalDialog Title="@AsoRep["ParamVoIP"]" ButtonCloseEvent="()=>ViewParamVoIP=false">
+        <BodyContent>
+            @*Номер телефона*@
+            <div class="mb-3">
+                <label class="form-label">@AsoRep["PhoneNumber"]</label>
+                <InputFocus @bind-Value="Model.Phone" />
+            </div>
+            @*Домен*@
+            <div class="mb-3">
+                <label class="form-label">@AsoRep["Domain"]</label>
+                <input type="text" class="form-control" @bind="Model.Domain">
+            </div>
+            @*Прокси*@
+            <div class="mb-3">
+                <label class="form-label">@AsoRep["Proxy"]</label>
+                <input type="text" class="form-control" @bind="Model.Proxy">
+            </div>
+            @*SIP-trunk*@
+            <div class="mb-3">
+                <label class="form-check-label"><input type="checkbox" class="form-check-input" checked="@(Model.Param1==1? "checked" : null)" @onchange="(e)=>{Model.Param1=(bool)(e.Value??false)?1:0;}" /> SIP-trunk</label>
+            </div>
+        </BodyContent>
+        <ButtonContent>
+            <BClose OnClick="()=>ViewParamVoIP=false" />
+        </ButtonContent>
+    </ModalDialog>
+}
+

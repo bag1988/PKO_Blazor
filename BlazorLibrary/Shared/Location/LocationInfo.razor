@@ -1,0 +1,57 @@
+﻿<ModalDialog Title="@AsoRep["IDS_STRING_PARAMS"]" ButtonCloseEvent="CallbackInvoke">
+    <BodyContent>
+        @if (Model != null)
+        {
+            //местоположение
+            <div class="mb-3">
+                <label class="form-label">@GsoRep["IDS_STRING_LOCATION"]</label>
+                <input disabled="disabled" type="text" class="form-control" @bind="Model.SzName">
+            </div>
+            <hr />
+            //Кода для установления входящего соединения
+            <b>@DeviceRep["CodeSetConnection"]</b>
+            //Код страны
+            <div class="mb-3">
+                <label class="form-label">@DeviceRep["CountryCode"]</label>
+                <input disabled="disabled" type="number" max="9999" class="form-control" @bind="Model.SzRegion">
+            </div>
+
+            //Код города
+            <div class="mb-3">
+                <label class="form-label">@DeviceRep["CityCode"]</label>
+                <input disabled="disabled" type="number" max="99999999" class="form-control" @bind="Model.SzCity">
+            </div>
+            //Абонентский номер ведомственной ТС
+            <div class="mb-3">
+                <label class="form-label">@DeviceRep["LocalATSCode"]</label>
+                <input disabled="disabled" type="number" max="99999999" class="form-control" @bind="Model.SzLocalATS">
+            </div>
+            <hr />
+            //Префиксы для исходящего соединения
+            <b>@DeviceRep["Prefixes"]</b>
+            //Выход на международную линию
+            <div class="mb-3">
+                <label class="form-label">@DeviceRep["InterNationalPrefix"]</label>
+                <input disabled="disabled" type="text" maxlength="3" class="form-control" @bind="Model.SzInterNationalPrefix">
+            </div>
+            //Выход на АМТС
+            <div class="mb-3">
+                <label class="form-label">@DeviceRep["InterUrbanPrefix"]</label>
+                <input disabled="disabled" type="text" maxlength="3" class="form-control" @bind="Model.SzInterUrbanPrefix">
+            </div>
+            //Выход на городскую линию
+            <div class="mb-3">
+                <label class="form-label">@DeviceRep["LocalCallPrefix"]</label>
+                <input disabled="disabled" type="text" maxlength="4" class="form-control" @bind="Model.SzLocalCallPrefix">
+            </div>
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+    <ButtonContent>
+        <BClose OnClick="CallbackInvoke" />
+    </ButtonContent>
+</ModalDialog>
+

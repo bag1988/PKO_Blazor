@@ -1,0 +1,97 @@
+﻿@page "/SitGroups"
+@using SMSSGsoProto.V1;
+@using Microsoft.AspNetCore.Components
+@using BlazorLibrary.Shared.Modal
+@using SMDataServiceProto.V1;
+@using SharedLibrary.Models
+@using BlazorLibrary.Shared.Buttons
+
+<TitleView>@ARMSetRep["SITUATION_GROUPS"]</TitleView>
+
+<div class="row">
+    <div class="col-md-3">
+        <TableScroll Devision="2" Colspan="2" DbClick="() => isAddSitGroup = true" TItem="SitGroupInfo" Items="SituationGroups" SelectList="@(SelectedSituationGroup!=null ? new (){SelectedSituationGroup}:null)" SetSelectList="HandleSitGroupChanged" MinWidth="0">
+            <Thead>
+                <ThSort ThList="thList" ThWidthProcent="@(new List<int>(){70,30})" />
+            </Thead>
+            <Tbody Context="item">
+            <td>@item.SitGroupName</td>
+            <td>@(item.SitGroupStatus != 1 ? ARMSetRep["STATUS_INACTIVE"] : ARMSetRep["STATUS_ACTIVE"])</td>
+            </Tbody>
+            <TSticky>
+                <CheckP BitPos="NameBitsPos.Create">
+                    <BDark Text="@ARMSetRep["ADD"]" OnClick="AddSitGroup" />
+                    @if (SelectedSituationGroup != null)
+                    {
+                        <BEdit OnClick="() => isAddSitGroup = true" />
+                        <BDelete OnClick="() => isDeleteSitGroup = true" />
+                    }
+                </CheckP>
+            </TSticky>
+        </TableScroll>
+    </div>
+
+    <div class="col-md-9">
+        <TableScroll Devision="2" IsSetFocus="false" Colspan="4" TItem="SitGroupLinkInfo_tag" Items="SituationList" SelectList="@(SelectedSituation!=null ? new (){SelectedSituation}:null)" SetSelectList="((e) => {SelectedSituation = e?.FirstOrDefault();})" MinWidth="0">
+            <Thead>
+                <ThSort ThList="situationThList" ThWidthProcent="@(new List<int>(){30,30,10,30})" />
+            </Thead>
+            <Tbody Context="item">
+            <td>@item.SitName</td>
+            <td>@subsystems?.FirstOrDefault(r=>r.Key ==item.SitSubsystemID ).Value</td>
+            <td>@item.CodeName</td>
+            <td>@item.Comm</td>
+            </Tbody>
+            <TSticky>
+                <CheckP BitPos="NameBitsPos.Create">
+                    @if (SelectedSituationGroup != null)
+                    {
+                        <BDark Text="@ARMSetRep["ADD"]" OnClick="()=> isAddSit = true" />
+                        @if (SelectedSituation != null)
+                        {
+                            <BDelete OnClick="() => isDeleteSitLink = true" />
+                        }
+                    }
+                </CheckP>
+            </TSticky>
+        </TableScroll>
+    </div>
+</div>
+<SitGroupSateList SituationGroups="SituationGroups"></SitGroupSateList>
+
+@if (isAddSitGroup)
+{
+    <AddOrEditSitGroup ActionBack="IsUpdateGroups" SitGroup="new(SelectedSituationGroup??new())" />
+}
+@if (isDeleteSitGroup && SelectedSituationGroup != null)
+{
+    <ModalDialog Title="@ARMSetRep["DELETE_SIT_GROUP_TITLE"]" ButtonCloseEvent="()=>isDeleteSitGroup=false">
+        <BodyContent>
+            <p class="alert alert-danger">
+                @ARMSetRep["CONFIRM_DELETE_SIT_GROUP"] <b>@SelectedSituationGroup.SitGroupName?</b>
+            </p>
+        </BodyContent>
+        <ButtonContent>
+            <BDelete OnClick="RemoveSitGroup" />
+            <BCancel OnClick="()=>isDeleteSitGroup=false" />
+        </ButtonContent>
+    </ModalDialog>
+}
+@if (isAddSit && SelectedSituationGroup != null)
+{
+    <AddObject ActionBack="HandleAddObjects" />
+}
+@if (isDeleteSitLink && SelectedSituation != null)
+{
+    <ModalDialog Title="@ARMSetRep["DELETE_LINKED_SCEN"]" ButtonCloseEvent="()=>isDeleteSitLink=false">
+        <BodyContent>
+            <p class="alert alert-danger">
+                @ARMSetRep["CONFIRM_DELETE_LINKED_SCEN"] <b>@SelectedSituation.SitName?</b>
+            </p>
+        </BodyContent>
+        <ButtonContent>
+            <BDelete OnClick="RemoveSitLink" />
+            <BCancel OnClick="()=>isDeleteSitLink=false" />
+        </ButtonContent>
+    </ModalDialog>
+}

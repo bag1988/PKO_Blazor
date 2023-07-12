@@ -1,0 +1,44 @@
+﻿@page "/ViewChannel"
+@using BlazorLibrary.Shared.ObjectTree
+@using AsoDataProto.V1;
+@inherits CancellableComponent
+<TitleView>@StartUIRep["IDS_HELP_CHAN_SOST"]</TitleView>
+<div class="row">
+    <DivScroll SetClass="col-md-3">
+        <TreeListUnlimit TItem="ChannelGroup" Items="GetTopLevel" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="SetSelectItem">
+            <ContentView>
+                @context.Name
+            </ContentView>
+        </TreeListUnlimit>
+    </DivScroll>
+    <div class="col-md-9">
+        @if(!IsPageLoad)
+        {
+            <TableVirtualize @ref="table" TItem="ChannelInfo" Provider="GetProvider" IsOnKeyDown="false" IsSetFocus="false">
+                <Tbody Context="item">
+                <td>@item.ChName</td>
+                <td>@GetChState(item.ChState)</td>                    
+                <td>@item.ChNotReadyLine</td>
+                <td>@item.ChNotController</td>
+                <td>@item.ChAnswer</td>
+                <td>@item.ChNoAnswer</td>
+                <td>@item.ChAbBusy</td>
+                <td>@item.ChAnswerDtmf</td>
+                <td>@item.ChAnswerTicker</td>
+                <td>@item.ChErrorAts</td>
+                <td>@item.ChAnswerFax</td>
+                <td>@item.ChInterError</td>
+                <td>@item.ChAnswerSetup</td>
+                <td>@item.ChUndefinedAnswer</td>
+                <td>@item.ChInfo</td>
+                </Tbody>
+                <TSticky>
+                    @if (ChannelInfoList?.Count > 0)
+                    {
+                        <BPrint OnClick="GetReport" />
+                    }
+                </TSticky>
+            </TableVirtualize>
+        }       
+    </div>
+</div>

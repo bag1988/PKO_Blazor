@@ -1,0 +1,31 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.Extensions.Localization;
+@using Microsoft.JSInterop
+@using BBImport.Client
+@using BBImport.Client.Shared
+@using ReplaceLibrary;
+@using BlazorLibrary.ServiceColection
+@using SharedLibrary;
+@using BlazorLibrary.Shared
+@using BlazorLibrary.Shared.Buttons
+@using BlazorLibrary.Shared.Modal
+@using BlazorLibrary.Shared.Table
+@using SharedLibrary.Models;
+
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager MyNavigationManager
+@inject HubContextCreate _HubContext
+@inject IStringLocalizer<DeviceReplace> DeviceRep
+@inject IStringLocalizer<ASOReplace> AsoRep
+@inject IStringLocalizer<GSOReplase> GsoRep
+@inject IStringLocalizer<ReplaceDictionary> Rep
+@inject IStringLocalizer<GSOFormReplase> GSOFormRep
+@inject GetUserInfo _User

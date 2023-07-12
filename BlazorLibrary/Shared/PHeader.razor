@@ -1,0 +1,15 @@
+﻿<p class="alert bg-dark text-white position-sticky mb-2" style="z-index:@ZIndex; @(StyleTop!=null? "top:"+StyleTop+"px;":"")">
+    @ChildContent
+</p>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public int? StyleTop { get; set; } = 0;
+
+    [Parameter]
+    public int ZIndex { get; set; } = 2;
+}
+

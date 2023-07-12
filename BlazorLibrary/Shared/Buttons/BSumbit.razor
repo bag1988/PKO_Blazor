@@ -1,0 +1,15 @@
+﻿@inherits ButtonDefault
+<button form="@FormId" disabled="@(IsProcessing?"disabled":null)" type="submit" hotkey="@(!string.IsNullOrEmpty(HotKey)?HotKey:null)" class="btn btn@(IsOutline==true?"-outline":"")-@ColorButton @(TextWrap==true?"text-wrap":"text-nowrap") @AddClass">@_content</button>
+
+@code {
+    [Parameter]
+    public string? FormId { get; set; }
+
+    [Parameter]
+    public string? ColorButton { get; set; } = "dark";
+
+    protected override void OnInitialized()
+    {
+        Text = Text ?? GsoRep["IDS_STRING_SAVE"];
+    }
+}

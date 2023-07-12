@@ -1,0 +1,87 @@
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM archlinux:latest AS base
+WORKDIR /app
+EXPOSE 81
+#EXPOSE 443
+
+# Update the repositories
+RUN	pacman -Syy --noconfirm
+
+# Install dotnet runtime
+RUN	pacman -S --noconfirm aspnet-runtime
+
+# Install rhvoice
+RUN	pacman -S --noconfirm rhvoice
+
+# Install languages
+#RUN	pacman -S --noconfirm rhvoice-language-albanian
+#RUN	pacman -S --noconfirm rhvoice-language-brazilian-portuguese
+#RUN	pacman -S --noconfirm rhvoice-language-english
+#RUN	pacman -S --noconfirm rhvoice-language-esperanto
+#RUN	pacman -S --noconfirm rhvoice-language-georgian
+#RUN	pacman -S --noconfirm rhvoice-language-kyrgyz
+#RUN	pacman -S --noconfirm rhvoice-language-macedonian
+#RUN	pacman -S --noconfirm rhvoice-language-polish
+RUN	pacman -S --noconfirm rhvoice-language-russian
+#RUN	pacman -S --noconfirm rhvoice-language-tatar
+#RUN	pacman -S --noconfirm rhvoice-language-ukrainian
+
+# Install voices
+#RUN	pacman -S --noconfirm rhvoice-voice-alan
+RUN	pacman -S --noconfirm rhvoice-voice-aleksandr
+#RUN	pacman -S --noconfirm rhvoice-voice-aleksandr-hq
+#RUN	pacman -S --noconfirm rhvoice-voice-anatol
+RUN	pacman -S --noconfirm rhvoice-voice-anna
+#RUN	pacman -S --noconfirm rhvoice-voice-arina
+#RUN	pacman -S --noconfirm rhvoice-voice-artemiy
+#RUN	pacman -S --noconfirm rhvoice-voice-azamat
+#RUN	pacman -S --noconfirm rhvoice-voice-bdl
+#RUN	pacman -S --noconfirm rhvoice-voice-clb
+#RUN	pacman -S --noconfirm rhvoice-voice-elena
+#RUN	pacman -S --noconfirm rhvoice-voice-evgeniy-eng
+#RUN	pacman -S --noconfirm rhvoice-voice-evgeniy-rus
+#RUN	pacman -S --noconfirm rhvoice-voice-hana
+#RUN	pacman -S --noconfirm rhvoice-voice-irina
+#RUN	pacman -S --noconfirm rhvoice-voice-kiko
+#RUN	pacman -S --noconfirm rhvoice-voice-leticia-f123
+#RUN	pacman -S --noconfirm rhvoice-voice-lyubov
+#RUN	pacman -S --noconfirm rhvoice-voice-magda
+#RUN	pacman -S --noconfirm rhvoice-voice-marianna
+#RUN	pacman -S --noconfirm rhvoice-voice-mikhail
+#RUN	pacman -S --noconfirm rhvoice-voice-natalia
+#RUN	pacman -S --noconfirm rhvoice-voice-natan
+#RUN	pacman -S --noconfirm rhvoice-voice-natia
+#RUN	pacman -S --noconfirm rhvoice-voice-nazgul
+#RUN	pacman -S --noconfirm rhvoice-voice-pavel
+#RUN	pacman -S --noconfirm rhvoice-voice-slt
+#RUN	pacman -S --noconfirm rhvoice-voice-spomenka
+#RUN	pacman -S --noconfirm rhvoice-voice-suze
+#RUN	pacman -S --noconfirm rhvoice-voice-talgat
+#RUN	pacman -S --noconfirm rhvoice-voice-tatiana
+#RUN	pacman -S --noconfirm rhvoice-voice-victoria
+#RUN	pacman -S --noconfirm rhvoice-voice-vitaliy
+#RUN	pacman -S --noconfirm rhvoice-voice-volodymyr
+#RUN	pacman -S --noconfirm rhvoice-voice-yuriy
+##new
+##RUN	pacman -S --noconfirm umka
+##RUN	pacman -S --noconfirm vitaliy-ng
+
+FROM archlinux:latest AS build
+# Update the repositories
+RUN	pacman -Syy
+# Install openssh
+RUN	pacman -S --noconfirm dotnet-sdk
+
+WORKDIR /src
+COPY . .
+WORKDIR "/src/RhVoiceService"
+RUN dotnet build "RhVoiceService.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "RhVoiceService.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "RhVoiceService.dll"]

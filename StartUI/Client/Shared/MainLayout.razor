@@ -1,0 +1,114 @@
+﻿@inherits PushInherits
+
+<Main @ref="elem" Title="@GetTitle()">
+    <Menu>
+        <CascadingValue Value="@context">
+            <div class="px-2">
+                <p>
+                    <select class="form-select form-select-sm mt-3" value="@context" @onchange="ChangeSubSystem">
+                        @if (configStart.ASO)
+                        {
+                            <option value="@SubsystemType.SUBSYST_ASO">@SMGateRep["IDS_STRING_ASO"]</option>
+                        }
+                        @if (configStart.UUZS && (!MyNavigationManager.Uri.Contains("HistoryCall") && !MyNavigationManager.Uri.Contains("ViewChannel")))
+                        {
+                            <option value="@SubsystemType.SUBSYST_SZS">@SMGateRep["IDS_STRING_SZS"]</option>
+                        }
+                        @if (configStart.STAFF && (!MyNavigationManager.Uri.Contains("HistoryCall") && !MyNavigationManager.Uri.Contains("ViewChannel")))
+                        {
+                            <option value="@SubsystemType.SUBSYST_GSO_STAFF">@StartUIRep["IDS_STAFFTITLE"]</option>
+                        }
+
+                        @if (configStart.P16x && (MyNavigationManager.Uri.Contains("PuNotifyLog") || MyNavigationManager.Uri.Contains("EventLog")))
+                        {
+                            <option value="@SubsystemType.SUBSYST_P16x">@GsoRep["P16X"]</option>
+                        }
+                    </select>
+                </p>
+            </div>
+            <CheckP BitPos="NameBitsPos.General">
+                <Link HotKey="@KeyCode.SitView" Match="NavLinkMatch.All" href="/">@StartUIRep["IDS_LOG_SWITCHTONOTIFY"]</Link>
+            </CheckP>
+
+            <CheckP BitPos="NameBitsPos.ViewLogs">
+                <Link HotKey="@KeyCode.EventLog" href="/EventLog">@StartUIRep["EventLog"]</Link>
+            </CheckP>
+
+            <CheckP BitPos="NameBitsPos.ViewArhive">
+                <Link HotKey="@KeyCode.ResultView" href="/PuNotifyLog">@StartUIRep["IDS_P16xMenuID_Results"]</Link>
+            </CheckP>
+            @if (context == SubsystemType.SUBSYST_ASO)
+            {
+                <CheckP BitPos="NameBitsPos.ViewChannel">
+                    <Link HotKey="@KeyCode.ChannelView" href="/ViewChannel" Text="@StartUIRep["ID_SWITCHTOCHANNELMODE"]" />
+                </CheckP>
+                <CheckP BitPos="NameBitsPos.ViewArhive">
+                    <Link href="/HistoryCall" Text="@GsoRep["HISTORY_CALL"]" />
+                </CheckP>
+            }
+
+            @*Сервисные сообщения*@
+            <div class="nav-item px-2">
+                @if (ServiceLogs?.Count > 0)
+                {
+                    <NavLink class="nav-link blink" style="color:#dc7272 !important;" href="/ViewServiceMessage">@GsoRep["IDS_STRING_INFO_MESSAGE"]</NavLink>
+                }
+                else
+                {
+                    <NavLink class="nav-link" style="color:gray !important;" href="/ViewServiceMessage">@GsoRep["IDS_STRING_INFO_MESSAGE"]</NavLink>
+                }
+            </div>
+
+            <HR />
+
+            <CheckP SystemID="SubsystemType.SUBSYST_Setting" BitPos="NameBitsPos.Setting">
+                @if (context != SubsystemType.SUBSYST_GSO_STAFF)
+                {
+                    <DivNavLink>
+                        <label class="px-2">
+                            <input class="me-1" type="checkbox" checked="@Settings.ContinueNotify" @onchange="@(async ()=>{Settings.ContinueNotify=!Settings.ContinueNotify; await SaveSatting();})">
+                            @StartUIRep["ID_INIT_CONTINUES"]
+                        </label>
+                    </DivNavLink>
+                }
+
+                <DivNavLink>
+                    <label class="px-2">
+                        <input class="me-1" type="checkbox" checked="@Settings.SoundEnd" @onchange="@(async ()=>{Settings.SoundEnd=!Settings.SoundEnd; await SaveSatting();})">
+                        @StartUIRep["ID_END_NOTIFY_SIGNAL"]
+                    </label>
+                </DivNavLink>
+                @if (context == SubsystemType.SUBSYST_ASO)
+                {
+                    <DivNavLink>
+                        <label class="px-2">
+                            <input class="me-1" type="checkbox" checked="@Settings.SaveReport" @onchange="@(async ()=>{Settings.SaveReport=!Settings.SaveReport; await SaveSatting();})">
+                            @StartUIRep["ID_CHANNELSAUTOSAVE"]
+                        </label>
+                    </DivNavLink>
+
+                    <DivNavLink>
+                        <label class="px-2">
+                            <input class="me-1" type="checkbox" checked="@Settings.ChannelConn" @onchange="@(async ()=>{Settings.ChannelConn=!Settings.ChannelConn; await SaveSatting();})">
+                            @StartUIRep["ID_ATTACH_CHANLS"]
+                        </label>
+                    </DivNavLink>
+                }
+                <DivNavLink>
+                    <label class="px-2">
+                        <input class="me-1" type="checkbox" disabled="disabled" checked="@Settings.SitConfirm" @onchange="@(async ()=>{Settings.SitConfirm=!Settings.SitConfirm; await SaveSatting();})">
+                        @StartUIRep["ID_SIT_SELECT_CONFIRM"]
+                    </label>
+                </DivNavLink>
+            </CheckP>
+        </CascadingValue>
+    </Menu>
+    <ChildContent>
+        @if (Body != null)
+        {
+            <CascadingValue Value="@context">
+                @Body
+            </CascadingValue>
+        }
+    </ChildContent>
+</Main>

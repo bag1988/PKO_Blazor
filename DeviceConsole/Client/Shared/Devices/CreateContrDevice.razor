@@ -1,0 +1,258 @@
+﻿@using SharedLibrary.Utilities;
+@inherits CancellableComponent
+
+<ModalDialog Title="@(DeviceObj_ID?.ObjID>0?Model?.Name:AsoRep["IDS_REG_BLOCK_INSERT"])" ButtonCloseEvent="Close">
+    <BodyContent>
+        @if (Model != null)
+        {
+            @*Наименование*@
+            <div class="mb-3">
+                <label class="form-label">@UUZSRep["IDS_STRING_NAME"]</label>
+                <InputFocus @bind-Value="Model.Name" />
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    @*Серийный номер*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_SERIAL_NUMBER"]</label>
+                        <label class="form-control bg-light">@GetSerialNumber()</label>
+                    </div>
+
+
+                    @*Тип устройства*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_TYPE_DEVICE"]</label>
+                        <div class="d-flex align-items-start">
+                            <label class="form-control bg-light ms-1">@(Model.Type.ToString("X4"))h</label>
+                            @if (SubsystemID != SubsystemType.SUBSYST_P16x && Model.Type != DevType.SZS)
+                            {
+                                @if (DeviceObj_ID?.ObjID > 0)
+                                {
+                                    <label class="form-control bg-light ms-1">@(m_ComboDevType.FirstOrDefault(x => x.Key == Model.Type).Value)</label>
+                                }
+                                else if (Model.Type != DevType.SZS && DeviceObj_ID?.SubsystemID != SubsystemType.SUBSYST_P16x)
+                                {
+                                    <select class="form-select ms-1" @onchange="OnChange" value="@Model.Type">
+                                        @foreach (var item in m_ComboDevType)
+                                        {
+                                            <option value="@item.Key">@item.Value</option>
+                                        }
+                                    </select>
+                                }
+                            }
+
+                        </div>
+                    </div>
+
+                    @if (SubsystemID != SubsystemType.SUBSYST_P16x)
+                    {
+                        @if (Model.Type == DevType.XPORTUDP)
+                        {
+                            <hr />
+                            @*Параметры группы устройств XPORTUDP*@
+                            <b>@UUZSRep["IDS_STRING_SETTING_XPORTUDP"]</b>
+                            @*Адрес группы устройтсв (Broadcast)*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_ADRESS_DEVICE"]</label>
+                                <InputIpAddress @bind-Value="UDPParams.RemoteIpAddress" />
+                            </div>
+                            @*UDP порт*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_UDP_PORT"]</label>
+                                <input type="text" class="form-control" @bind="UDPParams.RemotePort">
+                            </div>
+                            <hr />
+                            @*Параметры приема ответов от группы устройств XPORTUDP*@
+                            <b>@UUZSRep["IDS_STRING_ANSWER_DEVICE"]</b>
+                            @*Адрес приема ответов*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_ADRESS_ANSWER"]</label>
+                                <InputIpAddress @bind-Value="UDPParams.LocalIpAddress" />
+                            </div>
+                            @*Порт приема ответов*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_PORT_ANCWER"]</label>
+                                @if (DeviceObj_ID?.ObjID > 0)
+                                {
+                                    <label class="form-control bg-light">@m_wPortUDP</label>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" @bind="m_wPortUDP">
+                                }
+                            </div>
+                            <hr />
+
+                        }
+                        @if (Model.Type != DevType.XPORTUDP && Model.Type != DevType.SZS)
+                        {
+                            @*Порт*@
+                            <div class="mb-3">
+                                <label class="form-label">@GsoRep["IDS_STRING_PORT"]</label>
+                                <div class="d-flex align-items-start">
+
+                                    @if (Model.Type == DevType.XPORT || Model.Type == DevType.RAD_MOD)
+                                    {
+                                        <label class="form-control bg-light ms-1">@Model.PortNo</label>
+
+                                        @if (DeviceObj_ID?.ObjID > 0)
+                                        {
+                                            <label class="form-control bg-light ms-1">@(m_ComboComPort.FirstOrDefault(x => x.Key == Model.PortNo).Value)</label>
+
+                                        }
+                                        else
+                                        {
+                                            <select class="form-select ms-1" @bind="Model.PortNo">
+                                                @foreach (var item in m_ComboComPort)
+                                                {
+                                                    <option value="@item.Key">@item.Value</option>
+                                                }
+                                            </select>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <label class="form-control bg-light ms-1">@m_wPortUDP</label>
+                                        @if (DeviceObj_ID?.ObjID > 0)
+                                        {
+                                            <label class="form-control bg-light ms-1">@m_wPortUDP</label>
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="form-control ms-1" @bind="@m_wPortUDP">
+
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.Type == DevType.XPORTTCP || Model.Type == DevType.SZS)
+                        {
+                            @*Адрес*@
+                            <div class="mb-3">
+                                <label class="form-label">@UUZSRep["IDS_STRING_ADRESS"]</label>
+                                @if (DeviceObj_ID?.ObjID > 0)
+                                {
+                                    <label class="form-control bg-light">@m_IPAddressUZS</label>
+                                }
+                                else
+                                {
+                                    <InputIpAddress @bind-Value="m_IPAddressUZS" />
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        @*Порт*@
+                        <div class="mb-3">
+                            <label class="form-label">@GsoRep["IDS_STRING_PORT"]</label>
+                            <div class="d-flex align-items-start">
+                                <label class="form-control bg-light ms-1">@IpAddressUtilities.UintToString((uint)Model.PortNo)</label>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+
+                <div class="col-md-6">
+                    @*Количество каналов*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_CHANNELS_COUNT"]</label>
+                        <label class="form-control bg-light">@Model.CountCh</label>
+                    </div>
+
+                    @*Версия устройства*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_VER_DEVICE"]</label>
+                        @if (Model.Type != DevType.RAD_MOD && DeviceObj_ID?.SubsystemID != SubsystemType.SUBSYST_P16x && Model.Type != DevType.SZS)
+                        {
+                            <select class="form-select" @bind="Model.Ver">
+                                @foreach (var item in m_ComboVer)
+                                {
+                                    <option value="@item.Key">@item.Value</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <label class="form-control bg-light">@Model.Ver</label>
+                        }
+
+                    </div>
+                    @*№ канальной*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_CHANNELS"]</label>
+                        <label class="form-control bg-light">@(Model.OrderOnPort + 1)</label>
+                    </div>
+
+                    @*Блок*@
+                    <div class="mb-3">
+                        <label class="form-label">@UUZSRep["IDS_STRING_BLOCK"]</label>
+                        <label class="form-control bg-light">@(Model.BlockNo + 1)</label>
+                    </div>
+
+
+                    @if (Model.Type != DevType.RAD_MOD && SubsystemID != SubsystemType.SUBSYST_P16x && Model.Type != DevType.SZS)
+                    {
+                        @*Звук*@
+                        <div class="mb-3">
+                            <label class="form-label">@UUZSRep["IDS_STRING_SOUND"]</label>
+                            <select class="form-select" @bind="@audioParam.Fmt">
+                                @foreach (var item in m_SoundFormat)
+                                {
+                                    <option value="@item.Key">@item.Value</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                </div>
+            </div>
+            @*Линия связи*@
+            @if (SubsystemID != SubsystemType.SUBSYST_P16x)
+            {
+                <div class="mb-3">
+                    <label class="form-label">@GsoRep["IDS_STRING_LINE1"]</label>
+                    <select class="form-select" @bind="@m_recBindingLine.LineID">
+                        <option value="0">-----</option>
+                        @if (FreeLine?.Any() ?? false)
+                        {
+                            @foreach (var item in FreeLine)
+                            {
+                                <option value="@item.LineID">@item.LineName (@item.LineTypeName)</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+        }
+        else
+        {
+            <PLoad />
+        }
+    </BodyContent>
+    <ButtonContent>
+        <BSave OnClick="OnAdd" />
+        <BCancel OnClick="Close" />
+    </ButtonContent>
+</ModalDialog>
+
+
+
+
+@if (IsErrorSetting)
+{
+    <ModalDialog Title="@DeviceRep["IDS_STRING_WARNING"]" ButtonCloseEvent="()=>IsErrorSetting=false">
+        <BodyContent>
+            <p class="alert alert-warning">
+                @GSOFormRep["IDS_E_SETTING_DEVICE"]
+            </p>
+        </BodyContent>
+        <ButtonContent>
+            <BSave OnClick="ConfigAddOrReplacePort" />
+            <BCancel OnClick="()=>IsErrorSetting=false" />
+        </ButtonContent>
+    </ModalDialog>
+}

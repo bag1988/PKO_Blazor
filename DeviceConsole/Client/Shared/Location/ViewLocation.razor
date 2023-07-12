@@ -1,0 +1,48 @@
+﻿@page "/ViewLocation"
+@inherits FiltrInherits<LocationSelectFiltr>
+
+@using SMDataServiceProto.V1;
+<TitleView>@GsoRep["IDS_STRING_LOCATION"]</TitleView>
+
+
+@if (!IsPageLoad)
+{
+    <FiltrInput AddItemFiltr="AddItemFiltr" RemoveItemsFiltr="RemoveItemsFiltr" Items="FiltrItems" Hints="HintItems" PlaceHolder="@PlaceHolder" />
+    <TableVirtualize @ref="table" TItem="LocationItem" Provider="GetProvider" DbClick="()=>IsViewEdit=true" SelectList="@(SelectItem!=null ? new (){SelectItem}:null)" SetSelectList="(e)=>SelectItem = e?.LastOrDefault()">
+        <Tbody Context="item">
+        <td>@item.Name</td>
+        </Tbody>
+        <TSticky>
+            <CheckP BitPos="NameBitsPos.Create">
+                <BCreate OnClick="()=>{IsViewEdit=true; SelectItem=null;}" />
+                @if (SelectItem != null)
+                {
+                    <BEdit OnClick="()=>IsViewEdit=true" />
+                    <BDelete OnClick="()=>IsDelete=true" />
+                }
+            </CheckP>
+        </TSticky>
+    </TableVirtualize>
+}
+
+<CheckP BitPos="NameBitsPos.Create">
+    @if (IsViewEdit == true)
+    {
+        <CreateLocation CallBack="CallBackEvent" LocationID="@(SelectItem!=null?SelectItem.LocationID:null)" />
+    }
+
+    @if (IsDelete == true && SelectItem != null)
+    {
+        <ModalDialog Title="@GsoRep["IDS_REG_LOC_DELETE"]" ButtonCloseEvent="()=>IsDelete=false">
+            <BodyContent>
+                <p class="alert alert-danger">
+                    @AsoRep["IDS_STRING_MULTI_DELETE_Q"]: <b>@SelectItem.Name</b>
+                </p>
+            </BodyContent>           
+            <ButtonContent>
+                <BDelete OnClick="DeleteLocation" />
+                <BCancel OnClick="()=>IsDelete=false" />
+            </ButtonContent>
+        </ModalDialog>
+    }
+    </CheckP>
